@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "241163609783",
+    "firebase_url": "https://chattie-3eb7b.firebaseio.com",
+    "project_id": "chattie-3eb7b",
+    "storage_bucket": "chattie-3eb7b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:241163609783:android:472e8cf7a60e4623e24f32",
+        "android_client_info": {
+          "package_name": "com.web.xeam"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "241163609783-2or83046qrp41ms70a8rceaeqb273c2h.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCuS3dgj8NBVHKfT8cZZHwV20RPHzWA5AE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "241163609783-2or83046qrp41ms70a8rceaeqb273c2h.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

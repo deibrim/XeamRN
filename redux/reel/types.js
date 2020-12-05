@@ -1,0 +1,6 @@
+export const ActionTypes = {
+  SET_REELS: "SET_REELS",
+  SET_MY_REELS: "SET_MY_REELS",
+  SET_USER_REELS: "SET_USER_REELS",
+  CURRENT_REEL: "CURRENT_REEL",
+};

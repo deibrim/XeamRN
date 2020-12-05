@@ -1,0 +1,56 @@
+import { StyleSheet } from "react-native";
+export const styles = StyleSheet.create({
+  reelCardContainer: {
+    width: "100%",
+    height: 192,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  reelCard: {
+    width: "48%",
+    height: 220,
+    position: "relative",
+    marginVertical: 6,
+  },
+  userAddReel: {
+    position: "absolute",
+    top: 8,
+    left: 8,
+    backgroundColor: "#ffffff",
+    borderRadius: 20,
+    width: 39,
+    height: 39,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  reelCardImage: {
+    width: "100%",
+    height: 220,
+    borderRadius: 12,
+  },
+  reelCardFooter: {
+    height: 25,
+    width: "100%",
+    position: "absolute",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-start",
+    bottom: 12,
+    left: 9,
+  },
+  reelCardFooterText: {
+    fontSize: 13,
+    fontWeight: "500",
+    color: "#ffffff",
+  },
+  overlay: {
+    borderRadius: 12,
+    flex: 1,
+    position: "absolute",
+    left: 0,
+    top: 0,
+    opacity: 0.5,
+    backgroundColor: "black",
+    width: "100%",
+  },
+});

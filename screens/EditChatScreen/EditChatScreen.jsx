@@ -36,14 +36,16 @@ export default function EditChatScreen() {
       <View style={styles.header}>
         <View style={{ flexDirection: "row", alignItems: "center" }}>
           <TouchableWithoutFeedback onPress={() => navigation.goBack()}>
-            <Ionicons
-              name="ios-arrow-back"
-              size={24}
-              color="black"
-              style={{ marginRight: 10 }}
-            />
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <Ionicons
+                name="ios-arrow-back"
+                size={24}
+                color="black"
+                style={{ marginRight: 10 }}
+              />
+              <Text style={styles.title}>Back</Text>
+            </View>
           </TouchableWithoutFeedback>
-          <Text style={styles.title}>Back</Text>
         </View>
         <Text style={{ ...styles.title, fontSize: 14 }}>Chat Settings</Text>
       </View>

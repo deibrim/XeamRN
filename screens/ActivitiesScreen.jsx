@@ -8,6 +8,7 @@ import {
   Text,
   ScrollView,
   RefreshControl,
+  TouchableOpacity,
 } from "react-native";
 import { useSelector } from "react-redux";
 import moment from "moment";
@@ -83,44 +84,61 @@ export default function ActivitiesScreen() {
         )}
         <View>
           {activities.map((item, index) => (
-            <View
+            <TouchableOpacity
               key={index}
+              onPress={() => {
+                item.type === "follow" &&
+                  navigation.navigate("UserProfileScreen", {
+                    userId: item.userId,
+                  });
+              }}
               style={{
-                flexDirection: "row",
-                height: 80,
                 width: "100%",
-                flex: 1,
-                justifyContent: "flex-start",
-                alignItems: "center",
-                paddingHorizontal: 20,
-                backgroundColor: "white",
                 marginVertical: 5,
               }}
             >
-              <Image
+              <View
+                // key={index}
                 style={{
-                  width: 50,
-                  height: 50,
-                  resizeMode: "cover",
-                  borderRadius: 50,
-                  borderWidth: 2,
-                  borderColor: "#fff",
-                  marginRight: 10,
+                  flexDirection: "row",
+                  height: 80,
+                  width: "100%",
+                  flex: 1,
+                  justifyContent: "flex-start",
+                  alignItems: "center",
+                  paddingHorizontal: 20,
+                  backgroundColor: "white",
                 }}
-                source={{ uri: `${item.userProfileImg}` }}
-              />
-              <View style={{ flex: 1 }}>
-                <Text style={{ fontWeight: "bold", fontSize: 16 }}>
-                  {item.username}{" "}
-                  <Text style={{ fontWeight: "400", fontSize: 14 }}>
-                    started following you
+              >
+                <Image
+                  style={{
+                    width: 50,
+                    height: 50,
+                    resizeMode: "cover",
+                    borderRadius: 50,
+                    borderWidth: 2,
+                    borderColor: "#fff",
+                    marginRight: 10,
+                  }}
+                  source={{ uri: `${item.userProfileImg}` }}
+                />
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontWeight: "bold", fontSize: 16 }}>
+                    {item.username}{" "}
+                    <Text style={{ fontWeight: "400", fontSize: 14 }}>
+                      {item.type === "follow"
+                        ? "started following you"
+                        : item.type === "like"
+                        ? "like your reel"
+                        : "commented on your reel"}
+                    </Text>
                   </Text>
-                </Text>
-                <Text style={{ color: "gray" }}>
-                  {moment(item.timestamp).fromNow()}
-                </Text>
+                  <Text style={{ color: "gray" }}>
+                    {moment(item.timestamp).fromNow()}
+                  </Text>
+                </View>
               </View>
-            </View>
+            </TouchableOpacity>
           ))}
         </View>
       </ScrollView>

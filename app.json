@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "XeamJs",
-    "slug": "XeamJs",
+    "name": "Xeam",
+    "slug": "Xeam",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -22,12 +22,15 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
       },
+      "useNextNotificationsApi": true,
       "package": "com.web.xeam",
       "googleServicesFile": "./google-services.json",
       "versionCode": 1
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "description": "",
+    "githubUrl": "https://github.com/0zzycodes/XeamRN"
   }
 }

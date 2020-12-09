@@ -15,8 +15,6 @@ import {
 import { v4 as uuidv4 } from "uuid";
 import EmojiBoard from "react-native-emoji-board";
 import firebase from "../../firebase/firebase.utils";
-
-import BG from "../../assets/images/BG.png";
 import styles from "./styles";
 
 const InputBox = (props) => {
@@ -27,35 +25,6 @@ const InputBox = (props) => {
     isPrivateChannel,
     getMessagesRef,
   } = props;
-  // console.log("===============messagesRef=====================");
-  // console.log(messagesRef);
-  // console.log("====================================");
-  // console.log("=================currentChannel===================");
-  // console.log(currentChannel);
-  // console.log("====================================");
-  // console.log("==================currentUser==================");
-  // console.log(currentUser);
-  // console.log("====================================");
-  // console.log("==================isPrivateChannel==================");
-  // console.log(isPrivateChannel);
-  // console.log("====================================");
-  // console.log("==================getMessagesRef==================");
-  // console.log(getMessagesRef());
-  // console.log("====================================");console.log("===============messagesRef=====================");
-  // console.log(messagesRef);
-  // console.log("====================================");
-  // console.log("=================currentChannel===================");
-  // console.log(currentChannel);
-  // console.log("====================================");
-  // console.log("==================currentUser==================");
-  // console.log(currentUser);
-  // console.log("====================================");
-  // console.log("==================isPrivateChannel==================");
-  // console.log(isPrivateChannel);
-  // console.log("====================================");
-  // console.log("==================getMessagesRef==================");
-  // console.log(getMessagesRef());
-  // console.log("====================================");
   const [message, setMessage] = useState("");
   const [storageRef, setStorageRef] = useState(firebase.storage().ref());
   const [typingRef, setTypingRef] = useState(firebase.database().ref("typing"));

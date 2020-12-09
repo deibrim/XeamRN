@@ -12,3 +12,7 @@ export const setUserReels = (reels) => ({
   type: ActionTypes.SET_USER_REELS,
   payload: reels,
 });
+export const setReplyUser = (username) => ({
+  type: ActionTypes.SET_REPLY_USER,
+  payload: username,
+});

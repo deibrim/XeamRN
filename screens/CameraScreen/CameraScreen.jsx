@@ -47,7 +47,7 @@ export default function CameraScreen() {
       const data = await camera.current.recordAsync({
         maxDuration: 300,
         // maxFileSize: 5000000,
-        quality: Camera.Constants.VideoQuality["4:3"],
+        quality: Camera.Constants.VideoQuality["480p"],
       });
       navigation.navigate("EditAndPostScreen", { videoUri: data.uri });
     }
@@ -78,6 +78,7 @@ export default function CameraScreen() {
     >
       <Camera
         ref={camera}
+        ratio={"4:3"}
         style={{
           height: Dimensions.get("window").height,
           width: Dimensions.get("window").width,

@@ -34,7 +34,7 @@ export default function ProfileScreen() {
     setLoadingReels(true);
     const reelRef = firestore
       .collection("reels")
-      .doc(`${user.id}`)
+      .doc(`${userId}`)
       .collection("userReels");
     reelRef.onSnapshot((snapshot) => {
       const reelsArr = [];
@@ -53,7 +53,9 @@ export default function ProfileScreen() {
       .doc(userId)
       .collection("userFollowers")
       .get();
-    setFollowerCount(snapshot.docs.length - 1);
+    !snapshot.empty
+      ? setFollowerCount(snapshot.docs.length - 1)
+      : setFollowerCount(0);
   }
   async function getFollowing(userId) {
     const snapshot = await firestore
@@ -76,9 +78,11 @@ export default function ProfileScreen() {
       <View style={styles.header}>
         <View style={{ flexDirection: "row", alignItems: "center" }}>
           <TouchableOpacity onPress={onClick}>
-            <Ionicons name="ios-arrow-back" size={24} color="black" />
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <Ionicons name="ios-arrow-back" size={24} color="black" />
+              <Text style={styles.title}>Profile</Text>
+            </View>
           </TouchableOpacity>
-          <Text style={styles.title}>Profile</Text>
         </View>
         <View
           style={{

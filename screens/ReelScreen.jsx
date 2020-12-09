@@ -17,6 +17,7 @@ const ReelScreen = () => {
   const navigation = useNavigation();
   const [currentReel, setCurrentReel] = useState({});
   const [flatListRef, setFlatListRef] = useState({});
+  const [toggleScroll, setToggleScroll] = useState(true);
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -43,7 +44,9 @@ const ReelScreen = () => {
       <View style={styles.header}>
         <View style={{ flexDirection: "row", alignItems: "center" }}>
           <TouchableWithoutFeedback onPress={() => navigation.goBack()}>
-            <Ionicons name="ios-arrow-back" size={24} color="white" />
+            <View style={{ width: 60 }}>
+              <Ionicons name="ios-arrow-back" size={24} color="white" />
+            </View>
           </TouchableWithoutFeedback>
         </View>
         <View
@@ -73,8 +76,15 @@ const ReelScreen = () => {
         viewabilityConfig={viewConfigRef.current}
         keyExtractor={(item, index) => index.toString()}
         renderItem={({ item, index }) => (
-          <ReelPost post={item} index={index} currentReel={currentReel} />
+          <ReelPost
+            post={item}
+            index={index}
+            currentReel={currentReel}
+            toggleScroll={toggleScroll}
+            setToggleScroll={setToggleScroll}
+          />
         )}
+        scrollEnabled={toggleScroll}
       />
     </View>
   );

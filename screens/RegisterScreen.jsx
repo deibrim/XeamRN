@@ -13,6 +13,7 @@ import {
   firestore,
 } from "../firebase/firebase.utils";
 import AppButton from "../components/AppButton/AppButton";
+import CustomPopUp from "../components/CustomPopUp/CustomPopUp";
 
 const RegisterScreen = (props) => {
   const [fullname, setFullname] = useState("");
@@ -40,6 +41,20 @@ const RegisterScreen = (props) => {
     createUser();
   };
   const handleRegisterUser = async () => {
+    if (
+      fullname.trim() === "" ||
+      email.trim() === "" ||
+      username.trim() === "" ||
+      confirmPassword.trim() === "" ||
+      password.trim() === ""
+    ) {
+      setErrorMessage("All fields are required");
+      return;
+    }
+    if (confirmPassword !== password) {
+      setErrorMessage("Password doesn't match");
+      return;
+    }
     setLoading(true);
     checkUsernameAndCreateAccount();
   };
@@ -71,7 +86,16 @@ const RegisterScreen = (props) => {
       <View style={styles.head}>
         <Text style={styles.headText}>CREATE ACCOUNT</Text>
       </View>
-
+      <View style={{ width: "100%", alignItems: "center" }}>
+        {errorMessage !== "" ? (
+          <CustomPopUp
+            message={`${errorMessage}`}
+            type={"error"}
+            customStyles={{ backgroundColor: "red" }}
+            customTextStyles={{ color: "#ffffff" }}
+          />
+        ) : null}
+      </View>
       <View style={styles.inputGroup}>
         <AntDesign
           style={styles.inputGroupIcon}
@@ -87,6 +111,7 @@ const RegisterScreen = (props) => {
           placeholderTextColor="#000000"
           autoCapitalize="words"
           onChangeText={(e) => {
+            setErrorMessage("");
             setFullname(e);
           }}
           value={fullname}
@@ -106,6 +131,7 @@ const RegisterScreen = (props) => {
           placeholderTextColor="#000000"
           autoCapitalize="none"
           onChangeText={(e) => {
+            setErrorMessage("");
             setUsername(e);
           }}
           value={username}
@@ -127,6 +153,7 @@ const RegisterScreen = (props) => {
           placeholderTextColor="#000000"
           autoCapitalize="none"
           onChangeText={(e) => {
+            setErrorMessage("");
             setEmail(e);
           }}
           value={email}
@@ -147,6 +174,7 @@ const RegisterScreen = (props) => {
           placeholderTextColor="#000000"
           autoCapitalize="none"
           onChangeText={(e) => {
+            setErrorMessage("");
             setPassword(e);
           }}
           value={password}
@@ -177,6 +205,7 @@ const RegisterScreen = (props) => {
           placeholderTextColor="#000000"
           autoCapitalize="none"
           onChangeText={(e) => {
+            setErrorMessage("");
             setConfirmPassword(e);
           }}
           value={confirmPassword}

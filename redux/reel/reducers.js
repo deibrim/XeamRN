@@ -4,6 +4,7 @@ const INITIAL_STATE = {
   loadedReels: [],
   myReels: [],
   userReels: [],
+  replyUser: "",
 };
 
 const reelReducer = (state = INITIAL_STATE, action) => {
@@ -22,6 +23,11 @@ const reelReducer = (state = INITIAL_STATE, action) => {
       return {
         ...state,
         userReels: action.payload,
+      };
+    case ActionTypes.SET_REPLY_USER:
+      return {
+        ...state,
+        replyUser: action.payload,
       };
     default:
       return state;

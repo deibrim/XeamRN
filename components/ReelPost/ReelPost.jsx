@@ -6,15 +6,24 @@ import {
   Image,
   TouchableOpacity,
 } from "react-native";
-
+import { useSelector } from "react-redux";
 import { Video } from "expo-av";
 import styles from "./styles";
-
+import {
+  firestore,
+  addLikeToActivityFeed,
+  removeLikeFromActivityFeed,
+} from "../../firebase/firebase.utils";
 import { Entypo, AntDesign, FontAwesome, Fontisto } from "@expo/vector-icons";
+import CommentInput from "../CommentInput/CommentInput";
+import { ScrollView } from "react-native-gesture-handler";
+import CommentModal from "../CommentModal/CommentModal";
 
 const ReelPost = (props) => {
+  const currentUser = useSelector((state) => state.user.currentUser);
   const [post, setPost] = useState(props.post);
   const [isLiked, setIsLiked] = useState(false);
+  const [showComments, setShowComments] = useState(false);
   const [videoUri, setVideoUri] = useState("");
 
   const [paused, setPaused] = useState(false);
@@ -28,12 +37,57 @@ const ReelPost = (props) => {
   };
 
   const onLikePress = () => {
-    const likesToAdd = isLiked ? -1 : 1;
-    setPost({
-      ...post,
-      likes: post.likes + likesToAdd,
-    });
-    setIsLiked(!isLiked);
+    const isLiked = post.likes[currentUser.id] === true;
+    const cuserId = currentUser.id;
+    // const Likes = { ...post.likes };
+    if (isLiked) {
+      post.likes[cuserId] = false;
+      let likes = post.likes;
+      firestore
+        .collection("reels")
+        .doc(post.user_id)
+        .collection("userReels")
+        .doc(post.id)
+        .update({ likes });
+      removeLikeFromActivityFeed(
+        currentUser,
+        post.user_id,
+        post.id,
+        currentUser.id != post.user_id
+      );
+      setIsLiked(!isLiked);
+    } else if (!isLiked) {
+      post.likes[cuserId] = true;
+      let likes = post.likes;
+      firestore
+        .collection("reels")
+        .doc(post.user_id)
+        .collection("userReels")
+        .doc(post.id)
+        .update({ likes });
+      addLikeToActivityFeed(
+        currentUser,
+        post.user_id,
+        post.id,
+        currentUser.id != post.user_id,
+        post.videoUri
+      );
+      setIsLiked(!isLiked);
+    }
+  };
+  const getLikeCount = () => {
+    // if (post.likes == null) {
+    //   return 0;
+    // }
+    // let count = 0;
+    // // if the key is explicitly set to true, add a like
+    // post.likes.values.forEach((val) => {
+    //   if (val == true) {
+    //     count += 1;
+    //   }
+    // });
+
+    return Object.values(post.likes).filter((v) => v).length;
   };
 
   const getVideoUri = async () => {
@@ -85,14 +139,22 @@ const ReelPost = (props) => {
                 <AntDesign
                   name={"heart"}
                   size={24}
-                  color={isLiked ? "red" : "white"}
+                  color={post.likes[currentUser.id] === true ? "red" : "white"}
                 />
-                <Text style={styles.statsLabel}>{post.likes}</Text>
+                <Text style={styles.statsLabel}>{getLikeCount()}</Text>
               </TouchableOpacity>
 
               <View style={styles.iconContainer}>
-                <FontAwesome name={"commenting"} size={24} color="white" />
-                <Text style={styles.statsLabel}>{post.comments}</Text>
+                <TouchableOpacity
+                  style={styles.iconContainer}
+                  onPress={() => {
+                    props.setToggleScroll(false);
+                    setShowComments(true);
+                  }}
+                >
+                  <FontAwesome name={"commenting"} size={24} color="white" />
+                  <Text style={styles.statsLabel}>{post.comments}</Text>
+                </TouchableOpacity>
               </View>
             </View>
 
@@ -117,6 +179,14 @@ const ReelPost = (props) => {
           </View>
         </View>
       </TouchableWithoutFeedback>
+      {showComments ? (
+        <CommentModal
+          postId={post.id}
+          postOwnerId={post.user.user_id}
+          setShowComments={setShowComments}
+          setToggleScroll={props.setToggleScroll}
+        />
+      ) : null}
     </View>
   );
 };

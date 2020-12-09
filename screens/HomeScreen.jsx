@@ -1,9 +1,10 @@
 import { Feather } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 // import {  Notifications } from "expo";
+import Constants from "expo-constants";
 import * as Permissions from "expo-permissions";
 import * as Notifications from "expo-notifications";
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import {
   View,
   Image,
@@ -36,45 +37,40 @@ export default function HomeScreen() {
     wait(2000).then(() => setRefreshing(false));
   }, []);
   useEffect(() => {
-    registerForPushNotificationsAsync().then((token) =>
-      firestore.doc(`users/${user.id}`).update({ push_token: token })
-    );
+    enablePushNotifications();
     getTimeline();
   }, []);
-  async function registerForPushNotificationsAsync() {
-    let token;
-    if (Constants.isDevice) {
-      const { status: existingStatus } = await Permissions.getAsync(
-        Permissions.NOTIFICATIONS
-      );
-      let finalStatus = existingStatus;
-      if (existingStatus !== "granted") {
-        const { status } = await Permissions.askAsync(
-          Permissions.NOTIFICATIONS
-        );
-        finalStatus = status;
-      }
-      if (finalStatus !== "granted") {
-        alert("Failed to get push token for push notification!");
-        return;
-      }
-      token = (await Notifications.getExpoPushTokenAsync()).data;
-      console.log(token);
-    } else {
-      alert("Must use physical device for Push Notifications");
+  async function askPermissions() {
+    const { status: existingStatus } = await Permissions.getAsync(
+      Permissions.NOTIFICATIONS
+    );
+    let finalStatus = existingStatus;
+    if (existingStatus !== "granted") {
+      const { status } = await Permissions.askAsync(Permissions.NOTIFICATIONS);
+      finalStatus = status;
     }
-
-    if (Platform.OS === "android") {
-      Notifications.setNotificationChannelAsync("default", {
-        name: "default",
-        importance: Notifications.AndroidImportance.MAX,
-        vibrationPattern: [0, 250, 250, 250],
-        lightColor: "#FF231F7C",
-      });
+    if (finalStatus !== "granted") {
+      return false;
     }
+    return true;
+  }
 
+  async function registerForPushNotifications() {
+    const enabled = await askPermissions();
+    if (!enabled) {
+      return Promise.resolve();
+    }
+    // Get the token that uniquely identifies this device
+    let token = await Notifications.getExpoPushTokenAsync();
     return token;
   }
+  async function enablePushNotifications() {
+    let token = await registerForPushNotifications();
+    if (token) {
+      firestore.doc(`users/${user.id}`).update({ push_token: token });
+    }
+  }
+
   function getTimeline() {
     setLoading(true);
     const reelRef = firestore
@@ -101,7 +97,7 @@ export default function HomeScreen() {
           {" "}
           Hi,{" "}
           <Text style={{ color: "#006aff", fontWeight: "bold" }}>
-            {user.name.split(" ")[0]}
+            {user.name && user.name.split(" ")[0]}
           </Text>
         </Text>
         <View
@@ -132,7 +128,7 @@ export default function HomeScreen() {
         style={styles.container}
       >
         <View style={styles.trendSection}>
-          <Text style={styles.sectionTitle}>Trending Reels</Text>
+          <Text style={styles.sectionTitle}>🔥 Reels 🔥</Text>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}

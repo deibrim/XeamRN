@@ -231,6 +231,13 @@ function ExploreScreenNavigator() {
           headerShown: false,
         }}
       />
+      <FriendListScreenStack.Screen
+        name="ChatRoom"
+        component={ChatRoomScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
     </ScreenStack.Navigator>
   );
 }
@@ -242,6 +249,13 @@ function ActivitiesScreenNavigator() {
       <ScreenStack.Screen
         name="ActivitiesScreen"
         component={ActivitiesScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <ScreenStack.Screen
+        name="UserProfileScreen"
+        component={UserProfileScreen}
         options={{
           headerShown: false,
         }}

@@ -16,7 +16,12 @@ const firebaseConfig = {
   measurementId: "G-CYEEQR3P3H",
 };
 
-firebase.initializeApp(firebaseConfig);
+// firebase.initializeApp(firebaseConfig);
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+} else {
+  firebase.app(); // if already initialized, use that one
+}
 
 export const auth = firebase.auth();
 export const firestore = firebase.firestore();
@@ -66,15 +71,6 @@ export const createUserProfileDocument = async (userAuth, additionalData) => {
   return userRef;
 };
 
-export const addNotification = async (notificationId, userId, notification) => {
-  const userRef = firestore.doc(
-    `users/${userId}/notifications/${notificationId}`
-  );
-  try {
-    await userRef.set(notification);
-  } catch (error) {}
-};
-
 export const updateProfileData = async (userId, incomingData) => {
   const userRef = firestore.doc(`users/${userId}`);
   const usersRef = firebase.database().ref("users");
@@ -92,6 +88,15 @@ export const updateProfileData = async (userId, incomingData) => {
       console.log("error updating profile", error.message);
     }
   }
+};
+
+export const addNotification = async (notificationId, userId, notification) => {
+  const userRef = firestore.doc(
+    `users/${userId}/notifications/${notificationId}`
+  );
+  try {
+    await userRef.set(notification);
+  } catch (error) {}
 };
 
 export const postReel = (postData) => {
@@ -143,7 +148,7 @@ export const handleUnfollowUser = (profileId, currentUserId) => {
   });
 };
 
-export const handleFollowUser = (profileId, currentUser) => {
+export const handleFollowUser = (profileId, currentUser, user) => {
   // Make auth user follower of THAT user (update THEIR followers collection)
   followersRef
     .doc(profileId)
@@ -169,6 +174,74 @@ export const handleFollowUser = (profileId, currentUser) => {
       userProfileImg: currentUser.profile_pic,
       timestamp: Date.now(),
     });
+  fetch("https://exp.host/--/api/v2/push/send", {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      to: user.push_token.data,
+      sound: "default",
+      title: "Xeam",
+      body: `${currentUser.username} started following you`,
+    }),
+  });
+  // .then((res) => res.json())
+  // .then((data) => console.log(data));
+};
+
+export const addAComment = async (
+  currentUser,
+  data,
+  postId,
+  ownerId,
+  isNotPostOwner
+) => {
+  const commentRef = await firestore
+    .collection("comments")
+    .doc(postId)
+    .collection("comments")
+    .doc(`${data.id}`);
+  commentRef.set(data);
+  addToActivityFeed(
+    currentUser,
+    ownerId,
+    postId,
+    isNotPostOwner,
+    "comment",
+    `${currentUser.username} commented your reel`
+  );
+};
+
+export const addAReply = async ({ data, commentId, postId }) => {
+  const commentRef = await firestore
+    .collection("comments")
+    .doc(postId)
+    .collection("comments")
+    .doc(`${commentId}`);
+  const snapShot = await commentRef.get();
+  if (snapShot.exists) {
+    let replies = [];
+    replies = snapShot.data().replies;
+    replies.push(data);
+    try {
+      await commentRef.update({
+        replies,
+      });
+      addToActivityFeed(
+        currentUser,
+        ownerId,
+        postId,
+        isNotPostOwner,
+        videoUri,
+        "comment",
+        `${currentUser.username} reply to your reel`
+      );
+    } catch (error) {
+      console.log("error updating profile", error.message);
+    }
+  }
 };
 
 // Note: To delete post, ownerId and currentUserId must be equal, so they can be used interchangeably
@@ -203,72 +276,94 @@ export const deleteReel = async (ownerId, postId) => {
   });
 };
 
-export const handleLikeReel = (currentUserId, ownerId, postId) => {
-  const _isLiked = likes[currentUserId] === true;
-
-  if (_isLiked) {
-    reelsRef
-      .doc(ownerId)
-      .collection("userReels")
-      .doc(postId)
-      .update({ "likes.$currentUserId": false });
-    removeLikeFromActivityFeed();
-    // setState(() {
-    //   likeCount -= 1;
-    //   isLiked = false;
-    //   likes[currentUserId] = false;
-    // });
-  } else if (!_isLiked) {
-    reelsRef
-      .doc(ownerId)
-      .collection("userReels")
-      .doc(postId)
-      .update({ "likes.$currentUserId": true });
-    addLikeToActivityFeed();
-    // setState(() {
-    //   likeCount += 1;
-    //   isLiked = true;
-    //   likes[currentUserId] = true;
-    //   showHeart = true;
-    // });
-    // Timer(Duration(milliseconds: 500), () {
-    //   setState(() {
-    //     showHeart = false;
-    //   });
-    // });
-  }
-};
-
-export const addLikeToActivityFeed = (currentUserId, ownerId, postId) => {
+export const addLikeToActivityFeed = async (
+  currentUser,
+  ownerId,
+  postId,
+  isNotPostOwner,
+  videoUri
+) => {
   // add a notification to the postOwner's activity feed only if comment made by OTHER user (to avoid getting notification for our own like)
-  const isNotPostOwner = currentUserId != ownerId;
   if (isNotPostOwner) {
+    const ownerRef = firestore.collection("users").doc(ownerId);
+    const ownerSnapShot = await ownerRef.get();
     activityFeedRef.doc(ownerId).collection("feedItems").doc(postId).set({
       type: "like",
       username: currentUser.username,
       userId: currentUser.id,
-      userProfileImg: currentUser.photoUrl,
+      userProfileImg: currentUser.profile_pic,
       postId: postId,
-      mediaUrl: mediaUrl,
-      timestamp: timestamp,
+      videoUri,
+      timestamp: Date.now(),
+    });
+    fetch("https://exp.host/--/api/v2/push/send", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        to: ownerSnapShot.data().push_token.data,
+        sound: "default",
+        title: "Xeam",
+        body: `${currentUser.username} like your reel`,
+      }),
     });
   }
 };
 
-export const removeLikeFromActivityFeed = (currentUserId, ownerId, postId) => {
-  const isNotPostOwner = currentUserId != ownerId;
+export const removeLikeFromActivityFeed = async (
+  currentUser,
+  postId,
+  isNotPostOwner
+) => {
   if (isNotPostOwner) {
     const ayRef = activityFeedRef
-      .documents(ownerId)
+      .doc(currentUser.id)
       .collection("feedItems")
-      .documents(postId)
-      .get();
-    ayRef.then((doc) => {
+      .doc(postId);
+    const aySnapshot = ayRef.get();
+    aySnapshot.then((doc) => {
       if (doc.exists) {
         ayRef.delete();
       }
     });
   }
 };
-
 export default firebase;
+
+async function addToActivityFeed(
+  currentUser,
+  ownerId,
+  postId,
+  isNotPostOwner,
+  type,
+  body
+) {
+  // add a notification to the postOwner's activity feed only if comment made by OTHER user (to avoid getting notification for our own like)
+  if (isNotPostOwner) {
+    const ownerRef = firestore.collection("users").doc(ownerId);
+    const ownerSnapShot = await ownerRef.get();
+    activityFeedRef.doc(ownerId).collection("feedItems").doc(postId).set({
+      type,
+      username: currentUser.username,
+      userId: currentUser.id,
+      userProfileImg: currentUser.profile_pic,
+      postId,
+      timestamp: Date.now(),
+    });
+    fetch("https://exp.host/--/api/v2/push/send", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        to: ownerSnapShot.data().push_token.data,
+        sound: "default",
+        title: "Xeam",
+        body,
+      }),
+    });
+  }
+}

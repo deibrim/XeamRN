@@ -2,6 +2,7 @@ import { AntDesign, MaterialIcons } from "@expo/vector-icons";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import React, { useState } from "react";
 import {
+  Image,
   View,
   Text,
   TextInput,
@@ -15,7 +16,7 @@ import firebase from "../../firebase/firebase.utils";
 
 import styles from "./styles";
 import { postReel } from "../../firebase/firebase.utils";
-import { Base64 } from "../../utils/DeEncoder";
+// import { Base64 } from "../../utils/DeEncoder";
 
 const EditAndPostScreen = () => {
   const user = useSelector((state) => state.user.currentUser);
@@ -23,6 +24,9 @@ const EditAndPostScreen = () => {
   const [paused, setPaused] = useState(false);
   const [videoUri, setVideoUri] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [uploadingPercentage, setUploadingPercentage] = useState(0);
+  const [loading, setLoading] = useState(false);
+
   const onPlayPausePress = () => {
     setPaused(!paused);
   };
@@ -40,9 +44,7 @@ const EditAndPostScreen = () => {
         (snapshot) => {
           let progressPercentage =
             (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-          console.log("====================================");
-          console.log(progressPercentage);
-          console.log("====================================");
+          setUploadingPercentage(Math.floor(progressPercentage));
           switch (snapshot.state) {
             case firebase.storage.TaskState.PAUSED:
               setUploading("paused");
@@ -97,6 +99,7 @@ const EditAndPostScreen = () => {
     navigation.goBack();
   };
   const handlePublish = async () => {
+    setLoading(true);
     const id = uuidv4().split("-").join("");
     // uploadToCloud(route.params.videoUri);
     uploadToStorage(route.params.videoUri, id);
@@ -109,9 +112,8 @@ const EditAndPostScreen = () => {
         description,
         user_id: user.id,
         likes: {},
-        likes: 0,
         comments: 0,
-        music: `${user.name} - Original Audio`,
+        music: `${user.username} - Original Audio`,
         posted_at: Date.now(),
         user: {
           name: user.name,
@@ -119,8 +121,10 @@ const EditAndPostScreen = () => {
         },
       };
       postReel(newPost);
+      setLoading(false);
       navigation.navigate("HomeScreen");
     } catch (e) {
+      setLoading(false);
       console.error(e);
     }
   };
@@ -171,6 +175,32 @@ const EditAndPostScreen = () => {
           </View>
         </TouchableWithoutFeedback>
       </View>
+      {loading && (
+        <View
+          style={{
+            position: "absolute",
+            minHeight: 200,
+            width: "100%",
+            top: 0,
+            bottom: 0,
+            left: 0,
+            right: 0,
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            backgroundColor: "#000",
+            opacity: 0.9,
+          }}
+        >
+          <Text style={{ color: "#ffffff", fontSize: 18, marginBottom: 20 }}>
+            {uploadingPercentage}%
+          </Text>
+          <Image
+            style={{ marginLeft: 5, width: 40, height: 40 }}
+            source={require("../../assets/loader.gif")}
+          />
+        </View>
+      )}
     </>
   );
 };

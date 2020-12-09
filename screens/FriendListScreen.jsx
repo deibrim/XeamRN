@@ -32,9 +32,9 @@ function FriendListScreen({
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (user) {
-      addListeners(user.id);
-    }
+    // if (user) {
+    //   addListeners(user.id);
+    // }
   }, []);
 
   const onRefresh = useCallback(() => {
@@ -42,32 +42,32 @@ function FriendListScreen({
     wait(2000).then(() => setRefreshing(false));
   }, []);
 
-  function addListeners(currentUserId) {
-    setLoading(true);
-    const loadedUsers = [];
-    usersRef.on("child_added", (snap) => {
-      if (currentUserId !== snap.key) {
-        const user = snap.val();
-        user["id"] = snap.key;
-        user["status"] = "offline";
-        loadedUsers.push(user);
-      }
-      setUsers(loadedUsers);
-      setLoading(false);
-    });
+  // function addListeners(currentUserId) {
+  //   setLoading(true);
+  //   const loadedUsers = [];
+  //   usersRef.on("child_added", (snap) => {
+  //     if (currentUserId !== snap.key) {
+  //       const user = snap.val();
+  //       user["id"] = snap.key;
+  //       user["status"] = "offline";
+  //       loadedUsers.push(user);
+  //     }
+  //     setUsers(loadedUsers);
+  //     setLoading(false);
+  //   });
 
-    connectedRef.on("value", (snap) => {
-      if (snap.val() === true) {
-        const ref = presenceRef.child(currentUserId);
-        ref.set(true);
-        ref.onDisconnect().remove((err) => {
-          if (err !== null) {
-            console.log(err);
-          }
-        });
-      }
-    });
-  }
+  //   connectedRef.on("value", (snap) => {
+  //     if (snap.val() === true) {
+  //       const ref = presenceRef.child(currentUserId);
+  //       ref.set(true);
+  //       ref.onDisconnect().remove((err) => {
+  //         if (err !== null) {
+  //           console.log(err);
+  //         }
+  //       });
+  //     }
+  //   });
+  // }
 
   function isUserOnline(user) {
     return user.status === "online";
@@ -119,12 +119,22 @@ function FriendListScreen({
             />
           </View>
         )}
-        <FlatList
+        <View
+          style={{
+            backgroundColor: "#ecf2fa",
+            flex: 1,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Text style={{ fontSize: 18 }}>Comming Soon</Text>
+        </View>
+        {/* <FlatList
           data={users}
           renderItem={({ item }) => <ChatListItem user={item} />}
           keyExtractor={(item, index) => index.toString()}
           extraData={users}
-        />
+        /> */}
       </View>
     </>
   );

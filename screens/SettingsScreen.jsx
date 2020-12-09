@@ -1,4 +1,4 @@
-import { AntDesign, Ionicons, Entypo, Feather } from "@expo/vector-icons";
+import { Fontisto, Ionicons, Entypo, Feather } from "@expo/vector-icons";
 import React, { useState, useCallback } from "react";
 import {
   View,
@@ -30,14 +30,16 @@ export default function SettingsScreen() {
       <View style={styles.header}>
         <View style={{ flexDirection: "row", alignItems: "center" }}>
           <TouchableWithoutFeedback onPress={() => navigation.goBack()}>
-            <Ionicons
-              name="ios-arrow-back"
-              size={24}
-              color="black"
-              style={{ marginRight: 10 }}
-            />
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <Ionicons
+                name="ios-arrow-back"
+                size={24}
+                color="black"
+                style={{ marginRight: 10 }}
+              />
+              <Text style={styles.title}>Settings</Text>
+            </View>
           </TouchableWithoutFeedback>
-          <Text style={styles.title}>Settings</Text>
         </View>
       </View>
       <View
@@ -47,6 +49,21 @@ export default function SettingsScreen() {
         }
         style={styles.container}
       >
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>ACCOUNT SETTINGS</Text>
+          <SettingsItemWrapper
+            title={"Tv Account"}
+            description={"Entertain your viewers "}
+            icon={<Feather name="tv" size={20} color="white" />}
+            onPress={() => navigation.navigate("EditChatScreen")}
+          />
+          <SettingsItemWrapper
+            title={"Store Account"}
+            description={"Sell your product with ease"}
+            icon={<Fontisto name="shopping-store" size={20} color="white" />}
+            onPress={() => navigation.navigate("EditChatScreen")}
+          />
+        </View>
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>GENERAL SETTINGS</Text>
           <SettingsItemWrapper
@@ -80,7 +97,7 @@ export default function SettingsScreen() {
             From
           </Text>
           <Text style={{ color: "#006eff", fontSize: 16, fontWeight: "bold" }}>
-            OZZYCODE
+            Xeam
           </Text>
         </View>
       </View>
@@ -114,6 +131,7 @@ const styles = StyleSheet.create({
   },
   section: {
     marginVertical: 20,
+    marginBottom: 10,
     width: "100%",
     paddingHorizontal: 20,
     alignItems: "flex-start",

@@ -1,5 +1,7 @@
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
+// const fetch = require("node-fetch");
+// const axios = require("axios");
 admin.initializeApp();
 
 exports.onCreateFollower = functions.firestore
@@ -40,19 +42,29 @@ exports.onCreateFollower = functions.firestore
         timelineReelsRef.doc(postId).set(postData);
       }
     });
-    fetch("https://exp.host/--/api/v2/push/send", {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        to: followedSnapShot.data().push_token,
-        sound: "default",
-        title: "New Follower",
-        body: `${followerSnapShot.data().username} started following you`,
-      }),
-    });
+    // axios
+    //   .post("https://exp.host/--/api/v2/push/send", {
+    //     to: followedSnapShot.data().push_token.data,
+    //     sound: "default",
+    //     title: "New Follower",
+    //     body: `${followerSnapShot.data().username} started following you`,
+    //   })
+    //   .catch((error) => {
+    //     console.log(error);
+    //   });
+    // fetch("https://exp.host/--/api/v2/push/send", {
+    //   method: "POST",
+    //   headers: {
+    //     Accept: "application/json",
+    //     "Content-Type": "application/json",
+    //   },
+    //   body: JSON.stringify({
+    //     to: followedSnapShot.data().push_token.data,
+    //     sound: "default",
+    //     title: "New Follower",
+    //     body: `${followerSnapShot.data().username} started following you`,
+    //   }),
+    // });
   });
 
 exports.onDeleteFollower = functions.firestore

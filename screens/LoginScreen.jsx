@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { auth } from "../firebase/firebase.utils";
 import AppButton from "../components/AppButton/AppButton";
+import CustomPopUp from "../components/CustomPopUp/CustomPopUp";
 
 const LoginScreen = (props) => {
   const [email, setEmail] = useState("");
@@ -43,6 +44,16 @@ const LoginScreen = (props) => {
       <View style={styles.head}>
         <Text style={styles.headText}>WELCOME BACK</Text>
       </View>
+      <View style={{ width: "100%", alignItems: "center" }}>
+        {errorMessage !== "" ? (
+          <CustomPopUp
+            message={`${errorMessage}`}
+            type={"error"}
+            customStyles={{ backgroundColor: "red" }}
+            customTextStyles={{ color: "#ffffff" }}
+          />
+        ) : null}
+      </View>
       <View style={styles.inputGroup}>
         <EvilIcons
           name="envelope"
@@ -59,6 +70,7 @@ const LoginScreen = (props) => {
           placeholderTextColor="#000000"
           autoCapitalize="none"
           onChangeText={(e) => {
+            setErrorMessage("");
             setEmail(e);
           }}
           value={email}
@@ -79,6 +91,7 @@ const LoginScreen = (props) => {
           placeholderTextColor="#000000"
           autoCapitalize="none"
           onChangeText={(e) => {
+            setErrorMessage("");
             setPassword(e);
           }}
           value={password}

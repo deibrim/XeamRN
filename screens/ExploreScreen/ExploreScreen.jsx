@@ -104,9 +104,12 @@ export default function ExploreScreen() {
                     />
                   </View>
                   <View style={styles.midContainer}>
-                    <Text style={styles.username}>{item.name}</Text>
+                    <Text style={styles.username}>
+                      {item.username.split("")[0].toUpperCase() +
+                        item.username.substring(1)}
+                    </Text>
                     <Text numberOfLines={2} style={styles.highlight}>
-                      {item.highlight}
+                      {item.name} | {item.headline}
                     </Text>
                   </View>
                 </View>

@@ -119,37 +119,6 @@ export default function ExploreScreen() {
           keyExtractor={(item, index) => index.toString()}
         />
       </View>
-      {/* <ScrollView
-        contentContainerStyle={{ width: "100%", alignItems: "center" }}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-        style={styles.container}
-      >
-        <View>
-
-          {foundUsers.map((item, index) => (
-            <TouchableOpacity key={index} onPress={() => {}}>
-              <View style={styles.userContainer}>
-                <View style={styles.lefContainer}>
-                  <View style={{ position: "relative" }}>
-                    <Image
-                      source={{ uri: item.profile_pic }}
-                      style={styles.avatar}
-                    />
-                  </View>
-                  <View style={styles.midContainer}>
-                    <Text style={styles.username}>{item.name}</Text>
-                    <Text numberOfLines={2} style={styles.lastMessage}>
-                      {item.highlight}
-                    </Text>
-                  </View>
-                </View>
-              </View>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </ScrollView> */}
     </>
   );
 }

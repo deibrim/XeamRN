@@ -23,25 +23,33 @@ const styles = StyleSheet.create({
   uiContainer: {
     height: "100%",
     justifyContent: "flex-end",
+    alignItems: "center",
+    width: "100%",
   },
   bottomContainer: {
+    width: "90%",
     padding: 10,
-    paddingBottom: 20,
+    paddingHorizontal: 25,
+    marginBottom: 20,
+    borderRadius: 50,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-end",
+    backgroundColor: "#000000",
+    opacity: 0.7,
   },
   handle: {
     color: "#fff",
-    fontSize: 16,
-    fontWeight: "700",
+    fontSize: 15,
+    fontWeight: "400",
     marginBottom: 10,
+    marginRight: 10,
   },
   description: {
     color: "#fff",
-    fontSize: 16,
+    fontSize: 13,
     fontWeight: "300",
-    marginBottom: 10,
+    marginBottom: 8,
   },
   songRow: {
     flexDirection: "row",
@@ -49,7 +57,7 @@ const styles = StyleSheet.create({
   },
   songName: {
     color: "#fff",
-    fontSize: 16,
+    fontSize: 14,
     marginLeft: 5,
   },
 
@@ -63,10 +71,40 @@ const styles = StyleSheet.create({
 
   //  right container
   rightContainer: {
+    position: "absolute",
+    right: 0,
+    top: "40%",
     alignSelf: "flex-end",
-    height: "20%",
+    height: "25%",
     justifyContent: "flex-start",
+    marginRight: 0,
+  },
+  centerContainer: {
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+    right: 0,
+    left: 0,
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    // backgroundColor: "#000000",
+    // opacity: 0.5,
+    zIndex: 1,
+  },
+  rightContainerBg: {
+    position: "absolute",
+    right: 0,
+    // top: "40%",
+    alignSelf: "center",
+    height: "100%",
+    justifyContent: "center",
+    borderRadius: 30,
     marginRight: 5,
+    backgroundColor: "#000000",
+    opacity: 0.7,
+    padding: 12,
+    zIndex: 9,
   },
   profilePicture: {
     width: 50,
@@ -78,7 +116,8 @@ const styles = StyleSheet.create({
 
   iconContainer: {
     alignItems: "center",
-    margin: 10,
+    // margin: 10,
+    marginVertical: 5,
   },
   statsLabel: {
     color: "#fff",

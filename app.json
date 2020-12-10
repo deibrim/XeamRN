@@ -4,7 +4,7 @@
     "slug": "Xeam",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/xlogowhite.png",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
@@ -19,7 +19,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/xlogowhite.png",
         "backgroundColor": "#FFFFFF"
       },
       "useNextNotificationsApi": true,
@@ -28,7 +28,7 @@
       "versionCode": 1
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/xlogowhite.png"
     },
     "description": "",
     "githubUrl": "https://github.com/0zzycodes/XeamRN"

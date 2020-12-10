@@ -1,9 +1,15 @@
-import React, { useEffect, useState } from "react";
 import {
+  Ionicons,
+  SimpleLineIcons,
+  AntDesign,
+  FontAwesome,
+} from "@expo/vector-icons";
+import React, { useEffect, useState, useCallback } from "react";
+import {
+  Image,
   View,
   TouchableWithoutFeedback,
   Text,
-  Image,
   TouchableOpacity,
 } from "react-native";
 import { useSelector } from "react-redux";
@@ -14,21 +20,29 @@ import {
   addLikeToActivityFeed,
   removeLikeFromActivityFeed,
 } from "../../firebase/firebase.utils";
-import { Entypo, AntDesign, FontAwesome, Fontisto } from "@expo/vector-icons";
-import CommentInput from "../CommentInput/CommentInput";
-import { ScrollView } from "react-native-gesture-handler";
 import CommentModal from "../CommentModal/CommentModal";
+import ReelPostMoreModal from "../ReelPostMoreModal/ReelPostMoreModal";
+const wait = (timeout) => {
+  return new Promise((resolve) => {
+    setTimeout(resolve, timeout);
+  });
+};
 
 const ReelPost = (props) => {
   const currentUser = useSelector((state) => state.user.currentUser);
   const [post, setPost] = useState(props.post);
   const [isLiked, setIsLiked] = useState(false);
   const [showComments, setShowComments] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [showMore, setShowMore] = useState(false);
   const [videoUri, setVideoUri] = useState("");
 
   const [paused, setPaused] = useState(false);
   const [activePaused, setActivePaused] = useState(true);
-
+  const onSave = useCallback(() => {
+    setSaved(true);
+    wait(2000).then(() => setSaved(false));
+  }, []);
   const onPlayPausePress = () => {
     setPaused(!paused);
   };
@@ -75,18 +89,11 @@ const ReelPost = (props) => {
       setIsLiked(!isLiked);
     }
   };
+  const onShowMore = () => {
+    props.setToggleScroll(!props.toggleScroll);
+    setShowMore(!showMore);
+  };
   const getLikeCount = () => {
-    // if (post.likes == null) {
-    //   return 0;
-    // }
-    // let count = 0;
-    // // if the key is explicitly set to true, add a like
-    // post.likes.values.forEach((val) => {
-    //   if (val == true) {
-    //     count += 1;
-    //   }
-    // });
-
     return Object.values(post.likes).filter((v) => v).length;
   };
 
@@ -126,45 +133,113 @@ const ReelPost = (props) => {
           />
 
           <View style={styles.uiContainer}>
+            {!activePaused ? (
+              <View style={styles.centerContainer}>
+                <View
+                  style={{
+                    borderRadius: 50,
+                    height: 60,
+                    width: 60,
+                    backgroundColor: "#111111",
+                    opacity: 0.7,
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
+                  <Ionicons
+                    name="ios-play"
+                    size={40}
+                    color="#ffffff"
+                    style={{ marginLeft: 5 }}
+                  />
+                </View>
+              </View>
+            ) : null}
+            {saved ? (
+              <View style={{ ...styles.centerContainer, opacity: 0.7 }}>
+                <Text style={{ fontSize: 18, color: "#ffffff" }}>Saved!</Text>
+              </View>
+            ) : null}
+            {showMore ? (
+              <View
+                style={{
+                  ...styles.centerContainer,
+                  zIndex: 5,
+                  opacity: 0.7,
+                  backgroundColor: "#111111",
+                }}
+              >
+                <ReelPostMoreModal
+                  postOwnerId={post.user_id}
+                  postData={post}
+                  setShowMore={setShowMore}
+                  onSave={onSave}
+                />
+              </View>
+            ) : null}
+
             <View style={styles.rightContainer}>
               {/* <Image
                 style={styles.profilePicture}
                 source={{ uri: post.user.imageUri }}
               /> */}
-
-              <TouchableOpacity
-                style={styles.iconContainer}
-                onPress={onLikePress}
-              >
-                <AntDesign
-                  name={"heart"}
-                  size={24}
-                  color={post.likes[currentUser.id] === true ? "red" : "white"}
-                />
-                <Text style={styles.statsLabel}>{getLikeCount()}</Text>
-              </TouchableOpacity>
-
-              <View style={styles.iconContainer}>
+              <View style={styles.rightContainerBg}>
                 <TouchableOpacity
                   style={styles.iconContainer}
-                  onPress={() => {
-                    props.setToggleScroll(false);
-                    setShowComments(true);
-                  }}
+                  onPress={onLikePress}
                 >
-                  <FontAwesome name={"commenting"} size={24} color="white" />
-                  <Text style={styles.statsLabel}>{post.comments}</Text>
+                  <AntDesign
+                    name={"heart"}
+                    size={20}
+                    color={
+                      post.likes[currentUser.id] === true ? "red" : "white"
+                    }
+                  />
+                  <Text style={styles.statsLabel}>{getLikeCount()}</Text>
+                </TouchableOpacity>
+
+                <View style={styles.iconContainer}>
+                  <TouchableOpacity
+                    style={styles.iconContainer}
+                    onPress={() => {
+                      props.setToggleScroll(false);
+                      setShowComments(true);
+                    }}
+                  >
+                    <FontAwesome name={"commenting"} size={20} color="white" />
+                    <Text style={styles.statsLabel}>{post.comments}</Text>
+                  </TouchableOpacity>
+                </View>
+                <TouchableOpacity
+                  style={styles.iconContainer}
+                  onPress={onShowMore}
+                >
+                  <Ionicons name="ios-more" size={20} color="white" />
                 </TouchableOpacity>
               </View>
             </View>
 
             <View style={styles.bottomContainer}>
               <View>
-                {/* <Text style={styles.handle}>@{post.user.username}</Text> */}
-                <Text style={styles.description}>{post.description}</Text>
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                  <Image
+                    style={{
+                      width: 25,
+                      height: 25,
+                      borderRadius: 15,
+                      marginBottom: 10,
+                      marginRight: 10,
+                    }}
+                    source={{
+                      uri: post.user.profile_pic,
+                    }}
+                  />
+                  <Text style={styles.handle}>{post.user.username} - </Text>
+                  <Text style={styles.description}>{post.description}</Text>
+                </View>
 
                 <View style={styles.songRow}>
-                  <Entypo name={"beamed-note"} size={18} color="white" />
+                  <SimpleLineIcons name="music-tone" size={16} color="white" />
                   <Text style={styles.songName}>
                     {post.music || "Original Audio"}
                   </Text>

@@ -1,4 +1,4 @@
-import { Ionicons, Feather } from "@expo/vector-icons";
+import { MaterialIcons, Feather } from "@expo/vector-icons";
 import React, { useEffect, useState, useRef } from "react";
 import {
   View,
@@ -6,6 +6,7 @@ import {
   Dimensions,
   StyleSheet,
   TouchableWithoutFeedback,
+  TouchableOpacity,
 } from "react-native";
 import { useSelector } from "react-redux";
 import { useRoute, useNavigation } from "@react-navigation/native";
@@ -43,11 +44,21 @@ const ReelScreen = () => {
     <View>
       <View style={styles.header}>
         <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <TouchableWithoutFeedback onPress={() => navigation.goBack()}>
-            <View style={{ width: 60 }}>
-              <Ionicons name="ios-arrow-back" size={24} color="white" />
-            </View>
-          </TouchableWithoutFeedback>
+          <TouchableOpacity
+            style={{
+              alignItems: "center",
+              justifyContent: "center",
+              width: 35,
+              height: 35,
+              borderRadius: 20,
+              elevation: 2,
+              backgroundColor: "#111111",
+              opacity: 0.7,
+            }}
+            onPress={() => navigation.goBack()}
+          >
+            <MaterialIcons name="navigate-before" size={30} color="#ffffff" />
+          </TouchableOpacity>
         </View>
         <View
           style={{
@@ -55,11 +66,21 @@ const ReelScreen = () => {
             justifyContent: "space-between",
           }}
         >
-          <TouchableWithoutFeedback
+          <TouchableOpacity
+            style={{
+              alignItems: "center",
+              justifyContent: "center",
+              width: 40,
+              height: 40,
+              borderRadius: 20,
+              elevation: 2,
+              backgroundColor: "#111111",
+              opacity: 0.7,
+            }}
             onPress={() => navigation.navigate("CameraScreen")}
           >
-            <Feather name="video" size={24} color="white" />
-          </TouchableWithoutFeedback>
+            <Feather name="video" size={24} color="#ffffff" />
+          </TouchableOpacity>
         </View>
       </View>
       <FlatList
@@ -97,7 +118,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     width: "100%",
     alignItems: "center",
-    paddingTop: 40,
+    paddingTop: 30,
     paddingBottom: 10,
     paddingHorizontal: 10,
     zIndex: 1,

@@ -28,7 +28,7 @@ const AppButton = ({
       <Text style={{ ...styles.appButtonText, ...textStyle }}>{title}</Text>
       {loading && (
         <Image
-          style={{ marginLeft: 5, width: 18, height: 18 }}
+          style={{ marginTop: 2, marginLeft: 5, width: 18, height: 18 }}
           source={require("../../assets/loader.gif")}
         />
       )}

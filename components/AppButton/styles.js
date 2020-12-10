@@ -5,7 +5,7 @@ const styles = StyleSheet.create({
   appButtonContainer: {
     flexDirection: "row",
     justifyContent: "center",
-    elevation: 8,
+    elevation: 2,
     backgroundColor: Colors.light.tint,
     borderRadius: 20,
     paddingVertical: 10,

@@ -8,7 +8,7 @@ import { styles } from "./styles";
 
 export default function ReelPreview(props) {
   const { videoUri, user, index } = props.data;
-  const { profile_pic, name } = user;
+  const { profile_pic, name, username } = user;
   const navigation = useNavigation();
   return (
     <>
@@ -36,7 +36,7 @@ export default function ReelPreview(props) {
                 style={{ height: 25, width: 25, borderRadius: 20 }}
                 source={{ uri: profile_pic }}
               />
-              <Text style={styles.reelCardFooterText}> {name}</Text>
+              <Text style={styles.reelCardFooterText}> {username}</Text>
             </View>
           </View>
         </View>

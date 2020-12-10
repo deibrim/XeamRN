@@ -1,6 +1,7 @@
 import {
   AntDesign,
   Ionicons,
+  Feather,
   Entypo,
   MaterialCommunityIcons,
   SimpleLineIcons,
@@ -173,6 +174,20 @@ export default function UserProfileScreen() {
               </View>
             </TouchableOpacity>
           )}
+          <TouchableOpacity
+            style={{
+              alignItems: "center",
+              justifyContent: "center",
+              width: 30,
+              height: 30,
+              borderRadius: 20,
+              marginLeft: 5,
+              elevation: 2,
+              backgroundColor: "#ffffff",
+            }}
+          >
+            <Feather name="more-vertical" size={24} color="black" />
+          </TouchableOpacity>
         </View>
       </View>
       {loading ? (
@@ -248,7 +263,7 @@ export default function UserProfileScreen() {
               </View>
             </View>
           </View>
-          <View style={{ paddingHorizontal: "10%" }}>
+          {/* <View style={{ paddingHorizontal: "10%" }}>
             <TouchableOpacity
               onPress={changeChannel}
               style={{ marginTop: -20 }}
@@ -275,7 +290,7 @@ export default function UserProfileScreen() {
                 <Text style={{ color: "white" }}>Send Message</Text>
               </View>
             </TouchableOpacity>
-          </View>
+          </View> */}
           <View
             style={{
               flexDirection: "row",

@@ -17,7 +17,7 @@ const LoginScreen = (props) => {
   const [loading, setLoading] = useState(false);
   const [toggleShowPassword, setToggleShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const handleSubmit = async (event) => {
+  const handleSubmit = async () => {
     setLoading(true);
     try {
       await auth.signInWithEmailAndPassword(email, password);

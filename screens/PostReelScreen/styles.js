@@ -1,27 +1,15 @@
-import { StyleSheet } from "react-native";
+import { StyleSheet, Dimensions } from "react-native";
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     width: "100%",
-    height: "100%",
-  },
-  videPlayButton: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    bottom: 0,
-    right: 0,
-    zIndex: 100,
-  },
-  video: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    bottom: 0,
-    right: 0,
+    height: Dimensions.get("screen").height,
+    backgroundColor: "#006eff",
   },
   uiContainer: {
-    height: "100%",
+    flex: 1,
+    height: Dimensions.get("screen").height,
     justifyContent: "space-between",
   },
   topContainer: {
@@ -35,6 +23,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   bottomContainer: {
+    marginTop: "auto",
+    marginBottom: 10,
     alignSelf: "flex-end",
     height: 80,
     padding: 10,
@@ -49,8 +39,8 @@ const styles = StyleSheet.create({
   textInput: {
     backgroundColor: "white",
     width: "100%",
-    paddingLeft: 10,
-    borderRadius: 20,
+    paddingLeft: 15,
+    borderRadius: 30,
   },
   button: {
     flexDirection: "row",

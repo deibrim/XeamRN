@@ -19,6 +19,7 @@ import EditChatScreen from "../screens/EditChatScreen/EditChatScreen";
 import EditAndPostScreen from "../screens/EditAndPostScreen/EditAndPostScreen";
 import ExploreScreen from "../screens/ExploreScreen/ExploreScreen";
 import UserProfileScreen from "../screens/UserProfileScreen/UserProfileScreen";
+import PostReelScreen from "../screens/PostReelScreen/PostReelScreen";
 
 const BottomTab = createBottomTabNavigator();
 
@@ -43,6 +44,9 @@ export default function BottomTabNavigator() {
         return false;
         break;
       case "EditAndPostScreen":
+        return false;
+        break;
+      case "PostReelScreen":
         return false;
         break;
       case "EditProfileScreen":
@@ -181,6 +185,13 @@ function HomeScreenNavigator() {
       <HomeScreenStack.Screen
         name="EditAndPostScreen"
         component={EditAndPostScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <HomeScreenStack.Screen
+        name="PostReelScreen"
+        component={PostReelScreen}
         options={{
           headerShown: false,
         }}

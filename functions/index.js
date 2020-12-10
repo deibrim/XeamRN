@@ -166,7 +166,6 @@ exports.onDeleteReel = functions.firestore
     // 2) Delete each post in each follower's timeline
     querySnapshot.forEach(async (doc) => {
       const followerId = doc.id;
-
       const timelineRefGet = await admin
         .firestore()
         .collection("timeline")

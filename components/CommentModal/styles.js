@@ -2,7 +2,7 @@ import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
   commentModal: {
-    height: "60%",
+    height: "50%",
     width: "100%",
     position: "absolute",
     bottom: 0,
@@ -19,5 +19,6 @@ export const styles = StyleSheet.create({
   },
   commentBox: {
     marginTop: "auto",
+    marginBottom: 10,
   },
 });

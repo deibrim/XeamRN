@@ -247,7 +247,11 @@ export const addAReply = async ({ data, commentId, postId }) => {
 // Note: To delete post, ownerId and currentUserId must be equal, so they can be used interchangeably
 export const deleteReel = async (ownerId, postId) => {
   // delete post itself
-  const rsRef = await reelsRef.doc(ownerId).collection("userReels").doc(postId);
+  const rsRef = await firestore
+    .collection("reels")
+    .doc(ownerId)
+    .collection("userReels")
+    .doc(postId);
   const reelsSnapshot = rsRef.get();
   reelsSnapshot.then((doc) => {
     if (doc.exists) {
@@ -255,23 +259,28 @@ export const deleteReel = async (ownerId, postId) => {
     }
   });
   // delete uploaded video for the database storage
+  firebase.storage().ref(`reels/${postId}`).delete();
   // then delete all activity feed notifications
   const afRef = await activityFeedRef
     .doc(ownerId)
     .collection("feedItems")
     .where("postId", "==", `${postId}`);
-  const activityFeedSnapshot = afRef.get();
+  const activityFeedSnapshot = await afRef.get();
+
   activityFeedSnapshot.docs.forEach((doc) => {
     if (doc.exists) {
-      afRef.delete();
+      doc.ref.delete();
     }
   });
   // then delete all comments
-  const csRef = await commentsRef.doc(postId).collection("comments");
-  const commentsSnapshot = csRef.get();
+  const csRef = await firestore
+    .collection("comments")
+    .doc(postId)
+    .collection("comments");
+  const commentsSnapshot = await csRef.get();
   commentsSnapshot.docs.forEach((doc) => {
     if (doc.exists) {
-      csRef.delete();
+      doc.ref.delete();
     }
   });
 };

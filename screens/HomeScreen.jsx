@@ -1,4 +1,4 @@
-import { Feather } from "@expo/vector-icons";
+import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 // import {  Notifications } from "expo";
 import Constants from "expo-constants";
@@ -128,7 +128,15 @@ export default function HomeScreen() {
         style={styles.container}
       >
         <View style={styles.trendSection}>
-          <Text style={styles.sectionTitle}>🔥 Reels 🔥</Text>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <Feather
+              name="trending-up"
+              size={22}
+              color="#444444"
+              style={{ marginBottom: 10, marginLeft: 10 }}
+            />
+            <Text style={styles.sectionTitle}>Reels</Text>
+          </View>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -139,7 +147,15 @@ export default function HomeScreen() {
           </ScrollView>
         </View>
         <View style={styles.recentSection}>
-          <Text style={styles.sectionTitle}>Recent Reels</Text>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <MaterialCommunityIcons
+              name="timeline-outline"
+              size={22}
+              color="#444444"
+              style={{ marginBottom: 10, marginLeft: 10 }}
+            />
+            <Text style={styles.sectionTitle}>Feed</Text>
+          </View>
           {loading && (
             <View
               style={{
@@ -207,7 +223,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     marginBottom: 10,
     fontWeight: "bold",
-    color: "#797a7a",
+    color: "#444444",
     paddingLeft: 10,
   },
   trendSection: {

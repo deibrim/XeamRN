@@ -91,7 +91,7 @@ export default function HomeScreen() {
     <>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.navigate("CameraScreen")}>
-          <Feather name="video" size={26} color="gray" />
+          <Feather name="video" size={26} color="#444444" />
         </TouchableOpacity>
         <Text style={styles.title}>
           {" "}
@@ -220,9 +220,9 @@ const styles = StyleSheet.create({
     borderRadius: 15,
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: 18,
     marginBottom: 10,
-    fontWeight: "bold",
+    fontWeight: "700",
     color: "#444444",
     paddingLeft: 10,
   },

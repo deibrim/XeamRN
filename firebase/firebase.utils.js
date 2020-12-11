@@ -50,6 +50,7 @@ export const createUserProfileDocument = async (userAuth, additionalData) => {
         verifiedProfile: false,
         email,
         joined,
+        isBusinessAccount: false,
         location: "",
         website: "",
         headline: "",
@@ -210,7 +211,7 @@ export const addAComment = async (
     postId,
     isNotPostOwner,
     "comment",
-    `${currentUser.username} commented your reel`
+    `${currentUser.username} commented on your reel`
   );
 };
 
@@ -350,17 +351,21 @@ async function addToActivityFeed(
   body
 ) {
   // add a notification to the postOwner's activity feed only if comment made by OTHER user (to avoid getting notification for our own like)
-  if (isNotPostOwner) {
+  if (!isNotPostOwner) {
     const ownerRef = firestore.collection("users").doc(ownerId);
     const ownerSnapShot = await ownerRef.get();
-    activityFeedRef.doc(ownerId).collection("feedItems").doc(postId).set({
-      type,
-      username: currentUser.username,
-      userId: currentUser.id,
-      userProfileImg: currentUser.profile_pic,
-      postId,
-      timestamp: Date.now(),
-    });
+    activityFeedRef
+      .doc(ownerId)
+      .collection("feedItems")
+      .doc(currentUser.id)
+      .set({
+        type,
+        username: currentUser.username,
+        userId: currentUser.id,
+        userProfileImg: currentUser.profile_pic,
+        postId,
+        timestamp: Date.now(),
+      });
     fetch("https://exp.host/--/api/v2/push/send", {
       method: "POST",
       headers: {

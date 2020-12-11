@@ -50,7 +50,9 @@ const CommentModal = ({
   ) : (
     <View style={styles.commentModal}>
       <View style={styles.commentHead}>
-        <Text style={{ fontSize: 16 }}>Comments</Text>
+        <Text style={{ fontSize: 16 }}>
+          {comments.length} Comment{comments.length > 1 && "s"}
+        </Text>
         <TouchableOpacity
           style={{ width: 50, alignItems: "flex-end" }}
           onPress={() => {

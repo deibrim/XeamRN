@@ -8,7 +8,13 @@ import {
 } from "@expo/vector-icons";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import React, { useEffect, useState } from "react";
-import { StyleSheet, Image, TouchableOpacity, ScrollView } from "react-native";
+import {
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  ScrollView,
+} from "react-native";
 import { useSelector, useDispatch } from "react-redux";
 import { Text, View } from "../../components/Themed";
 import {
@@ -19,7 +25,9 @@ import {
 import { setCurrentChannel, setPrivateChannel } from "../../redux/chat/actions";
 import { setUserReels } from "../../redux/reel/actions";
 import ReelPreview from "../../components/ReelPreview/ReelPreview";
-
+import UserProfileMoreModal from "../../components/UserProfileMoreModal/UserProfileMoreModal";
+import { styles } from "./styles";
+import AfterReporting from "../../components/AfterReporting/AfterReporting";
 export default function UserProfileScreen() {
   const route = useRoute();
   const navigation = useNavigation();
@@ -31,7 +39,9 @@ export default function UserProfileScreen() {
   const [followerCount, setFollowerCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [reported, setReported] = useState(false);
   const [loadingReels, setLoadingReels] = useState(false);
+  const [showMore, setShowMore] = useState(false);
   const [user, setUser] = useState({});
   const dispatch = useDispatch();
   useEffect(() => {
@@ -185,11 +195,41 @@ export default function UserProfileScreen() {
               elevation: 2,
               backgroundColor: "#ffffff",
             }}
+            onPress={() => setShowMore(!showMore)}
           >
             <Feather name="more-vertical" size={24} color="black" />
           </TouchableOpacity>
         </View>
       </View>
+      {reported ? (
+        <View
+          style={{
+            ...styles.centerContainer,
+            backgroundColor: "#ffffff",
+            zIndex: 15,
+            paddingHorizontal: "20%",
+          }}
+        >
+          <AfterReporting setReported={setReported} customText={"profile"} />
+        </View>
+      ) : null}
+      {showMore ? (
+        <TouchableWithoutFeedback
+          onPress={() => {
+            setShowMore(false);
+          }}
+        >
+          <View style={styles.moreModalContainer}>
+            <UserProfileMoreModal
+              userId={user.id}
+              userData={user}
+              setShowMore={setShowMore}
+              reported={reported}
+              setReported={setReported}
+            />
+          </View>
+        </TouchableWithoutFeedback>
+      ) : null}
       {loading ? (
         <View
           style={{
@@ -396,44 +436,3 @@ export default function UserProfileScreen() {
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-  },
-  header: {
-    flexDirection: "row",
-    width: "100%",
-    alignItems: "center",
-    paddingTop: 40,
-    paddingBottom: 10,
-    paddingLeft: 20,
-    paddingRight: 10,
-    zIndex: 1,
-    minHeight: 80,
-    backgroundColor: "#ffffff",
-    justifyContent: "space-between",
-    elevation: 4,
-  },
-  userPreview: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingRight: 50,
-  },
-  title: {
-    color: "#42414C",
-    fontSize: 20,
-    marginLeft: 10,
-    marginBottom: 1,
-  },
-  listReels: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    flexWrap: "wrap",
-    paddingHorizontal: 10,
-    paddingVertical: 10,
-    paddingBottom: 20,
-  },
-});

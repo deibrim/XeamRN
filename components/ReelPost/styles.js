@@ -52,6 +52,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   songRow: {
+    width: "100%",
     flexDirection: "row",
     alignItems: "center",
   },
@@ -117,7 +118,7 @@ const styles = StyleSheet.create({
   iconContainer: {
     alignItems: "center",
     // margin: 10,
-    marginVertical: 5,
+    marginVertical: 6,
   },
   statsLabel: {
     color: "#fff",

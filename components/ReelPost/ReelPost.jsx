@@ -3,6 +3,7 @@ import {
   SimpleLineIcons,
   AntDesign,
   FontAwesome,
+  MaterialIcons,
 } from "@expo/vector-icons";
 import React, { useEffect, useState, useCallback } from "react";
 import {
@@ -22,6 +23,7 @@ import {
 } from "../../firebase/firebase.utils";
 import CommentModal from "../CommentModal/CommentModal";
 import ReelPostMoreModal from "../ReelPostMoreModal/ReelPostMoreModal";
+import AfterReporting from "../AfterReporting/AfterReporting";
 const wait = (timeout) => {
   return new Promise((resolve) => {
     setTimeout(resolve, timeout);
@@ -30,18 +32,38 @@ const wait = (timeout) => {
 
 const ReelPost = (props) => {
   const currentUser = useSelector((state) => state.user.currentUser);
-  const [post, setPost] = useState(props.post);
+  const [post] = useState(props.post);
   const [isLiked, setIsLiked] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [saved, setSaved] = useState(false);
   const [showMore, setShowMore] = useState(false);
+  const [videoLoading, setVideoLoading] = useState(false);
   const [videoUri, setVideoUri] = useState("");
-
+  const [reported, setReported] = useState(false);
   const [paused, setPaused] = useState(false);
   const [activePaused, setActivePaused] = useState(true);
+
   const onSave = useCallback(() => {
     setSaved(true);
     wait(2000).then(() => setSaved(false));
+  }, []);
+  const onView = useCallback(() => {
+    wait(2000).then(() => {
+      const isViewed = post.views[currentUser.id] === true;
+      const currentUserId = currentUser.id;
+      if (isViewed) {
+        return;
+      } else if (!isViewed) {
+        post.views[currentUserId] = true;
+        let views = post.views;
+        firestore
+          .collection("reels")
+          .doc(post.user_id)
+          .collection("userReels")
+          .doc(post.id)
+          .update({ views });
+      }
+    });
   }, []);
   const onPlayPausePress = () => {
     setPaused(!paused);
@@ -52,10 +74,10 @@ const ReelPost = (props) => {
 
   const onLikePress = () => {
     const isLiked = post.likes[currentUser.id] === true;
-    const cuserId = currentUser.id;
+    const currentUserId = currentUser.id;
     // const Likes = { ...post.likes };
     if (isLiked) {
-      post.likes[cuserId] = false;
+      post.likes[currentUserId] = false;
       let likes = post.likes;
       firestore
         .collection("reels")
@@ -71,7 +93,7 @@ const ReelPost = (props) => {
       );
       setIsLiked(!isLiked);
     } else if (!isLiked) {
-      post.likes[cuserId] = true;
+      post.likes[currentUserId] = true;
       let likes = post.likes;
       firestore
         .collection("reels")
@@ -90,11 +112,17 @@ const ReelPost = (props) => {
     }
   };
   const onShowMore = () => {
+    if (activePaused) {
+      setActivePaused(false);
+    }
     props.setToggleScroll(!props.toggleScroll);
     setShowMore(!showMore);
   };
   const getLikeCount = () => {
     return Object.values(post.likes).filter((v) => v).length;
+  };
+  const getViewCount = () => {
+    return Object.values(post.views).filter((v) => v).length;
   };
 
   const getVideoUri = async () => {
@@ -119,18 +147,25 @@ const ReelPost = (props) => {
         }
       >
         <View>
-          <Video
-            source={{ uri: videoUri }}
-            style={styles.video}
-            onError={(e) => console.log(e)}
-            resizeMode={"cover"}
-            repeat={true}
-            shouldPlay={
-              props.currentReel.index === props.index ? activePaused : paused
-            }
-            isLooping
-            paused={paused}
-          />
+          {props.currentReel.index === props.index && (
+            <Video
+              source={{ uri: videoUri }}
+              style={styles.video}
+              onError={(e) => console.log(e)}
+              resizeMode={"cover"}
+              repeat={true}
+              shouldPlay={
+                props.currentReel.index === props.index ? activePaused : paused
+              }
+              isLooping
+              paused={paused}
+              onLoadStart={() => setVideoLoading(true)}
+              onLoad={() => {
+                setVideoLoading(false);
+                onView();
+              }}
+            />
+          )}
 
           <View style={styles.uiContainer}>
             {!activePaused ? (
@@ -155,34 +190,65 @@ const ReelPost = (props) => {
                 </View>
               </View>
             ) : null}
+            {videoLoading && activePaused && (
+              <View
+                style={{
+                  ...styles.centerContainer,
+                  zIndex: 5,
+                  // opacity: 0.7,
+                  // backgroundColor: "#111111",
+                }}
+              >
+                <Image
+                  style={{ marginLeft: 5, width: 40, height: 40 }}
+                  source={require("../../assets/loader.gif")}
+                />
+              </View>
+            )}
             {saved ? (
               <View style={{ ...styles.centerContainer, opacity: 0.7 }}>
                 <Text style={{ fontSize: 18, color: "#ffffff" }}>Saved!</Text>
               </View>
             ) : null}
-            {showMore ? (
+            {reported ? (
               <View
                 style={{
                   ...styles.centerContainer,
-                  zIndex: 5,
-                  opacity: 0.7,
-                  backgroundColor: "#111111",
+                  backgroundColor: "#ffffff",
+                  zIndex: 15,
+                  paddingHorizontal: "20%",
                 }}
               >
-                <ReelPostMoreModal
-                  postOwnerId={post.user_id}
-                  postData={post}
-                  setShowMore={setShowMore}
-                  onSave={onSave}
-                />
+                <AfterReporting setReported={setReported} customText={"post"} />
               </View>
+            ) : null}
+            {showMore ? (
+              <TouchableWithoutFeedback
+                onPress={() => {
+                  setShowMore(false);
+                }}
+              >
+                <View
+                  style={{
+                    ...styles.centerContainer,
+                    zIndex: 5,
+                    opacity: 0.7,
+                    backgroundColor: "#111111",
+                  }}
+                >
+                  <ReelPostMoreModal
+                    postOwnerId={post.user_id}
+                    postData={post}
+                    setShowMore={setShowMore}
+                    onSave={onSave}
+                    reported={reported}
+                    setReported={setReported}
+                  />
+                </View>
+              </TouchableWithoutFeedback>
             ) : null}
 
             <View style={styles.rightContainer}>
-              {/* <Image
-                style={styles.profilePicture}
-                source={{ uri: post.user.imageUri }}
-              /> */}
               <View style={styles.rightContainerBg}>
                 <TouchableOpacity
                   style={styles.iconContainer}
@@ -195,7 +261,11 @@ const ReelPost = (props) => {
                       post.likes[currentUser.id] === true ? "red" : "white"
                     }
                   />
-                  <Text style={styles.statsLabel}>{getLikeCount()}</Text>
+                  {post.user_id === currentUser.id && (
+                    <Text style={styles.statsLabel}>
+                      {post.user_id === currentUser.id && getLikeCount()}
+                    </Text>
+                  )}
                 </TouchableOpacity>
 
                 <View style={styles.iconContainer}>
@@ -243,6 +313,30 @@ const ReelPost = (props) => {
                   <Text style={styles.songName}>
                     {post.music || "Original Audio"}
                   </Text>
+                  <View
+                    style={{
+                      marginLeft: "auto",
+                      flexDirection: "row",
+                      alignItems: "center",
+                      opacity: 0.7,
+                    }}
+                  >
+                    <MaterialIcons
+                      name="visibility"
+                      size={18}
+                      color="#f8f8f8"
+                    />
+                    <Text
+                      style={{
+                        fontSize: 13,
+                        fontWeight: "500",
+                        color: "#f8f8f8",
+                        marginLeft: 2,
+                      }}
+                    >
+                      {getViewCount()}
+                    </Text>
+                  </View>
                 </View>
               </View>
 
@@ -257,7 +351,7 @@ const ReelPost = (props) => {
       {showComments ? (
         <CommentModal
           postId={post.id}
-          postOwnerId={post.user.user_id}
+          postOwnerId={post.user_id}
           setShowComments={setShowComments}
           setToggleScroll={props.setToggleScroll}
         />

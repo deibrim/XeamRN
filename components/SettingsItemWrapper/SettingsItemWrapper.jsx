@@ -30,7 +30,7 @@ const SettingsItemWrapper = ({
           {icon}
         </View>
         <View>
-          <Text style={{ fontSize: 18, fontWeight: "bold", color: "gray" }}>
+          <Text style={{ fontSize: 16, fontWeight: "bold", color: "gray" }}>
             {title}
           </Text>
           <Text style={{ fontSize: 13, fontWeight: "500", color: "#b3b4b6" }}>

@@ -5,7 +5,13 @@ import * as ImagePicker from "expo-image-picker";
 import { Camera } from "expo-camera";
 import * as Permissions from "expo-permissions";
 import React, { useEffect, useRef, useState } from "react";
-import { Text, View, TouchableOpacity, Dimensions } from "react-native";
+import {
+  Text,
+  View,
+  TouchableOpacity,
+  Dimensions,
+  StyleSheet,
+} from "react-native";
 
 import styles from "./styles";
 
@@ -46,7 +52,7 @@ export default function CameraScreen() {
       setIsRecording(true);
       const data = await camera.current.recordAsync({
         maxDuration: 300,
-        // maxFileSize: 5000000,
+        maxFileSize: 5000000,
         quality: Camera.Constants.VideoQuality["480p"],
       });
       navigation.navigate("EditAndPostScreen", { videoUri: data.uri });
@@ -59,7 +65,8 @@ export default function CameraScreen() {
         mediaTypes: ImagePicker.MediaTypeOptions.Videos,
         allowsEditing: true,
         aspect: [4, 3],
-        quality: 1,
+        quality: 0,
+        videoMaxDuration: 15,
       });
 
       if (!result.cancelled) {
@@ -72,19 +79,10 @@ export default function CameraScreen() {
   return (
     <View
       style={{
-        height: Dimensions.get("window").height,
-        width: Dimensions.get("window").width,
+        flex: 1,
       }}
     >
-      <Camera
-        ref={camera}
-        ratio={"4:3"}
-        style={{
-          height: Dimensions.get("window").height,
-          width: Dimensions.get("window").width,
-        }}
-        type={type}
-      >
+      <Camera ref={camera} ratio={"4:3"} style={{ flex: 1 }} type={type}>
         <View style={styles.recordControl}>
           <View style={styles.recordControlBorder}>
             <TouchableOpacity

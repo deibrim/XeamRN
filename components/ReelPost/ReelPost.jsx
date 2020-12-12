@@ -41,6 +41,7 @@ const ReelPost = (props) => {
   const [videoUri, setVideoUri] = useState("");
   const [reported, setReported] = useState(false);
   const [paused, setPaused] = useState(false);
+  const [shouldContinuePlaying, setShouldContinuePlaying] = useState(false);
   const [activePaused, setActivePaused] = useState(true);
 
   const onSave = useCallback(() => {
@@ -136,7 +137,30 @@ const ReelPost = (props) => {
   useEffect(() => {
     getVideoUri();
   }, []);
-
+  const onDisplayVideo = () => {
+    if (props.currentReel.index === props.index || shouldContinuePlaying) {
+      return (
+        <Video
+          source={{ uri: videoUri }}
+          style={styles.video}
+          onError={(e) => console.log(e)}
+          resizeMode={"cover"}
+          repeat={true}
+          shouldPlay={
+            props.currentReel.index === props.index ? activePaused : paused
+          }
+          isLooping
+          paused={paused}
+          onLoadStart={() => setVideoLoading(true)}
+          onLoad={() => {
+            setVideoLoading(false);
+            setShouldContinuePlaying(true);
+            onView();
+          }}
+        />
+      );
+    }
+  };
   return (
     <View style={styles.container}>
       <TouchableWithoutFeedback
@@ -147,25 +171,7 @@ const ReelPost = (props) => {
         }
       >
         <View>
-          {props.currentReel.index === props.index && (
-            <Video
-              source={{ uri: videoUri }}
-              style={styles.video}
-              onError={(e) => console.log(e)}
-              resizeMode={"cover"}
-              repeat={true}
-              shouldPlay={
-                props.currentReel.index === props.index ? activePaused : paused
-              }
-              isLooping
-              paused={paused}
-              onLoadStart={() => setVideoLoading(true)}
-              onLoad={() => {
-                setVideoLoading(false);
-                onView();
-              }}
-            />
-          )}
+          {onDisplayVideo()}
 
           <View style={styles.uiContainer}>
             {!activePaused ? (

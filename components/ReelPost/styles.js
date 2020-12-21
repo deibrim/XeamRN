@@ -30,6 +30,7 @@ const styles = StyleSheet.create({
     width: "90%",
     padding: 10,
     paddingHorizontal: 25,
+    paddingRight: 5,
     marginBottom: 20,
     borderRadius: 50,
     flexDirection: "row",
@@ -40,9 +41,8 @@ const styles = StyleSheet.create({
   },
   handle: {
     color: "#fff",
-    fontSize: 15,
-    fontWeight: "400",
-    marginBottom: 10,
+    fontSize: 16,
+    fontWeight: "bold",
     marginRight: 10,
   },
   description: {
@@ -50,11 +50,14 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "300",
     marginBottom: 8,
+    flex: 1,
+    flexWrap: "wrap",
   },
   songRow: {
     width: "100%",
     flexDirection: "row",
     alignItems: "center",
+    paddingRight: 15,
   },
   songName: {
     color: "#fff",

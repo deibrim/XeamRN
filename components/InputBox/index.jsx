@@ -4,7 +4,7 @@ import {
   Entypo,
   Ionicons,
 } from "@expo/vector-icons";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   ImageBackground,
@@ -14,7 +14,7 @@ import {
 } from "react-native";
 import { v4 as uuidv4 } from "uuid";
 import EmojiBoard from "react-native-emoji-board";
-import firebase from "../../firebase/firebase.utils";
+import firebase, { firestore } from "../../firebase/firebase.utils";
 import styles from "./styles";
 
 const InputBox = (props) => {
@@ -24,6 +24,7 @@ const InputBox = (props) => {
     currentUser,
     isPrivateChannel,
     getMessagesRef,
+    endUser,
   } = props;
   const [message, setMessage] = useState("");
   const [storageRef, setStorageRef] = useState(firebase.storage().ref());
@@ -31,13 +32,20 @@ const InputBox = (props) => {
   const [uploadTask, setUploadTask] = useState(null);
   const [uploadState, setUploadState] = useState("");
   const [percentUploaded, setPercentUploaded] = useState(0);
-  const [channel, setChannel] = useState(props.currentChannel);
-  const [user, setUser] = useState(props.currentUser);
+  const [channel, setChannel] = useState(currentChannel);
+  const [user, setUser] = useState(currentUser);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState([]);
   const [modal, setModal] = useState(false);
+  const [isFriends, setIsFriends] = useState(false);
   const [emojiPicker, setEmojiPicker] = useState(false);
-
+  useEffect(() => {
+    if (message) {
+      typingRef.child(channel.id).child(user.id).set(`${currentUser.username}`);
+    } else {
+      typingRef.child(channel.id).child(user.id).remove();
+    }
+  }, [message]);
   function createMessage(
     fileUrl = null,
     audio = null,
@@ -45,20 +53,19 @@ const InputBox = (props) => {
     photo = null
   ) {
     const messageData = {
+      id: uuidv4().split("-").join(""),
       timestamp: firebase.database.ServerValue.TIMESTAMP,
       user: {
         id: user.id,
         name: user.name,
       },
+      read: false,
     };
     if (fileUrl && fileUrl !== null) {
       messageData["image"] = fileUrl;
     } else {
       messageData["content"] = message;
     }
-    console.log("====================================");
-    console.log(message);
-    console.log("====================================");
     return messageData;
   }
 
@@ -73,39 +80,80 @@ const InputBox = (props) => {
 
   async function sendMessage() {
     const { getMessagesRef } = props;
-    // const { message, channel, user, typingRef } = this.state;
-
-    if (message) {
-      setLoading(true);
-      // this.setState({ loading: true });
-      console.log("====================================");
-      console.log(channel.id);
-      console.log("====================================");
-      await getMessagesRef()
-        .child(channel.id)
-        .push()
-        .set(createMessage())
-        .then(() => {
-          setLoading(true);
-          setMessage("");
-          setError([]);
-          // this.setState({ loading: false, message: "", errors: [] });
-          typingRef.child(channel.id).child(user.id).remove();
-        })
-        .catch((err) => {
-          console.error(err);
-          setLoading(true);
-          setError(errors.concat(err));
-          // this.setState({
-          //   loading: false,
-          //   errors: errors.concat(err),
-          // });
-        });
-    } else {
-      setError(errors.concat({ message: "Add a message" }));
-      // this.setState({
-      //   errors: errors.concat({ message: "Add a message" }),
-      // });
+    await firebase
+      .database()
+      .ref("privateMessages")
+      .child(channel.id)
+      .once("value", (snapshot) => {
+        if (!snapshot.exists()) {
+          firebase
+            .database()
+            .ref(`/friends/${currentUser.id}`)
+            .child(endUser.id)
+            .set(endUser);
+          firebase
+            .database()
+            .ref(`/friends/${endUser.id}`)
+            .child(currentUser.id)
+            .set({
+              name: currentUser.name,
+              id: currentUser.id,
+              username: currentUser.username,
+              profile_pic: currentUser.profile_pic,
+            });
+          send();
+          return;
+        }
+        send();
+      });
+    async function send() {
+      const createMes = createMessage();
+      if (message.trim() !== "") {
+        setLoading(true);
+        await getMessagesRef()
+          .child(channel.id)
+          .child(createMes.id)
+          .set(createMes)
+          .then(async () => {
+            setLoading(true);
+            setMessage("");
+            setError([]);
+            typingRef.child(channel.id).child(user.id).remove();
+            const ownerRef = firestore.collection("users").doc(endUser.id);
+            const ownerSnapShot = await ownerRef.get();
+            // const title =
+            //   user.username.split("")[0].toUpperCase() +
+            //   user.username.substring(1);
+            fetch("https://exp.host/--/api/v2/push/send", {
+              method: "POST",
+              headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                channelId: "ChatRoom",
+                to: ownerSnapShot.data().push_token.data,
+                sound: "default",
+                title: user.name,
+                body: `${user.username}: ${createMes.content}`,
+                data: {
+                  chatId: channel.id,
+                  name: user.name,
+                  id: user.id,
+                  username: user.username,
+                  profile_pic: user.profile_pic,
+                },
+              }),
+            });
+          })
+          .catch((err) => {
+            console.error(err);
+            setLoading(true);
+            setError(errors.concat(err));
+          });
+      } else {
+        setError(errors.concat({ message: "Add a message" }));
+      }
     }
   }
 

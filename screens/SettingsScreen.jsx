@@ -1,24 +1,28 @@
 import {
+  AntDesign,
   FontAwesome5,
   Ionicons,
   Entypo,
   Feather,
   MaterialIcons,
 } from "@expo/vector-icons";
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useRef } from "react";
 import {
   View,
   StyleSheet,
   Text,
   Modal,
   Share,
+  ScrollView,
   RefreshControl,
-  TouchableHighlight,
   TouchableOpacity,
+  Dimensions,
+  FlatList,
 } from "react-native";
 import { useSelector } from "react-redux";
 import { useNavigation } from "@react-navigation/native";
 import SettingsItemWrapper from "../components/SettingsItemWrapper/SettingsItemWrapper";
+import AppButton from "../components/AppButton/AppButton";
 const wait = (timeout) => {
   return new Promise((resolve) => {
     setTimeout(resolve, timeout);
@@ -29,12 +33,14 @@ export default function SettingsScreen() {
   const navigation = useNavigation();
   const [refreshing, setRefreshing] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
+  const [index, setIndex] = useState(0);
+  let flatListRef;
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     wait(2000).then(() => setRefreshing(false));
   }, []);
 
-  onShare = async () => {
+  const onShare = async () => {
     const uri = "../assets/xlogowhite.png";
 
     Share.share(
@@ -69,6 +75,15 @@ export default function SettingsScreen() {
       }
     );
   };
+  const scrollToIndex = (index) => {
+    if (index === 2) {
+      navigation.navigate("TvGetStartedScreen");
+      setModalVisible(false);
+      return;
+    }
+    flatListRef.scrollToIndex({ animated: true, index: "" + index });
+    setIndex(index);
+  };
   return (
     <>
       <View style={styles.header}>
@@ -93,66 +108,27 @@ export default function SettingsScreen() {
         }
         style={styles.container}
       >
-        <Modal
-          animationType="fade"
-          transparent={true}
-          visible={modalVisible}
-          onRequestClose={() => {}}
-          style={{
-            width: "100%",
-          }}
-        >
-          <View
-            style={{
-              position: "absolute",
-              top: 0,
-              bottom: 0,
-              left: 0,
-              right: 0,
-              justifyContent: "space-evenly",
-              alignItems: "center",
-              backgroundColor: "#ffffff",
-              width: "100%",
-            }}
-          >
-            <View
-              style={{
-                flex: 1,
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Text style={styles.modalText}>Hello World!</Text>
-
-              <TouchableHighlight
-                style={{ ...styles.openButton, backgroundColor: "#2196F3" }}
-                onPress={() => {
-                  setModalVisible(!modalVisible);
-                }}
-              >
-                <Text style={styles.textStyle}>close Modal</Text>
-              </TouchableHighlight>
-            </View>
-            <TouchableOpacity style={{ marginTop: "auto" }} onPress={() => {}}>
-              <View style={styles.button}>
-                <Text style={styles.buttonText}>Continue</Text>
-              </View>
-            </TouchableOpacity>
-          </View>
-        </Modal>
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>ACCOUNT SETTINGS</Text>
           <SettingsItemWrapper
-            title={"Tv Account"}
+            title={"Tv Profile"}
             description={"Entertain your viewers "}
             icon={<Feather name="tv" size={20} color="white" />}
-            onPress={() => setModalVisible(true)}
+            onPress={() =>
+              user.isTvActivated
+                ? navigation.navigate("TvProfileScreen")
+                : navigation.navigate("TvGetStartedScreen")
+            }
           />
           <SettingsItemWrapper
-            title={"Store Account"}
+            title={"XStore"}
             description={"Sell your product with ease"}
             icon={<FontAwesome5 name="store-alt" size={20} color="white" />}
-            onPress={() => navigation.navigate("EditChatScreen")}
+            onPress={() =>
+              user.isBusinessAccount
+                ? navigation.navigate("UserStoreScreen")
+                : navigation.navigate("StoreGetStartedScreen")
+            }
           />
         </View>
         <View style={styles.section}>

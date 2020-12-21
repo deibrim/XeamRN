@@ -1,7 +1,5 @@
 import { Ionicons, AntDesign } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-import * as ImagePicker from "expo-image-picker";
-// import Constants from "expo-constants";
 import { Camera } from "expo-camera";
 import * as Permissions from "expo-permissions";
 import React, { useEffect, useRef, useState } from "react";
@@ -9,20 +7,29 @@ import {
   Text,
   View,
   TouchableOpacity,
+  Image,
   Dimensions,
-  StyleSheet,
+  ScrollView,
 } from "react-native";
-
+// import { Video } from "expo-av";
+// import CameraRoll from "@react-native-community/cameraroll";
+import * as MediaLibrary from "expo-media-library";
+// import { MediaLibrary, Permissions } from "expo";
 import styles from "./styles";
+import MediaLibraryModal from "../../components/MediaLibraryModal/MediaLibraryModal";
 
 export default function CameraScreen() {
   const navigation = useNavigation();
   const [hasPermission, setHasPermission] = useState(null);
-  const [type, setType] = useState(Camera.Constants.Type.back);
+  const [album, setAlbum] = useState(null);
+  const [type, setType] = useState("back");
   const [isRecording, setIsRecording] = useState(false);
-  const camera = useRef();
+  const [modalVisible, setModalVisible] = useState(false);
+  const [deviceCameraRatio, setDeviceCameraRatio] = useState(["16:9"]);
+  let camera;
   useEffect(() => {
     getPermissionAsync();
+    getMedias();
   }, []);
   async function getPermissionAsync() {
     const cam = await Permissions.askAsync(Permissions.CAMERA);
@@ -50,7 +57,7 @@ export default function CameraScreen() {
       camera.current.stopRecording();
     } else {
       setIsRecording(true);
-      const data = await camera.current.recordAsync({
+      const data = await camera.recordAsync({
         maxDuration: 300,
         maxFileSize: 5000000,
         quality: Camera.Constants.VideoQuality["480p"],
@@ -59,61 +66,109 @@ export default function CameraScreen() {
     }
   };
 
-  const pickVideo = async () => {
-    try {
-      let result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Videos,
-        allowsEditing: true,
-        aspect: [4, 3],
-        quality: 0,
-        videoMaxDuration: 15,
-      });
-
-      if (!result.cancelled) {
-        navigation.navigate("EditAndPostScreen", { videoUri: result.uri });
-      }
-    } catch (err) {
-      console.error(err);
-    }
+  async function getMedias() {
+    // let photos = CameraRoll.getAlbums({ assetType: "All" });
+    const album = await MediaLibrary.getAssetsAsync({
+      first: 12,
+      mediaType: "video",
+    });
+    const filteredAlbum = album.assets.filter((item) => item.duration < 1500);
+    setAlbum(filteredAlbum);
+  }
+  const pickVideo = (uri) => {
+    setModalVisible(false);
+    navigation.navigate("EditAndPostScreen", { videoUri: uri });
+  };
+  const getRatio = async () => {
+    let ratio = await camera.getSupportedRatiosAsync(); //android only now
+    setDeviceCameraRatio(ratio.pop());
   };
   return (
-    <View
-      style={{
-        flex: 1,
-      }}
-    >
-      <Camera ref={camera} ratio={"4:3"} style={{ flex: 1 }} type={type}>
-        <View style={styles.recordControl}>
-          <View style={styles.recordControlBorder}>
-            <TouchableOpacity
-              onPress={onRecord}
-              style={isRecording ? styles.buttonStop : styles.buttonRecord}
-            />
-          </View>
-        </View>
-        <View style={styles.otherControl}>
-          <TouchableOpacity
-            style={styles.selectFromPhoneContainer}
-            onPress={pickVideo}
-          >
-            <View style={styles.selectFromPhone}>
-              <AntDesign name="plus" size={20} color="white" />
+    <>
+      <View
+        style={{
+          flex: 1,
+          height: Dimensions.get("window").height,
+          position: "relative",
+        }}
+      >
+        {album && modalVisible && (
+          <MediaLibraryModal
+            modalVisible={modalVisible}
+            setModalVisible={setModalVisible}
+            album={album}
+            pickVideo={pickVideo}
+          />
+        )}
+        <Camera
+          ref={(ref) => (camera = ref)}
+          focusDepth={"on"}
+          autoFocus={true}
+          // useCamera2Api={true}
+          ratio={deviceCameraRatio}
+          onCameraReady={getRatio}
+          style={{ flex: 1 }}
+          type={type}
+        >
+          <View style={styles.recordControl}>
+            <View style={styles.recordControlBorder}>
+              <TouchableOpacity
+                onPress={onRecord}
+                style={isRecording ? styles.buttonStop : styles.buttonRecord}
+              />
             </View>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.flipCamera}
-            onPress={() => {
-              setType(
-                type === Camera.Constants.Type.back
-                  ? Camera.Constants.Type.front
-                  : Camera.Constants.Type.back
-              );
-            }}
-          >
-            <Ionicons name={"ios-reverse-camera"} size={40} color="white" />
-          </TouchableOpacity>
-        </View>
-      </Camera>
-    </View>
+          </View>
+          <View style={styles.otherControl}>
+            <TouchableOpacity
+              style={styles.selectFromPhoneContainer}
+              onPress={() => setModalVisible(true)}
+            >
+              <View style={styles.selectFromPhone}>
+                {/* <AntDesign name="plus" size={20} color="white" /> */}
+                {album && (
+                  <Image
+                    source={{ uri: album[0].uri }}
+                    resizeMode={"cover"}
+                    style={{ width: 20, height: 20, margin: 2 }}
+                  />
+                )}
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.flipCamera}
+              onPress={() => {
+                setType(type === "back" ? "front" : "back");
+              }}
+            >
+              <Ionicons name={"ios-reverse-camera"} size={40} color="white" />
+            </TouchableOpacity>
+          </View>
+        </Camera>
+        {/* {album ? (
+          <View style={styles.assets}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              {album.assets.map((item, index) => (
+                <Video
+                  key={index}
+                  source={{ uri: item.uri }}
+                  style={{ width: 80, height: 80, margin: 2 }}
+                  onError={(e) => console.log(e)}
+                  resizeMode={"cover"}
+                  shouldPlay={false}
+                />
+              ))}
+            </ScrollView>
+          </View>
+        ) : null} */}
+      </View>
+    </>
   );
+}
+{
+  /*<Image
+                  key={index}
+                  source={{ uri: item.uri }}
+                  resizeMode={"cover"}
+                  style={{ width: 80, height: 80, margin: 2 }}
+                /> */
 }

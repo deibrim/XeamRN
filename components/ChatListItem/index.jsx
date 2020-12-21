@@ -2,17 +2,41 @@ import React, { useEffect, useState } from "react";
 import { View, Text, Image, TouchableWithoutFeedback } from "react-native";
 import { useSelector, useDispatch } from "react-redux";
 import { setCurrentChannel, setPrivateChannel } from "../../redux/chat/actions";
-import styles from "./style";
+import firebase from "../../firebase/firebase.utils";
 import moment from "moment";
 import { useNavigation } from "@react-navigation/native";
+import styles from "./style";
 
 const ChatListItem = (props) => {
   const { user } = props;
   const [lastMessage, setLastMessage] = useState({});
+  const [isOnline, setIsOnline] = useState(false);
   const currentUser = useSelector((state) => state.user.currentUser);
   const dispatch = useDispatch();
   const navigation = useNavigation();
-  useEffect(() => {}, []);
+  useEffect(() => {
+    getLastMessage();
+    getUserPresence();
+  }, []);
+
+  async function getLastMessage() {
+    const channelId = getChannelId(user.id);
+    firebase
+      .database()
+      .ref(`/privateMessages/${channelId}`)
+      .limitToLast(1)
+      .on("child_added", (snapshot) => {
+        setLastMessage(snapshot.val());
+      });
+  }
+  async function getUserPresence() {
+    firebase
+      .database()
+      .ref(`/presence/${user.id}`)
+      .on("child_added", (snapshot) => {
+        setIsOnline(snapshot.val());
+      });
+  }
 
   function getChannelId(userId) {
     const currentUserId = currentUser.id;
@@ -26,14 +50,52 @@ const ChatListItem = (props) => {
     const channelData = {
       id: channelId,
       name: user.name,
+      username: user.username,
     };
     dispatch(setCurrentChannel(channelData));
     dispatch(setPrivateChannel(true));
-    navigation.navigate("ChatRoom", {
-      name: user.name,
-    });
+    navigation.navigate("ChatRoom", user);
   };
+  const { content, timestamp } = lastMessage;
 
+  const lastMessageComp = () => {
+    if (lastMessage.read !== undefined) {
+      if (!lastMessage.read) {
+        return (
+          <Text
+            numberOfLines={1}
+            ellipsizeMode={"tail"}
+            style={styles.lastMessage}
+          >
+            {content}
+          </Text>
+        );
+      }
+    } else if (!lastMessage.read) {
+      return (
+        <Text
+          numberOfLines={1}
+          ellipsizeMode={"tail"}
+          style={styles.lastMessage}
+        >
+          {content}
+        </Text>
+      );
+    } else {
+      return (
+        <Text
+          numberOfLines={1}
+          ellipsizeMode={"tail"}
+          style={{
+            ...styles.lastMessage,
+            fontWeight: "bold",
+          }}
+        >
+          {content}
+        </Text>
+      );
+    }
+  };
   return (
     <>
       <TouchableWithoutFeedback onPress={changeChannel}>
@@ -41,26 +103,28 @@ const ChatListItem = (props) => {
           <View style={styles.lefContainer}>
             <View style={{ position: "relative" }}>
               <Image source={{ uri: user.profile_pic }} style={styles.avatar} />
-              {/* <View
+              <View
                 style={
-                  user.status === "online"
+                  isOnline
                     ? { ...styles.isOnline }
                     : { ...styles.isOnline, ...styles.isOffline }
                 }
-              ></View> */}
+              ></View>
             </View>
 
             <View style={styles.midContainer}>
               <Text style={styles.username}>{user.name}</Text>
-              {/* <Text numberOfLines={2} style={styles.lastMessage}>
-                {chatRoom.lastMessage.content}
+              {/* <Text
+                numberOfLines={1}
+                ellipsizeMode={"tail"}
+                style={styles.lastMessage}
+              >
+                {content}
               </Text> */}
+              {lastMessageComp()}
+              <Text style={styles.time}>{moment(timestamp).fromNow()}</Text>
             </View>
           </View>
-
-          {/* <Text style={styles.time}>
-            {moment(chatRoom.lastMessage.createdAt).format("DD/MM/YYYY")}
-          </Text> */}
         </View>
       </TouchableWithoutFeedback>
     </>

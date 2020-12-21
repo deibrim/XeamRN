@@ -8,6 +8,10 @@ export const setMyReels = (reels) => ({
   type: ActionTypes.SET_MY_REELS,
   payload: reels,
 });
+export const setTvReels = (reels) => ({
+  type: ActionTypes.SET_TV_REELS,
+  payload: reels,
+});
 export const setUserReels = (reels) => ({
   type: ActionTypes.SET_USER_REELS,
   payload: reels,

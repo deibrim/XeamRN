@@ -15,10 +15,18 @@ import * as ImagePicker from "expo-image-picker";
 import Constants from "expo-constants";
 import { useSelector } from "react-redux";
 import { useNavigation } from "@react-navigation/native";
-import firebase, { updateProfileData } from "../../firebase/firebase.utils";
+import firebase, {
+  firestore,
+  updateProfileData,
+} from "../../firebase/firebase.utils";
 import { styles } from "./styles";
 import EditProfileInputGroup from "../../components/EditProfileInputGroup/EditProfileInputGroup";
-
+import CustomPopUp from "../../components/CustomPopUp/CustomPopUp";
+const wait = (timeout) => {
+  return new Promise((resolve) => {
+    setTimeout(resolve, timeout);
+  });
+};
 const EditProfileScreen = () => {
   const user = useSelector((state) => state.user.currentUser);
   const navigation = useNavigation();
@@ -32,6 +40,7 @@ const EditProfileScreen = () => {
   const [website, setWebsite] = useState(user.website || "");
   const [headline, setHeadline] = useState(user.headline || "");
   const [selectedGender, setSelectedGender] = useState(user.gender || "");
+  const [errorMessage, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadingPercentage, setUploadingPercentage] = useState(0);
@@ -92,7 +101,7 @@ const EditProfileScreen = () => {
   const handleSave = async () => {
     setLoading(true);
     const incomingData = {
-      username,
+      username: username.toLowerCase(),
       name,
       profile_pic: profilePic,
       location,
@@ -101,9 +110,31 @@ const EditProfileScreen = () => {
       headline,
       gender: selectedGender,
     };
+
     const success = await updateProfileData(user.id, incomingData);
     setLoading(false);
     success && navigation.navigate("ProfileScreen");
+  };
+  const checkUsernameAndUpdateAccount = async () => {
+    const usersRef = await firestore
+      .collection("users")
+      .where("username", "==", `${username.toLowerCase()}`);
+    const snapshot = await usersRef.get();
+    if (!snapshot.empty) {
+      const isExisted = snapshot.docs.filter((doc) => {
+        return doc.data().id === user.id && doc.data();
+      });
+      if (isExisted.length === 0) {
+        setErrorMessage("Username already existed");
+        setLoading(false);
+        wait(5000).then(async () => {
+          setErrorMessage("");
+        });
+        return;
+      }
+      handleSave();
+    }
+    handleSave();
   };
   return (
     <>
@@ -119,7 +150,7 @@ const EditProfileScreen = () => {
             justifyContent: "space-between",
           }}
         >
-          <TouchableOpacity onPress={handleSave}>
+          <TouchableOpacity onPress={checkUsernameAndUpdateAccount}>
             <Text style={styles.saveText}>Save</Text>
           </TouchableOpacity>
         </View>
@@ -158,7 +189,7 @@ const EditProfileScreen = () => {
           value={name}
         />
         <EditProfileInputGroup
-          label={"Usernme"}
+          label={"Username"}
           handleChange={setUsername}
           value={username}
         />
@@ -182,6 +213,28 @@ const EditProfileScreen = () => {
           handleChange={setHeadline}
           value={headline}
         />
+        <View
+          style={{
+            position: "absolute",
+            bottom: 60,
+            width: "100%",
+            alignItems: "center",
+          }}
+        >
+          {errorMessage.trim() !== "" ? (
+            <CustomPopUp
+              message={`${errorMessage}`}
+              type={"error"}
+              customStyles={{
+                backgroundColor: "red",
+                borderRadius: 30,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+              customTextStyles={{ color: "#ffffff", textAlign: "center" }}
+            />
+          ) : null}
+        </View>
       </ScrollView>
     </>
   );

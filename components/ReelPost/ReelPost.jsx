@@ -310,8 +310,19 @@ const ReelPost = (props) => {
                       uri: post.user.profile_pic,
                     }}
                   />
-                  <Text style={styles.handle}>{post.user.username} - </Text>
-                  <Text style={styles.description}>{post.description}</Text>
+                  <Text
+                    style={{
+                      flex: 1,
+                      flexDirection: "row",
+                      alignItems: "center",
+                      flexWrap: "wrap",
+                      marginBottom: 10,
+                      marginRight: 10,
+                    }}
+                  >
+                    <Text style={styles.handle}>{post.user.username} - </Text>
+                    <Text style={styles.description}>{post.description}</Text>
+                  </Text>
                 </View>
 
                 <View style={styles.songRow}>

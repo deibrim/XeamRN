@@ -3,7 +3,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createStackNavigator } from "@react-navigation/stack";
 import { getFocusedRouteNameFromRoute } from "@react-navigation/core";
 import * as React from "react";
-
+import firebase from "../firebase/firebase.utils";
 import Colors from "../constants/Colors";
 import useColorScheme from "../hooks/useColorScheme";
 import HomeScreen from "../screens/HomeScreen";
@@ -21,11 +21,32 @@ import ExploreScreen from "../screens/ExploreScreen/ExploreScreen";
 import UserProfileScreen from "../screens/UserProfileScreen/UserProfileScreen";
 import PostReelScreen from "../screens/PostReelScreen/PostReelScreen";
 import ReportBugScreen from "../screens/ReportBugScreen/ReportBugScreen";
+import TvGetStartedScreen from "../screens/TvGetStartedScreen/TvGetStartedScreen";
+import TvProfileScreen from "../screens/TvProfileScreen/TvProfileScreen";
+import TvInsightScreen from "../screens/TvInsightScreen/TvInsightScreen";
+import EditTvProfileScreen from "../screens/EditTvProfileScreen/EditTvProfileScreen";
+import StoreGetStartedScreen from "../screens/StoreGetStartedScreen/StoreGetStartedScreen";
+import { useSelector } from "react-redux";
 
 const BottomTab = createBottomTabNavigator();
 
 export default function BottomTabNavigator() {
+  const currentUser = useSelector((state) => state.user.currentUser);
   const colorScheme = useColorScheme();
+  firebase
+    .database()
+    .ref(".info/connected")
+    .on("value", (snap) => {
+      if (snap.val() === true) {
+        const ref = firebase.database().ref("presence").child(currentUser.id);
+        ref.set({ status: true });
+        ref.onDisconnect().remove((err) => {
+          if (err !== null) {
+            console.log(err);
+          }
+        });
+      }
+    });
   function getTabBarVisible(route) {
     const routeName = getFocusedRouteNameFromRoute(route);
     switch (routeName) {
@@ -54,6 +75,21 @@ export default function BottomTabNavigator() {
         return false;
         break;
       case "ReportBugScreen":
+        return false;
+        break;
+      case "TvGetStartedScreen":
+        return false;
+        break;
+      case "StoreGetStartedScreen":
+        return false;
+        break;
+      case "TvProfileScreen":
+        return false;
+        break;
+      case "EditTvProfileScreen":
+        return false;
+        break;
+      case "TvInsightScreen":
         return false;
         break;
       default:
@@ -165,9 +201,30 @@ function HomeScreenNavigator() {
           headerShown: false,
         }}
       />
+      <ScreenStack.Screen
+        name="TvProfileScreen"
+        component={TvProfileScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <ScreenStack.Screen
+        name="TvInsightScreen"
+        component={TvInsightScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
       <HomeScreenStack.Screen
         name="EditProfileScreen"
         component={EditProfileScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <HomeScreenStack.Screen
+        name="EditTvProfileScreen"
+        component={EditTvProfileScreen}
         options={{
           headerShown: false,
         }}
@@ -298,6 +355,41 @@ function SettingsScreenNavigator() {
       <ScreenStack.Screen
         name="ReportBugScreen"
         component={ReportBugScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <ScreenStack.Screen
+        name="TvGetStartedScreen"
+        component={TvGetStartedScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <ScreenStack.Screen
+        name="StoreGetStartedScreen"
+        component={StoreGetStartedScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <ScreenStack.Screen
+        name="TvProfileScreen"
+        component={TvProfileScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <ScreenStack.Screen
+        name="TvInsightScreen"
+        component={TvInsightScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <HomeScreenStack.Screen
+        name="EditTvProfileScreen"
+        component={EditTvProfileScreen}
         options={{
           headerShown: false,
         }}

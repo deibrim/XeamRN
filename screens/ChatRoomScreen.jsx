@@ -1,21 +1,29 @@
-import { MaterialCommunityIcons, Ionicons } from "@expo/vector-icons";
+import {
+  AntDesign,
+  Feather,
+  MaterialCommunityIcons,
+  Ionicons,
+} from "@expo/vector-icons";
 import { useRoute, useNavigation } from "@react-navigation/native";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import {
   FlatList,
   Text,
   View,
+  Image,
   ImageBackground,
   StyleSheet,
   ScrollView,
   TouchableWithoutFeedback,
+  TouchableOpacity,
 } from "react-native";
-import firebase, { firestore } from "../firebase/firebase.utils";
+import firebase from "../firebase/firebase.utils";
 import { setUserPosts } from "../redux/chat/actions";
 import ChatMessage from "../components/ChatMessage";
 import InputBox from "../components/InputBox";
-
+import CustomInput from "../components/CustomInput/CustomInput";
+let flatListRef;
 const ChatRoomScreen = () => {
   const route = useRoute();
   const navigation = useNavigation();
@@ -35,11 +43,16 @@ const ChatRoomScreen = () => {
   const [messagesLoading, setMessagesLoading] = useState(true);
   const [isChannelStarred, setIsChannelStarred] = useState(false);
   const [numUniqueUsers, setNumUniqueUsers] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
   const [typingUsers, setTypingUsers] = useState([]);
+  const [typing, setTyping] = useState(false);
   const [listeners, setListeners] = useState([]);
+  const [scrollToBottom, setScrollToBottom] = useState(false);
+  const [index, setIndex] = useState(messages.length);
+  const [showMore, setShowMore] = useState(false);
+  const [searching, setSearching] = useState(false);
+  const [query, setQuery] = useState("");
 
   const onClick = () => {
     navigation.goBack();
@@ -100,6 +113,10 @@ const ChatRoomScreen = () => {
     let typingUsers = [];
     typingRef.child(channelId).on("child_added", (snap) => {
       if (snap.key !== user.id) {
+        if (snap.val() === route.params.username && privateChannel) {
+          setTyping(true);
+          return;
+        }
         typingUsers = typingUsers.concat({
           id: snap.key,
           name: snap.val(),
@@ -137,7 +154,11 @@ const ChatRoomScreen = () => {
     let loadedMessages = [];
     const ref = getMessagesRef();
     ref.child(channelId).on("child_added", (snap) => {
-      loadedMessages.push(snap.val());
+      const transformed = {
+        ...snap.val(),
+        key: snap.key,
+      };
+      loadedMessages.push(transformed);
       setMessages(loadedMessages);
       setMessagesLoading(false);
       countUniqueUsers(loadedMessages);
@@ -193,15 +214,9 @@ const ChatRoomScreen = () => {
     }
   }
 
-  function handleSearchChange(event) {
-    setSearchTerm(event.target.value);
-    setSearchLoading(true);
-    handleSearchMessages();
-  }
-
   function handleSearchMessages() {
     const channelMessages = [...messages];
-    const regex = new RegExp(searchTerm, "gi");
+    const regex = new RegExp(query, "gi");
     const searchResults = channelMessages.reduce((acc, message) => {
       if (
         (message.content && message.content.match(regex)) ||
@@ -242,7 +257,9 @@ const ChatRoomScreen = () => {
   }
 
   function displayChannelName(channel) {
-    return channel ? `${privateChannel ? "" : ""}${channel.name}` : "";
+    return channel
+      ? `${privateChannel ? "" : ""}${channel.name.split(" ")[0]}`
+      : "";
   }
 
   const displayTypingUsers = (users) =>
@@ -292,37 +309,54 @@ const ChatRoomScreen = () => {
         break;
     }
   };
+  const onScrollToBottom = (index) => {
+    console.log("====================================");
+    console.log(flatListRef.getNativeScrollRef());
+    console.log("====================================");
+  };
+  const onScroll = () => {
+    if (index === messages.length) {
+      setScrollToBottom(false);
+    }
+    setScrollToBottom(true);
+  };
   return (
     <>
       <View style={styles.header}>
         <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <TouchableWithoutFeedback onPress={onClick}>
+          <TouchableOpacity
+            onPress={onClick}
+            style={{ flexDirection: "row", alignItems: "center" }}
+          >
             <Ionicons name="ios-arrow-back" size={24} color="black" />
-          </TouchableWithoutFeedback>
-          <View>
-            <Text
-              style={{
-                color: "#42414C",
-                fontSize: 20,
-                marginLeft: 10,
-                marginBottom: 1,
-              }}
-            >
-              {displayChannelName(channel)}
-            </Text>
-            {typingUsers.length !== 0 && (
+            <View>
               <Text
                 style={{
                   color: "#42414C",
-                  fontSize: 12,
+                  fontSize: 16,
                   marginLeft: 10,
                   marginBottom: 1,
                 }}
               >
-                {displayTypingUsers(typingUsers)}
+                {displayChannelName(channel)}
               </Text>
-            )}
-          </View>
+              {typingUsers.length !== 0 && (
+                <Text
+                  style={{
+                    color: "#42414C",
+                    fontSize: 12,
+                    marginLeft: 10,
+                    marginBottom: 1,
+                  }}
+                >
+                  {displayTypingUsers(typingUsers)}
+                </Text>
+              )}
+              {typing ? (
+                <Text style={{ marginLeft: 12, color: "gray" }}>typing...</Text>
+              ) : null}
+            </View>
+          </TouchableOpacity>
         </View>
         <View
           style={{
@@ -330,19 +364,37 @@ const ChatRoomScreen = () => {
             justifyContent: "space-between",
           }}
         >
-          <MaterialCommunityIcons
-            name="dots-vertical"
-            size={22}
-            color={"black"}
-          />
+          <TouchableOpacity onPress={() => setShowMore(!showMore)}>
+            <MaterialCommunityIcons
+              name="dots-vertical"
+              size={22}
+              color={"black"}
+            />
+          </TouchableOpacity>
         </View>
       </View>
       <ImageBackground style={{ flex: 1 }} source={chatBGPicker()}>
         <FlatList
-          data={messages}
-          renderItem={({ item }) => <ChatMessage message={item} />}
+          data={query ? searchResults : messages}
+          ref={async (ref) => {
+            flatListRef = ref;
+          }}
+          renderItem={({ item }) => (
+            <ChatMessage
+              message={item}
+              messageRef={getMessagesRef}
+              channelId={channel.id}
+            />
+          )}
           keyExtractor={(item, index) => index.toString()}
+          onEndReached={() => {
+            setScrollToBottom(false);
+          }}
+          onEndReachedThreshold={() => {
+            setScrollToBottom(false);
+          }}
           extraData={messages}
+          onScroll={onScroll}
         />
       </ImageBackground>
 
@@ -353,11 +405,113 @@ const ChatRoomScreen = () => {
         currentUser={user}
         isPrivateChannel={privateChannel}
         getMessagesRef={getMessagesRef}
+        endUser={route.params}
       />
+      {scrollToBottom ? (
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity
+            onPress={() => {
+              onScrollToBottom();
+            }}
+          >
+            <View style={styles.button}>
+              <Feather name="chevrons-down" size={20} color="white" />
+            </View>
+          </TouchableOpacity>
+        </View>
+      ) : null}
+      {showMore ? (
+        <TouchableWithoutFeedback
+          onPress={() => {
+            setShowMore(false);
+          }}
+        >
+          <View style={{ ...styles.moreModalContainer, bottom: 0 }}>
+            <View style={styles.modalContainer}>
+              <TouchableOpacity
+                style={styles.modalTextButton}
+                onPress={() => {
+                  setSearching(true);
+                  setShowMore(false);
+                }}
+              >
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                  <Feather
+                    name="search"
+                    size={18}
+                    color="black"
+                    style={{ marginRight: 10 }}
+                  />
+                  <Text style={styles.modalText}>Search</Text>
+                </View>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </TouchableWithoutFeedback>
+      ) : null}
+      {searching ? (
+        <View
+          style={{
+            ...styles.moreModalContainer,
+            alignItems: "flex-start",
+            backgroundColor: "transparent",
+            paddingTop: 35,
+            flexDirection: "row",
+            paddingRight: 20,
+          }}
+        >
+          <CustomInput
+            onChange={(e) => {
+              setQuery(e);
+              setSearchLoading(true);
+              handleSearchMessages();
+            }}
+            value={query}
+            placeholder={"Search message"}
+            icon={
+              searchLoading ? (
+                <Image
+                  style={{ marginLeft: 5, width: 18, height: 18 }}
+                  source={require("../assets/loader.gif")}
+                />
+              ) : (
+                <Feather name="search" size={18} color="black" />
+              )
+            }
+            iStyle={{ padding: 0, height: 40, paddingLeft: 10 }}
+            cStyle={{ paddingLeft: 10, height: 40, margin: 0, flex: 1 }}
+          />
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <TouchableOpacity
+              style={{
+                alignItems: "center",
+                justifyContent: "center",
+                width: 25,
+                height: 25,
+                borderRadius: 20,
+                elevation: 2,
+                marginTop: 10,
+                backgroundColor: "#ff4747",
+              }}
+              onPress={() => {
+                setSearching(false);
+              }}
+            >
+              <AntDesign name="close" size={18} color="#ffffff" />
+            </TouchableOpacity>
+          </View>
+        </View>
+      ) : null}
     </>
   );
 };
-
+// const scrollToEnd = (index) => {
+//   console.log("====================================");
+//   console.log(flatListRef);
+//   console.log("====================================");
+//   // flatListRef.scrollToEnd();
+// };
+// scrollToEnd();
 const styles = StyleSheet.create({
   container: {},
   header: {
@@ -379,6 +533,56 @@ const styles = StyleSheet.create({
     marginVertical: 30,
     height: 1,
     width: "80%",
+  },
+  buttonContainer: {
+    position: "absolute",
+    bottom: 80,
+    right: 15,
+    // zIndex: 99,
+  },
+  button: {
+    flexDirection: "row",
+    backgroundColor: "#006eff",
+    elevation: 2,
+    alignItems: "center",
+    justifyContent: "center",
+    height: 35,
+    width: 35,
+    borderRadius: 20,
+  },
+  moreModalContainer: {
+    position: "absolute",
+    zIndex: 5,
+    top: 0,
+    right: 0,
+    left: 0,
+    alignItems: "flex-end",
+    backgroundColor: "transparent",
+    paddingTop: 85,
+  },
+  modalContainer: {
+    alignItems: "center",
+    minHeight: 20,
+    minWidth: 150,
+    maxWidth: 150,
+    justifyContent: "center",
+    padding: 10,
+    borderRadius: 10,
+    elevation: 2,
+    backgroundColor: "#ffffff",
+    elevation: 4,
+  },
+  modalTextButton: {
+    flexDirection: "row",
+    marginVertical: 3,
+    paddingVertical: 5,
+    // borderBottomColor: "#999999",
+    // borderBottomWidth: 0.5,
+  },
+  modalText: {
+    color: "#111111",
+    fontWeight: "600",
+    fontSize: 14,
   },
 });
 

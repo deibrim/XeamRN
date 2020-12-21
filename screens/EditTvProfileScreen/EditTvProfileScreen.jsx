@@ -31,18 +31,21 @@ const wait = (timeout) => {
     setTimeout(resolve, timeout);
   });
 };
-const TvGetStartedScreen = () => {
+const EditTvProfileScreen = () => {
   const user = useSelector((state) => state.user.currentUser);
+  const tvProfile = useSelector((state) => state.user.currentUserTvProfile);
   const dispatch = useDispatch();
   const navigation = useNavigation();
-  const [modalVisible, setModalVisible] = useState(true);
   const [loading, setLoading] = useState(false);
-  const [tvCreated, setTvCreated] = useState(false);
-  const [image, setImage] = useState(null);
-  const [tvHandle, setTvHandle] = useState(user.username || "");
-  const [description, setDescription] = useState("");
-  const [website, setWebsite] = useState(user.website || "");
-  const [uploading, setUploading] = useState(false);
+  const [tvUpdated, setTvUpdated] = useState(false);
+  const [logo] = useState(tvProfile.logo);
+  const [image, setImage] = useState(tvProfile.logo);
+  const [tvHandle, setTvHandle] = useState(
+    tvProfile.tvHandle.substring(0, tvProfile.tvHandle.length - 3)
+  );
+  const [description, setDescription] = useState(tvProfile.description);
+  const [website, setWebsite] = useState(tvProfile.website || "");
+  const [uploading, setUploading] = useState("");
   const [uploadingPercentage, setUploadingPercentage] = useState(0);
   const [errorMessage, setErrorMessage] = useState("");
   const [index, setIndex] = useState(0);
@@ -70,7 +73,7 @@ const TvGetStartedScreen = () => {
     });
     if (!result.cancelled) {
       setImage(await result.uri);
-      // setImage(result.uri);
+      uploadLogoToStorage();
     }
   };
 
@@ -83,21 +86,17 @@ const TvGetStartedScreen = () => {
     setIndex(index);
     flatListRef.scrollEnabled = false;
   };
-  const onTvCreated = useCallback(() => {
-    setTvCreated(true);
+  const onTvUpdated = useCallback(() => {
+    setTvUpdated(true);
     wait(2000).then(async () => {
       const userRef = firestore.doc(`xeamTvs/${user.id}`);
       const snapShot = await userRef.get();
       dispatch(setCurrentUserTvProfile({ ...snapShot.data() }));
-      const resetAction = navigation.reset({
-        index: 0,
-        actions: [navigation.navigate("TvProfileScreen")],
-      });
-      navigation.dispatch(resetAction);
-      setTvCreated(false);
+      navigation.navigate("TvProfileScreen");
+      setTvUpdated(false);
     });
   }, []);
-  const uploadLogoToStorage = async () => {
+  async function uploadLogoToStorage() {
     const response = await fetch(image);
     const blob = await response.blob();
     const storageRef = firebase.storage().ref(`tv/${user.id}/tv_logo`);
@@ -123,36 +122,32 @@ const TvGetStartedScreen = () => {
       () => {
         uploadTask.snapshot.ref.getDownloadURL().then(async (downloadURL) => {
           setImage(downloadURL);
-          setUploading(" Creating profile...");
-          const tvData = {
-            id: user.id,
-            tvHandle: `${tvHandle.toLowerCase()}.tv`,
-            description,
-            logo: downloadURL,
-            website: website.toLowerCase(),
-            tvOwnerName: user.name,
-            tvOwnerUsername: user.username,
-          };
-
-          firestore.collection("xeamTvs").doc(user.id).set(tvData);
-          const userRef = firestore.doc(`users/${user.id}`);
-          await userRef.update({ isTvActivated: true });
+          setUploading(" Finish uploading logo");
           setLoading(false);
-          onTvCreated();
+          onTvUpdated();
         });
       }
     );
-  };
-  const onCreateTv = async () => {
-    setLoading(true);
-
+  }
+  const onUpdateTv = async () => {
+    setErrorMessage("");
     try {
-      uploadLogoToStorage();
+      const tvData = {
+        tvHandle: `${tvHandle.toLowerCase()}.tv`,
+        description,
+        logo: image,
+        website: website.toLowerCase(),
+        tvOwnerUsername: user.username,
+      };
+
+      firestore.collection("xeamTvs").doc(user.id).update(tvData);
+      setLoading(false);
+      onTvUpdated();
     } catch (e) {
       console.error(e);
     }
   };
-  const checkTvHandleAndCreateProfile = async () => {
+  const checkTvHandleAndUpdateProfile = async () => {
     if (tvHandle.trim() === "") {
       setErrorMessage("Tv Handle is required");
       return;
@@ -163,17 +158,26 @@ const TvGetStartedScreen = () => {
       setErrorMessage("Tv Logo is required");
       return;
     }
+    setLoading(true);
     setErrorMessage("");
     const tvsRef = await firestore
-      .collection("tvs")
-      .where("tvHandle", "==", `${tvHandle.toLowerCase()}`);
+      .collection("xeamTvs")
+      .where("tvHandle", "==", `${tvHandle.toLowerCase()}.tv`);
     const snapshot = await tvsRef.get();
-    if (snapshot.docs.length > 0) {
-      setErrorMessage("TvHandle already existed");
-      setLoading(false);
+
+    if (!snapshot.empty) {
+      const isExisted = snapshot.docs.filter((doc) => {
+        return doc.data().id === tvProfile.id && doc.data();
+      });
+      if (isExisted.length === 0) {
+        setErrorMessage("TvHandle already existed");
+        setLoading(false);
+        return;
+      }
+      onUpdateTv();
       return;
     }
-    onCreateTv();
+    onUpdateTv();
   };
 
   const Procedure = [
@@ -234,7 +238,7 @@ const TvGetStartedScreen = () => {
     />,
   ];
 
-  return tvCreated ? (
+  return tvUpdated ? (
     <View
       style={{
         minHeight: 200,
@@ -261,30 +265,28 @@ const TvGetStartedScreen = () => {
     </View>
   ) : (
     <>
-      <TvGetStartedModal
-        modalVisible={modalVisible}
-        setModalVisible={setModalVisible}
-      />
       <View style={styles.header}>
         <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <TouchableOpacity
-            style={{
-              alignItems: "center",
-              justifyContent: "center",
-              width: 30,
-              height: 30,
-              borderRadius: 20,
-              elevation: 2,
-              backgroundColor: "#ff4747",
-            }}
-            onPress={() => {
-              navigation.goBack();
-            }}
-          >
-            <AntDesign name="close" size={20} color="#ffffff" />
-          </TouchableOpacity>
+          {!loading && (
+            <TouchableOpacity
+              style={{
+                alignItems: "center",
+                justifyContent: "center",
+                width: 30,
+                height: 30,
+                borderRadius: 20,
+                elevation: 2,
+                backgroundColor: "#ff4747",
+              }}
+              onPress={() => {
+                navigation.goBack();
+              }}
+            >
+              <AntDesign name="close" size={20} color="#ffffff" />
+            </TouchableOpacity>
+          )}
         </View>
-        <Text style={{ ...styles.title, fontSize: 14 }}>Setup Tv Profile</Text>
+        <Text style={{ ...styles.title, fontSize: 14 }}>Update Tv Profile</Text>
       </View>
       <View
         style={{
@@ -315,6 +317,19 @@ const TvGetStartedScreen = () => {
               customTextStyles={{ color: "#ffffff", textAlign: "center" }}
             />
           ) : null}
+          {uploading.trim() !== "" ? (
+            <CustomPopUp
+              message={`${uploadingPercentage}%`}
+              type={"warning"}
+              customStyles={{
+                backgroundColor: "yellow",
+                borderRadius: 30,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+              customTextStyles={{ color: "#ffffff", textAlign: "center" }}
+            />
+          ) : null}
         </View>
         {loading && (
           <View
@@ -331,14 +346,11 @@ const TvGetStartedScreen = () => {
               alignItems: "center",
               backgroundColor: "#000",
               opacity: 0.6,
-              zIndex: 999999999999999999,
+              zIndex: 1,
             }}
           >
             <Text style={{ color: "#ffffff", fontSize: 18, marginBottom: 20 }}>
-              {uploading}
-            </Text>
-            <Text style={{ color: "#ffffff", fontSize: 18, marginBottom: 20 }}>
-              {uploadingPercentage}%
+              Updating Profile...
             </Text>
             <Image
               style={{ marginLeft: 5, width: 40, height: 40 }}
@@ -401,7 +413,9 @@ const TvGetStartedScreen = () => {
             } else if (index == 2) {
               scrollToIndex(3);
             } else {
-              checkTvHandleAndCreateProfile();
+              uploading
+                ? setErrorMessage(`Can't update while uploading logo`)
+                : checkTvHandleAndUpdateProfile();
             }
           }}
         >
@@ -419,7 +433,7 @@ const TvGetStartedScreen = () => {
                   : { ...styles.buttonText }
               }
             >
-              {index >= 3 ? "Create Tv" : "Next"}
+              {index >= 3 ? "Update Tv" : "Next"}
             </Text>
             {index < 3 && (
               <Ionicons name="ios-arrow-forward" size={20} color="black" />
@@ -431,4 +445,4 @@ const TvGetStartedScreen = () => {
   );
 };
 
-export default TvGetStartedScreen;
+export default EditTvProfileScreen;

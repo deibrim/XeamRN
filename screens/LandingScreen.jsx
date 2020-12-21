@@ -7,7 +7,7 @@ const LandingScreen = (props) => {
     <View style={styles.container}>
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <Image
-          source={require("../assets/images/xlogo.png")}
+          source={require("../assets/images/logot.png")}
           resizeMode={"contain"}
           style={{ width: 150 }}
         />
@@ -24,7 +24,7 @@ const LandingScreen = (props) => {
           onPress={() => {
             props.navigation.navigate("Login");
           }}
-          textStyle={{ color: "#111111" }}
+          textStyle={{ color: "#006eff" }}
           title="LOGIN"
           customStyle={{ ...styles.btn, ...styles.login }}
         />
@@ -59,6 +59,8 @@ const styles = StyleSheet.create({
     height: 50,
     width: "80%",
     backgroundColor: "#ffffff",
+    borderWidth: 0.5,
+    borderColor: "#006eff",
   },
 });
 

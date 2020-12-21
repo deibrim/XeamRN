@@ -20,26 +20,33 @@ import * as ImagePicker from "expo-image-picker";
 import Constants from "expo-constants";
 import { useSelector, useDispatch } from "react-redux";
 import firebase, { firestore } from "../../firebase/firebase.utils";
-import TvGetStartedModal from "../../components/TvGetStartedModal/TvGetStartedModal";
-import { styles } from "./styles";
+import StoreGetStartedModel from "../../components/StoreGetStartedModel/StoreGetStartedModel";
 import SetupTvInfo from "../../components/SetupTvInfo/SetupTvInfo";
 import CustomPopUp from "../../components/CustomPopUp/CustomPopUp";
 import { setCurrentUserTvProfile } from "../../redux/user/actions";
+import { styles } from "./styles";
 
 const wait = (timeout) => {
   return new Promise((resolve) => {
     setTimeout(resolve, timeout);
   });
 };
-const TvGetStartedScreen = () => {
+{
+  /* stars.map(arr => {
+      const ratings = arr.map(v => v.value)
+      return ratings.length ? ratings.reduce((total, val) => total + val) / arr.length : 'not reviewed'
+    })
+  } */
+}
+const StoreGetStartedScreen = () => {
   const user = useSelector((state) => state.user.currentUser);
   const dispatch = useDispatch();
   const navigation = useNavigation();
   const [modalVisible, setModalVisible] = useState(true);
   const [loading, setLoading] = useState(false);
-  const [tvCreated, setTvCreated] = useState(false);
+  const [storeCreated, setStoreCreated] = useState(false);
   const [image, setImage] = useState(null);
-  const [tvHandle, setTvHandle] = useState(user.username || "");
+  const [storeHandle, setStoreHandle] = useState(user.username || "");
   const [description, setDescription] = useState("");
   const [website, setWebsite] = useState(user.website || "");
   const [uploading, setUploading] = useState(false);
@@ -83,10 +90,10 @@ const TvGetStartedScreen = () => {
     setIndex(index);
     flatListRef.scrollEnabled = false;
   };
-  const onTvCreated = useCallback(() => {
-    setTvCreated(true);
+  const onStoreCreated = useCallback(() => {
+    setStoreCreated(true);
     wait(2000).then(async () => {
-      const userRef = firestore.doc(`xeamTvs/${user.id}`);
+      const userRef = firestore.doc(`stores/${user.id}`);
       const snapShot = await userRef.get();
       dispatch(setCurrentUserTvProfile({ ...snapShot.data() }));
       const resetAction = navigation.reset({
@@ -94,7 +101,7 @@ const TvGetStartedScreen = () => {
         actions: [navigation.navigate("TvProfileScreen")],
       });
       navigation.dispatch(resetAction);
-      setTvCreated(false);
+      setStoreCreated(false);
     });
   }, []);
   const uploadLogoToStorage = async () => {
@@ -124,9 +131,9 @@ const TvGetStartedScreen = () => {
         uploadTask.snapshot.ref.getDownloadURL().then(async (downloadURL) => {
           setImage(downloadURL);
           setUploading(" Creating profile...");
-          const tvData = {
+          const storeData = {
             id: user.id,
-            tvHandle: `${tvHandle.toLowerCase()}.tv`,
+            storeHandle: `${storeHandle.toLowerCase()}.tv`,
             description,
             logo: downloadURL,
             website: website.toLowerCase(),
@@ -134,11 +141,11 @@ const TvGetStartedScreen = () => {
             tvOwnerUsername: user.username,
           };
 
-          firestore.collection("xeamTvs").doc(user.id).set(tvData);
+          firestore.collection("stores").doc(user.id).set(storeData);
           const userRef = firestore.doc(`users/${user.id}`);
-          await userRef.update({ isTvActivated: true });
+          await userRef.update({ isBusinessAccount: true });
           setLoading(false);
-          onTvCreated();
+          onStoreCreated();
         });
       }
     );
@@ -152,24 +159,24 @@ const TvGetStartedScreen = () => {
       console.error(e);
     }
   };
-  const checkTvHandleAndCreateProfile = async () => {
-    if (tvHandle.trim() === "") {
-      setErrorMessage("Tv Handle is required");
+  const checkStoreHandleAndCreateStore = async () => {
+    if (storeHandle.trim() === "") {
+      setErrorMessage("Store name is required");
       return;
     } else if (description.trim() === "") {
       setErrorMessage("Tv Description is required");
       return;
     } else if (image.trim() === "") {
-      setErrorMessage("Tv Logo is required");
+      setErrorMessage("Store Logo is required");
       return;
     }
     setErrorMessage("");
     const tvsRef = await firestore
-      .collection("tvs")
-      .where("tvHandle", "==", `${tvHandle.toLowerCase()}`);
+      .collection("stores")
+      .where("storeHandle", "==", `${storeHandle.toLowerCase()}`);
     const snapshot = await tvsRef.get();
     if (snapshot.docs.length > 0) {
-      setErrorMessage("TvHandle already existed");
+      setErrorMessage("Store name already existed");
       setLoading(false);
       return;
     }
@@ -178,33 +185,33 @@ const TvGetStartedScreen = () => {
 
   const Procedure = [
     <SetupTvInfo
-      value={tvHandle}
-      onChangeText={setTvHandle}
-      placeholder={"Tv handle"}
+      value={storeHandle}
+      onChangeText={setStoreHandle}
+      placeholder={"Store Name"}
       content={{
-        headline: "Tv handle",
-        body: `@${tvHandle.toLowerCase()}.tv`,
+        headline: "Store name",
+        body: `@${storeHandle.toLowerCase()}.store`,
         illustration: <Feather name="at-sign" size={50} color="#666666" />,
       }}
       isImage={false}
       index={0}
       setIndex={setIndex}
     />,
-    <SetupTvInfo
-      value={description}
-      onChangeText={setDescription}
-      placeholder={"Description"}
-      content={{
-        headline: "Tv Description",
-        body: `Give a brief summary of the type of content your viewers should be expecting`,
-        illustration: (
-          <MaterialIcons name="speaker-notes" size={50} color="#666666" />
-        ),
-      }}
-      isImage={false}
-      index={1}
-      setIndex={setIndex}
-    />,
+    // <SetupTvInfo
+    //   value={description}
+    //   onChangeText={setDescription}
+    //   placeholder={"Description"}
+    //   content={{
+    //     headline: "Tv Description",
+    //     body: `Give a brief summary of the type of content your viewers should be expecting`,
+    //     illustration: (
+    //       <MaterialIcons name="speaker-notes" size={50} color="#666666" />
+    //     ),
+    //   }}
+    //   isImage={false}
+    //   index={1}
+    //   setIndex={setIndex}
+    // />,
     <SetupTvInfo
       value={website}
       onChangeText={setWebsite}
@@ -225,7 +232,7 @@ const TvGetStartedScreen = () => {
       onPress={pickImage}
       placeholder={"Url"}
       content={{
-        headline: "Tv Logo",
+        headline: "Store Logo",
         body: `You can explain so much with a descriptive logo`,
       }}
       isImage={true}
@@ -234,7 +241,7 @@ const TvGetStartedScreen = () => {
     />,
   ];
 
-  return tvCreated ? (
+  return storeCreated ? (
     <View
       style={{
         minHeight: 200,
@@ -261,7 +268,7 @@ const TvGetStartedScreen = () => {
     </View>
   ) : (
     <>
-      <TvGetStartedModal
+      <StoreGetStartedModel
         modalVisible={modalVisible}
         setModalVisible={setModalVisible}
       />
@@ -284,7 +291,9 @@ const TvGetStartedScreen = () => {
             <AntDesign name="close" size={20} color="#ffffff" />
           </TouchableOpacity>
         </View>
-        <Text style={{ ...styles.title, fontSize: 14 }}>Setup Tv Profile</Text>
+        <Text style={{ ...styles.title, fontSize: 14 }}>
+          Setup XStore Profile
+        </Text>
       </View>
       <View
         style={{
@@ -398,10 +407,8 @@ const TvGetStartedScreen = () => {
               scrollToIndex(1);
             } else if (index == 1) {
               scrollToIndex(2);
-            } else if (index == 2) {
-              scrollToIndex(3);
             } else {
-              checkTvHandleAndCreateProfile();
+              checkStoreHandleAndCreateStore();
             }
           }}
         >
@@ -419,7 +426,7 @@ const TvGetStartedScreen = () => {
                   : { ...styles.buttonText }
               }
             >
-              {index >= 3 ? "Create Tv" : "Next"}
+              {index >= 3 ? "Create Store" : "Next"}
             </Text>
             {index < 3 && (
               <Ionicons name="ios-arrow-forward" size={20} color="black" />
@@ -431,4 +438,4 @@ const TvGetStartedScreen = () => {
   );
 };
 
-export default TvGetStartedScreen;
+export default StoreGetStartedScreen;

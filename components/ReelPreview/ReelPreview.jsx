@@ -25,6 +25,11 @@ export default function ReelPreview(props) {
         }
       >
         <View style={styles.reelCard}>
+          {/* <Image
+            source={{ uri: videoUri }}
+            style={styles.reelCardImage}
+            resizeMode={"cover"}
+          /> */}
           <Video
             source={{ uri: videoUri }}
             style={styles.reelCardImage}

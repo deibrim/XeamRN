@@ -1,82 +1,72 @@
-import {
-  AntDesign,
-  Entypo,
-  Feather,
-  FontAwesome5,
-  Ionicons,
-  MaterialCommunityIcons,
-} from "@expo/vector-icons";
+import { AntDesign, Ionicons, Fontisto } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
-import { StyleSheet, Image, TouchableOpacity, ScrollView } from "react-native";
+import {
+  Text,
+  View,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  ScrollView,
+} from "react-native";
 import { useSelector, useDispatch } from "react-redux";
-import { Text, View } from "../components/Themed";
-import { firestore } from "../firebase/firebase.utils";
+import { firestore, auth } from "../../firebase/firebase.utils";
 import { useNavigation } from "@react-navigation/native";
-import { auth } from "../firebase/firebase.utils";
-import { setCurrentUser, setCurrentUserTvProfile } from "../redux/user/actions";
-import { setMyReels } from "../redux/reel/actions";
-import ReelPreview from "../components/ReelPreview/ReelPreview";
+// import { setCurrentUser } from "../../redux/user/actions";
+import { setTvReels } from "../../redux/reel/actions";
+import ReelPreview from "../../components/ReelPreview/ReelPreview";
 
-export default function ProfileScreen() {
+export default function TvProfileScreen() {
   const user = useSelector((state) => state.user.currentUser);
-  const reels = useSelector((state) => state.reel.myReels);
-  const savedReels = useSelector((state) => state.save.posts);
+  const tvProfile = useSelector((state) => state.user.currentUserTvProfile);
+  const reels = useSelector((state) => state.reel.tvReels);
   const [followerCount, setFollowerCount] = useState(0);
-  const [followingCount, setFollowingCount] = useState(0);
   const [focused, setFocused] = useState("reels");
   const [loading, setLoading] = useState(false);
   const [loadingReels, setLoadingReels] = useState(false);
   const dispatch = useDispatch();
   const navigation = useNavigation();
   useEffect(() => {
-    getFollowers(user.id);
-    getFollowing(user.id);
-    getUserReels(user.id);
+    getFollowers(tvProfile.id);
+    getTvReels(tvProfile.id);
   }, []);
-  function getUserReels(userId) {
+  function getTvReels(tvProfileId) {
     setLoadingReels(true);
     const reelRef = firestore
-      .collection("reels")
-      .doc(`${userId}`)
-      .collection("userReels");
+      .collection("tvReels")
+      .doc(`${tvProfileId}`)
+      .collection("reels");
     reelRef.onSnapshot((snapshot) => {
+      if (snapshot.empty) {
+        setLoadingReels(false);
+      }
       const reelsArr = [];
       snapshot.docs.forEach((doc) => {
         reelsArr.push(doc.data());
       });
-      // setReels(reelsArr);
-      dispatch(setMyReels(reelsArr));
+      dispatch(setTvReels(reelsArr));
       setLoadingReels(false);
     });
   }
-  async function getFollowers(userId) {
+  async function getFollowers(tvProfileId) {
     setLoading(true);
     const snapshot = await firestore
+      .collection("tvFollowers")
+      .doc(tvProfileId)
       .collection("followers")
-      .doc(userId)
-      .collection("userFollowers")
       .get();
+
     !snapshot.empty
-      ? setFollowerCount(snapshot.docs.length - 1)
+      ? setFollowerCount(snapshot.docs.length)
       : setFollowerCount(0);
-  }
-  async function getFollowing(userId) {
-    const snapshot = await firestore
-      .collection("following")
-      .doc(userId)
-      .collection("userFollowing")
-      .get();
-    setFollowingCount(snapshot.docs.length);
     setLoading(false);
   }
   const onClick = () => {
     navigation.goBack();
   };
-  const handleSignout = () => {
-    auth.signOut();
-    dispatch(setCurrentUser(null));
-    dispatch(setCurrentUserTvProfile(null));
-  };
+  //   const handleSignout = () => {
+  //     auth.signOut();
+  //     dispatch(setCurrentUser(null));
+  //   };
   return (
     <>
       <View style={styles.header}>
@@ -84,24 +74,36 @@ export default function ProfileScreen() {
           <TouchableOpacity onPress={onClick}>
             <View style={{ flexDirection: "row", alignItems: "center" }}>
               <Ionicons name="ios-arrow-back" size={24} color="black" />
-              <Text style={styles.title}>Profile</Text>
+              <Text style={styles.title}>{tvProfile.tvHandle}</Text>
             </View>
           </TouchableOpacity>
         </View>
         <View
           style={{
             flexDirection: "row",
-            width: 70,
-            justifyContent: "space-between",
+            // width: 70,
+            justifyContent: "flex-end",
           }}
         >
-          <TouchableOpacity
+          {/* <TouchableOpacity
             onPress={() => navigation.navigate("EditProfileScreen")}
           >
             <AntDesign name="edit" size={20} color="black" />
+          </TouchableOpacity> */}
+          <TouchableOpacity onPress={() => {}}>
+            <Fontisto name="star" size={15} color="#006eff" />
           </TouchableOpacity>
-          <TouchableOpacity onPress={handleSignout}>
-            <AntDesign name="logout" size={20} color="red" />
+          <TouchableOpacity onPress={() => {}}>
+            <Fontisto name="star" size={15} color="#006eff" />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => {}}>
+            <Fontisto name="star" size={15} color="#006eff" />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => {}}>
+            <Fontisto name="star" size={15} color="#999999" />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => {}}>
+            <Fontisto name="star" size={15} color="#999999" />
           </TouchableOpacity>
         </View>
       </View>
@@ -118,7 +120,7 @@ export default function ProfileScreen() {
         >
           <Image
             style={{ marginLeft: 5, width: 30, height: 30 }}
-            source={require("../assets/loader.gif")}
+            source={require("../../assets/loader.gif")}
           />
         </View>
       ) : (
@@ -126,40 +128,93 @@ export default function ProfileScreen() {
           <View style={styles.userPreview}>
             <View
               style={{
-                width: "40%",
-                backgroundColor: "#006aff",
-                padding: 10,
-                borderTopRightRadius: 100,
-                borderBottomRightRadius: 100,
                 flexDirection: "row",
-                justifyContent: "flex-end",
-                marginVertical: 40,
+                justifyContent: "space-evenly",
+                alignItems: "center",
+                width: "100%",
               }}
             >
-              <Image
+              <View>
+                <Text
+                  style={{ textAlign: "center", marginTop: 5, fontSize: 16 }}
+                >
+                  Likes
+                </Text>
+                <Text
+                  style={{
+                    textAlign: "center",
+                    marginTop: 5,
+                    fontSize: 16,
+                    fontWeight: "bold",
+                  }}
+                >
+                  0
+                </Text>
+              </View>
+              <View
                 style={{
-                  width: 80,
-                  height: 80,
-                  resizeMode: "cover",
-                  borderRadius: 50,
-                  borderWidth: 2,
-                  borderColor: "#fff",
+                  width: "30%",
+                  // backgroundColor: "#006aff",
+                  padding: 10,
+                  borderBottomLeftRadius: 100,
+                  borderBottomRightRadius: 100,
+                  flexDirection: "row",
+                  justifyContent: "center",
                 }}
-                source={{ uri: `${user.profile_pic}` }}
-              />
+              >
+                <Image
+                  style={{
+                    width: 90,
+                    height: 90,
+                    resizeMode: "cover",
+                    borderRadius: 50,
+                    borderWidth: 2,
+                    borderColor: "#fff",
+                  }}
+                  source={{ uri: `${tvProfile.logo}` }}
+                />
+              </View>
+              <View>
+                <Text
+                  style={{ textAlign: "center", marginTop: 5, fontSize: 16 }}
+                >
+                  Views
+                </Text>
+                <Text
+                  style={{
+                    textAlign: "center",
+                    marginTop: 5,
+                    fontSize: 16,
+                    fontWeight: "bold",
+                  }}
+                >
+                  0
+                </Text>
+              </View>
             </View>
             <View style={styles.userInfo}>
               <Text
-                style={{ color: "#42414C", fontSize: 22, fontWeight: "bold" }}
+                style={{
+                  color: "#42414C",
+                  textAlign: "center",
+                  fontSize: 22,
+                  fontWeight: "bold",
+                  marginBottom: 10,
+                }}
               >
-                {user.username || "John Doe"}
+                @{tvProfile.tvHandle}
               </Text>
               <Text
-                style={{ color: "#42414C", fontSize: 16, fontWeight: "500" }}
+                style={{
+                  color: "#42414C",
+                  textAlign: "center",
+                  fontSize: 16,
+                  fontWeight: "500",
+                }}
               >
-                {user.headline || "Software Engineer"}
+                {tvProfile.description}
               </Text>
-              <View
+              {/* <View
                 style={{
                   flexDirection: "row",
                   marginVertical: 5,
@@ -175,7 +230,7 @@ export default function ProfileScreen() {
                 <Text style={{ fontSize: 14, color: "gray" }}>
                   {user.location || "Washington DC"}
                 </Text>
-              </View>
+              </View> */}
             </View>
           </View>
           <View
@@ -184,19 +239,26 @@ export default function ProfileScreen() {
               justifyContent: "space-evenly",
               alignItems: "center",
               paddingHorizontal: 20,
-              marginTop: -10,
+              //   marginTop: -10,
             }}
           >
             <View style={{ alignItems: "center", width: 100 }}>
-              <Text style={{}}>Followers</Text>
-              <Text style={{ fontWeight: "bold" }}>{followerCount}</Text>
+              <Text style={{}}>Posts</Text>
+              <Text style={{ fontWeight: "bold" }}>{reels.length}</Text>
             </View>
             <View
               style={{ height: 50, width: 2, backgroundColor: "#006eff" }}
             ></View>
             <View style={{ alignItems: "center", width: 100 }}>
-              <Text style={{}}>Following</Text>
-              <Text style={{ fontWeight: "bold" }}>{followingCount}</Text>
+              <Text style={{}}>Polls</Text>
+              <Text style={{ fontWeight: "bold" }}>{reels.length}</Text>
+            </View>
+            <View
+              style={{ height: 50, width: 2, backgroundColor: "#006eff" }}
+            ></View>
+            <View style={{ alignItems: "center", width: 100 }}>
+              <Text style={{}}>Followers</Text>
+              <Text style={{ fontWeight: "bold" }}>{followerCount}</Text>
             </View>
           </View>
           <View
@@ -206,8 +268,9 @@ export default function ProfileScreen() {
               alignItems: "center",
               paddingHorizontal: 20,
               marginTop: 20,
-              elevation: 2,
+              height: 60,
               paddingVertical: 15,
+              elevation: 2,
             }}
           >
             <View style={{ alignItems: "center", width: 100 }}>
@@ -219,23 +282,23 @@ export default function ProfileScreen() {
                 )}
               </TouchableOpacity>
             </View>
-            <View style={{ alignItems: "center", width: 100 }}>
-              <TouchableOpacity onPress={() => setFocused("saves")}>
-                {focused === "saves" ? (
+            {/* <View style={{ alignItems: "center", width: 100 }}>
+              <TouchableOpacity onPress={() => setFocused("polls")}>
+                {focused === "polls" ? (
                   <MaterialCommunityIcons
-                    name="bookmark-multiple"
-                    size={25}
+                    name="poll-box"
+                    size={35}
                     color="#006eff"
                   />
                 ) : (
                   <MaterialCommunityIcons
-                    name="bookmark-multiple-outline"
-                    size={25}
+                    name="poll"
+                    size={20}
                     color="#b3b4b6"
                   />
                 )}
               </TouchableOpacity>
-            </View>
+            </View> */}
           </View>
 
           <ScrollView>
@@ -254,7 +317,7 @@ export default function ProfileScreen() {
                   >
                     <Image
                       style={{ marginLeft: 5, width: 30, height: 30 }}
-                      source={require("../assets/loader.gif")}
+                      source={require("../../assets/loader.gif")}
                     />
                   </View>
                 )}
@@ -267,38 +330,25 @@ export default function ProfileScreen() {
                 ))}
               </View>
             )}
-            {focused === "saves" && (
-              <View style={styles.listReels}>
-                {savedReels.map((item, index) => (
-                  <ReelPreview
-                    key={index}
-                    data={{ ...item, index }}
-                    reels={savedReels}
-                  />
-                ))}
-              </View>
-            )}
           </ScrollView>
         </View>
       )}
       <View style={{ ...styles.buttonContainer }}>
-        {user.isTvActivated && (
-          <TouchableOpacity
-            onPress={() => navigation.navigate("TvProfileScreen")}
-          >
-            <View style={styles.button}>
-              <Feather name="tv" size={20} color="white" />
-            </View>
-          </TouchableOpacity>
-        )}
+        <TouchableOpacity
+          onPress={() => navigation.navigate("EditTvProfileScreen")}
+        >
+          <View style={styles.button}>
+            <AntDesign name="edit" size={20} color="white" />
+          </View>
+        </TouchableOpacity>
         <View style={{ marginVertical: 5 }}></View>
-        {user.isBusinessAccount && (
-          <TouchableOpacity onPress={() => {}}>
-            <View style={styles.button}>
-              <FontAwesome5 name="store-alt" size={20} color="white" />
-            </View>
-          </TouchableOpacity>
-        )}
+        <TouchableOpacity
+          onPress={() => navigation.navigate("TvInsightScreen")}
+        >
+          <View style={styles.button}>
+            <Ionicons name="ios-stats" size={20} color="white" />
+          </View>
+        </TouchableOpacity>
       </View>
     </>
   );
@@ -323,10 +373,10 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   userPreview: {
-    flexDirection: "row",
+    // flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingRight: 50,
+    paddingBottom: 30,
   },
   title: {
     color: "#42414C",

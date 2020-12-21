@@ -12,7 +12,7 @@ import { useSelector } from "react-redux";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import ReelPost from "../components/ReelPost/ReelPost";
 
-const ReelScreen = () => {
+const ReelScreen = React.memo(() => {
   const route = useRoute();
   const reels = route.params.reelsArray;
   const navigation = useNavigation();
@@ -109,7 +109,7 @@ const ReelScreen = () => {
       />
     </View>
   );
-};
+});
 
 const styles = StyleSheet.create({
   header: {

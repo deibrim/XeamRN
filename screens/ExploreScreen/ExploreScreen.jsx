@@ -31,17 +31,29 @@ export default function ExploreScreen() {
     wait(2000).then(() => setRefreshing(false));
   }, []);
   const findUser = async (e) => {
+    // const usersRef = firestore
+    //   .collection("users")
+    //   .where("username", ">=", `${query.toLowerCase()}`)
+    //   .orderBy("username", "desc")
+    //   .startAt(query.toLowerCase())
+    //   .endAt(query.toLowerCase() + "\uf8ff");
+    // .orderBy("username", "desc");
     const usersRef = firestore
       .collection("users")
       .where("username", ">=", `${query.toLowerCase()}`)
       .orderBy("username", "desc");
-    usersRef.onSnapshot((snapshot) => {
-      const usersArr = [];
-      snapshot.docs.forEach((doc) => {
-        usersArr.push(doc.data());
-        setFoundUsers(usersArr);
-      });
+    const usersArr = [];
+    (await usersRef.get()).docs.forEach((doc) => {
+      usersArr.push(doc.data());
+      setFoundUsers(usersArr);
     });
+    // usersRef.onSnapshot((snapshot) => {
+    //   const usersArr = [];
+    //   snapshot.docs.forEach((doc) => {
+    //     usersArr.push(doc.data());
+    //     setFoundUsers(usersArr);
+    //   });
+    // });
   };
   return (
     <>

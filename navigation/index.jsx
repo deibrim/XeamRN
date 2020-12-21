@@ -13,8 +13,12 @@ import NotFoundScreen from "../screens/NotFoundScreen";
 import BottomTabNavigator from "./BottomTabNavigator";
 import RegisterScreen from "../screens/RegisterScreen";
 import LoginScreen from "../screens/LoginScreen";
-import { auth, createUserProfileDocument } from "../firebase/firebase.utils";
-import { setCurrentUser } from "../redux/user/actions";
+import {
+  auth,
+  createUserProfileDocument,
+  firestore,
+} from "../firebase/firebase.utils";
+import { setCurrentUser, setCurrentUserTvProfile } from "../redux/user/actions";
 import ForgotPasswordScreen from "../screens/ForgotPasswordScreen";
 
 // If you are not familiar with React Navigation, we recommend going through the
@@ -26,8 +30,13 @@ function Navigation({ colorScheme }) {
     auth.onAuthStateChanged(async (User) => {
       if (User) {
         const userRef = await createUserProfileDocument(User);
-        userRef.onSnapshot((snapShot) => {
+        userRef.onSnapshot(async (snapShot) => {
           dispatch(setCurrentUser({ id: snapShot.id, ...snapShot.data() }));
+          if (snapShot.data().isTvActivated) {
+            const userRef = firestore.doc(`xeamTvs/${snapShot.id}`);
+            const snapshot = await userRef.get();
+            dispatch(setCurrentUserTvProfile({ ...snapshot.data() }));
+          }
         });
       }
     });

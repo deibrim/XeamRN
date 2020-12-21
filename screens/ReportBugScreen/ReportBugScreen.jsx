@@ -28,6 +28,10 @@ const ReportBugScreen = () => {
   const onBugReport = async () => {
     setLoading(true);
     const id = uuidv4().split("-").join("");
+    if (bugReport.trim() === "") {
+      console.log("Tell us about the issue");
+      return;
+    }
     try {
       const newBugReport = {
         id,

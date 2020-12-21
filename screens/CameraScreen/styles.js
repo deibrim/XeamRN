@@ -64,6 +64,14 @@ const styles = StyleSheet.create({
     // alignSelf: "flex-end",
     // alignItems: "center",
   },
+  assets: {
+    position: "absolute",
+    bottom: 120,
+    left: 0,
+    right: 0,
+    // backgroundColor: "#ffffff",
+    minHeight: 80,
+  },
 });
 
 export default styles;

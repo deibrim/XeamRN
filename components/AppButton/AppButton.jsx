@@ -7,6 +7,7 @@ const AppButton = ({
   title,
   customStyle,
   icon,
+  iconComponent,
   iconColor,
   textStyle,
   disabled,
@@ -26,6 +27,7 @@ const AppButton = ({
         />
       )}
       <Text style={{ ...styles.appButtonText, ...textStyle }}>{title}</Text>
+      {iconComponent && iconComponent}
       {loading && (
         <Image
           style={{ marginTop: 2, marginLeft: 5, width: 18, height: 18 }}

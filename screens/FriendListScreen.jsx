@@ -1,7 +1,7 @@
 import { MaterialCommunityIcons, FontAwesome5 } from "@expo/vector-icons";
 import React, { useEffect, useState, useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import firebase, { firestore } from "../firebase/firebase.utils";
+import firebase from "../firebase/firebase.utils";
 import {
   FlatList,
   StyleSheet,
@@ -11,30 +11,26 @@ import {
 } from "react-native";
 import { Text, View } from "../components/Themed";
 import ChatListItem from "../components/ChatListItem";
+import { setFriends } from "../redux/chat/actions";
 
 const wait = (timeout) => {
   return new Promise((resolve) => {
     setTimeout(resolve, timeout);
   });
 };
-function FriendListScreen({
-  currentUser,
-  setCurrentChannel,
-  setPrivateChannel,
-}) {
+function FriendListScreen({ setCurrentChannel, setPrivateChannel }) {
   const user = useSelector((state) => state.user.currentUser);
-  const [users, setUsers] = useState([]);
-  const [usersRef] = useState(firebase.database().ref("users"));
-  const [connectedRef] = useState(firebase.database().ref(".info/connected"));
-  const [presenceRef] = useState(firebase.database().ref("presence"));
+  const friends = useSelector((state) => state.chat.friends);
+  // const [friends, setFriends] = useState([]);
+  const [friendsRef] = useState(firebase.database().ref(`/friends/${user.id}`));
   const [activeChannel, setActiveChannel] = useState("");
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(false);
-
+  const dispatch = useDispatch();
   useEffect(() => {
-    // if (user) {
-    //   addListeners(user.id);
-    // }
+    if (user) {
+      addListeners(user.id);
+    }
   }, []);
 
   const onRefresh = useCallback(() => {
@@ -42,35 +38,19 @@ function FriendListScreen({
     wait(2000).then(() => setRefreshing(false));
   }, []);
 
-  // function addListeners(currentUserId) {
-  //   setLoading(true);
-  //   const loadedUsers = [];
-  //   usersRef.on("child_added", (snap) => {
-  //     if (currentUserId !== snap.key) {
-  //       const user = snap.val();
-  //       user["id"] = snap.key;
-  //       user["status"] = "offline";
-  //       loadedUsers.push(user);
-  //     }
-  //     setUsers(loadedUsers);
-  //     setLoading(false);
-  //   });
-
-  //   connectedRef.on("value", (snap) => {
-  //     if (snap.val() === true) {
-  //       const ref = presenceRef.child(currentUserId);
-  //       ref.set(true);
-  //       ref.onDisconnect().remove((err) => {
-  //         if (err !== null) {
-  //           console.log(err);
-  //         }
-  //       });
-  //     }
-  //   });
-  // }
-
-  function isUserOnline(user) {
-    return user.status === "online";
+  function addListeners(currentUserId) {
+    setLoading(true);
+    const loadedUsers = [];
+    friendsRef.on("child_added", (snap) => {
+      if (currentUserId !== snap.key) {
+        const user = snap.val();
+        user["id"] = snap.key;
+        user["status"] = "offline";
+        loadedUsers.push(user);
+      }
+      dispatch(setFriends(loadedUsers));
+      setLoading(false);
+    });
   }
 
   function getChannelId(userId) {
@@ -81,28 +61,25 @@ function FriendListScreen({
       : `${currentUserId}/${userId}`;
   }
 
-  function changeChannel(user) {
-    const channelId = getChannelId(user.id);
-    const channelData = {
-      id: channelId,
-      name: user.name,
-    };
-
-    setCurrentChannel(channelData);
-    setPrivateChannel(true);
-    setActiveChannel(user.id);
-  }
-
   return (
     <>
       <View style={styles.header}>
         <Text style={styles.title}>Chats</Text>
-        {/* <View style={styles.chatCountContainer}>
-          <Text style={styles.chatCount}>{users.length}</Text>
-        </View> */}
+        {/* {!loading && (
+          <View style={styles.chatCountContainer}>
+            <Text style={styles.chatCount}>{friends.length}</Text>
+          </View>
+        )} */}
       </View>
-      <View style={{ backgroundColor: "#ecf2fa", width: "100%", flex: 1 }}>
-        {loading && (
+      <View
+        style={{
+          backgroundColor: "#ecf2fa",
+          width: "100%",
+          flex: 1,
+          paddingTop: 10,
+        }}
+      >
+        {/* {loading && (
           <View
             style={{
               flex: 1,
@@ -118,23 +95,13 @@ function FriendListScreen({
               source={require("../assets/loader.gif")}
             />
           </View>
-        )}
-        <View
-          style={{
-            backgroundColor: "#ecf2fa",
-            flex: 1,
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <Text style={{ fontSize: 18 }}>Comming Soon</Text>
-        </View>
-        {/* <FlatList
-          data={users}
+        )} */}
+        <FlatList
+          data={friends}
           renderItem={({ item }) => <ChatListItem user={item} />}
           keyExtractor={(item, index) => index.toString()}
-          extraData={users}
-        /> */}
+          extraData={friends}
+        />
       </View>
     </>
   );

@@ -107,6 +107,7 @@ const PostReelScreen = () => {
         description,
         user_id: user.id,
         likes: {},
+        views: {},
         comments: 0,
         music: `${user.username} - Original Audio`,
         posted_at: Date.now(),

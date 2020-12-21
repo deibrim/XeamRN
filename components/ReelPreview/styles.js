@@ -17,7 +17,7 @@ export const styles = StyleSheet.create({
     top: 8,
     left: 8,
     backgroundColor: "#ffffff",
-    borderRadius: 20,
+    borderRadius: 10,
     width: 39,
     height: 39,
     alignItems: "center",
@@ -26,7 +26,7 @@ export const styles = StyleSheet.create({
   reelCardImage: {
     width: "100%",
     height: 220,
-    borderRadius: 12,
+    borderRadius: 10,
   },
   reelCardFooter: {
     height: 25,
@@ -44,7 +44,7 @@ export const styles = StyleSheet.create({
     color: "#ffffff",
   },
   overlay: {
-    borderRadius: 12,
+    borderRadius: 10,
     flex: 1,
     position: "absolute",
     left: 0,

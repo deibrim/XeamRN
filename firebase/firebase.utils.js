@@ -51,6 +51,7 @@ export const createUserProfileDocument = async (userAuth, additionalData) => {
         email,
         joined,
         isBusinessAccount: false,
+        isTvActivated: false,
         location: "",
         website: "",
         headline: "",
@@ -182,6 +183,7 @@ export const handleFollowUser = (profileId, currentUser, user) => {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
+      channelId: "ActivitiesScreen",
       to: user.push_token.data,
       sound: "default",
       title: "Xeam",
@@ -313,6 +315,7 @@ export const addLikeToActivityFeed = async (
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+        channelId: "ActivitiesScreen",
         to: ownerSnapShot.data().push_token.data,
         sound: "default",
         title: "Xeam",
@@ -373,6 +376,7 @@ async function addToActivityFeed(
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+        channelId: "ActivitiesScreen",
         to: ownerSnapShot.data().push_token.data,
         sound: "default",
         title: "Xeam",

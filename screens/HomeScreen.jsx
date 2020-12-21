@@ -19,17 +19,19 @@ import { useSelector, useDispatch } from "react-redux";
 import TrendingReelPreview from "../components/TrendingReelPreview/TrendingReelPreview";
 import ReelPreview from "../components/ReelPreview/ReelPreview";
 import { setReels } from "../redux/reel/actions";
+import { setCurrentChannel, setPrivateChannel } from "../redux/chat/actions";
 const wait = (timeout) => {
   return new Promise((resolve) => {
     setTimeout(resolve, timeout);
   });
 };
-export default function HomeScreen() {
+export default React.memo(function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(false);
   const user = useSelector((state) => state.user.currentUser);
   const reels = useSelector((state) => state.reel.loadedReels);
   const dispatch = useDispatch();
+  const responseListener = useRef();
   const navigation = useNavigation();
   const onRefresh = useCallback(() => {
     setRefreshing(true);
@@ -39,6 +41,12 @@ export default function HomeScreen() {
   useEffect(() => {
     enablePushNotifications();
     getTimeline();
+    listenForPushNotifications();
+    listenForPushNotificationActions();
+
+    return () => {
+      Notifications.removeNotificationSubscription(responseListener);
+    };
   }, []);
   async function askPermissions() {
     const { status: existingStatus } = await Permissions.getAsync(
@@ -55,6 +63,42 @@ export default function HomeScreen() {
     return true;
   }
 
+  async function listenForPushNotificationActions() {
+    responseListener.current = Notifications.addNotificationResponseReceivedListener(
+      (response) => {
+        const chatData = JSON.parse(
+          response.notification.request.trigger.remoteMessage.data.body
+        );
+        if (chatData.chatId) {
+          dispatch(
+            setCurrentChannel({
+              id: chatData.chatId,
+              name: chatData.name,
+            })
+          );
+          dispatch(setPrivateChannel(true));
+          navigation.navigate("ChatRoom", {
+            name: chatData.name,
+            id: chatData.id,
+            username: chatData.username,
+            profile_pic: chatData.profile_pic,
+          });
+          return;
+        }
+        navigation.navigate(
+          `${response.notification.request.trigger.channelId}`
+        );
+      }
+    );
+  }
+  async function listenForPushNotifications() {
+    const subscription = Notifications.addNotificationReceivedListener(
+      (notification) => {
+        // console.log(notification);
+      }
+    );
+    return () => subscription.remove();
+  }
   async function registerForPushNotifications() {
     const enabled = await askPermissions();
     if (!enabled) {
@@ -70,6 +114,18 @@ export default function HomeScreen() {
       firestore.doc(`users/${user.id}`).update({ push_token: token });
     }
   }
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: true,
+    }),
+  });
+  // Notifications.getBadgeCountAsync().then((badge) => {
+  //   console.log("====================================");
+  //   console.log(badge);
+  //   console.log("====================================");
+  // });
 
   function getTimeline() {
     setLoading(true);
@@ -186,7 +242,7 @@ export default function HomeScreen() {
       </ScrollView>
     </>
   );
-}
+});
 
 const styles = StyleSheet.create({
   container: {

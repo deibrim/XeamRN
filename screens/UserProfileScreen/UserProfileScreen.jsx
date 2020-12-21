@@ -127,11 +127,15 @@ export default function UserProfileScreen() {
     const channelData = {
       id: channelId,
       name: user.name,
+      username: user.username,
     };
     dispatch(setCurrentChannel(channelData));
     dispatch(setPrivateChannel(true));
     navigation.navigate("ChatRoom", {
       name: user.name,
+      id: user.id,
+      username: user.username,
+      profile_pic: user.profile_pic,
     });
   };
   return (
@@ -303,7 +307,7 @@ export default function UserProfileScreen() {
               </View>
             </View>
           </View>
-          {/* <View style={{ paddingHorizontal: "10%" }}>
+          <View style={{ paddingHorizontal: "10%" }}>
             <TouchableOpacity
               onPress={changeChannel}
               style={{ marginTop: -20 }}
@@ -330,7 +334,7 @@ export default function UserProfileScreen() {
                 <Text style={{ color: "white" }}>Send Message</Text>
               </View>
             </TouchableOpacity>
-          </View> */}
+          </View>
           <View
             style={{
               flexDirection: "row",

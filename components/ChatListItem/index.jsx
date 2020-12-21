@@ -88,7 +88,6 @@ const ChatListItem = (props) => {
           ellipsizeMode={"tail"}
           style={{
             ...styles.lastMessage,
-            fontWeight: "bold",
           }}
         >
           {content}

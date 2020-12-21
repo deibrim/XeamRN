@@ -19,8 +19,9 @@ const ChatMessage = (props) => {
   const onReply = () => {};
 
   const updateRead = () => {
-    // const ref = getMessagesRef();
-    // props.messageRef;
+    if (message.user.id === user.id) {
+      return;
+    }
     if (message.read !== undefined) {
       if (!message.read) {
         props
@@ -29,10 +30,15 @@ const ChatMessage = (props) => {
           .child(message.key)
           .update({ read: true });
       }
+    } else if (!message.read) {
+      props
+        .messageRef()
+        .child(props.channelId)
+        .child(message.key)
+        .update({ read: true });
+    } else {
+      return;
     }
-    // console.log("====================================");
-    // console.log(props.messageRef().child(uid).update({read: true}));
-    // console.log("====================================");
   };
 
   return (

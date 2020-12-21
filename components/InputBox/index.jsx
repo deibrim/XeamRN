@@ -112,7 +112,7 @@ const InputBox = (props) => {
         setLoading(true);
         await getMessagesRef()
           .child(channel.id)
-          .child(createMes.id)
+          .push()
           .set(createMes)
           .then(async () => {
             setLoading(true);

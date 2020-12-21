@@ -11,6 +11,7 @@ const ChatListItem = (props) => {
   const { user } = props;
   const [lastMessage, setLastMessage] = useState({});
   const [isOnline, setIsOnline] = useState(false);
+  const [timestapBold, setTimestapBold] = useState(false);
   const currentUser = useSelector((state) => state.user.currentUser);
   const dispatch = useDispatch();
   const navigation = useNavigation();
@@ -57,42 +58,33 @@ const ChatListItem = (props) => {
     navigation.navigate("ChatRoom", user);
   };
   const { content, timestamp } = lastMessage;
-
+  const notRead = (
+    <Text
+      numberOfLines={1}
+      ellipsizeMode={"tail"}
+      style={{
+        ...styles.lastMessage,
+        fontWeight: "bold",
+        color: "black",
+      }}
+    >
+      {content}
+    </Text>
+  );
+  const onRead = (
+    <Text numberOfLines={1} ellipsizeMode={"tail"} style={styles.lastMessage}>
+      {content}
+    </Text>
+  );
   const lastMessageComp = () => {
-    if (lastMessage.read !== undefined) {
-      if (!lastMessage.read) {
-        return (
-          <Text
-            numberOfLines={1}
-            ellipsizeMode={"tail"}
-            style={styles.lastMessage}
-          >
-            {content}
-          </Text>
-        );
-      }
-    } else if (!lastMessage.read) {
-      return (
-        <Text
-          numberOfLines={1}
-          ellipsizeMode={"tail"}
-          style={styles.lastMessage}
-        >
-          {content}
-        </Text>
-      );
+    if (lastMessage.read === undefined) {
+      return onRead;
+    }
+    if (lastMessage.read) {
+      return onRead;
     } else {
-      return (
-        <Text
-          numberOfLines={1}
-          ellipsizeMode={"tail"}
-          style={{
-            ...styles.lastMessage,
-          }}
-        >
-          {content}
-        </Text>
-      );
+      // setTimestapBold(true);
+      return notRead;
     }
   };
   return (
@@ -113,15 +105,16 @@ const ChatListItem = (props) => {
 
             <View style={styles.midContainer}>
               <Text style={styles.username}>{user.name}</Text>
-              {/* <Text
-                numberOfLines={1}
-                ellipsizeMode={"tail"}
-                style={styles.lastMessage}
-              >
-                {content}
-              </Text> */}
               {lastMessageComp()}
-              <Text style={styles.time}>{moment(timestamp).fromNow()}</Text>
+              <Text
+                style={
+                  !lastMessage.read
+                    ? { ...styles.time, fontWeight: "bold" }
+                    : { ...styles.time }
+                }
+              >
+                {moment(timestamp).fromNow()}
+              </Text>
             </View>
           </View>
         </View>

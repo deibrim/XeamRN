@@ -2,6 +2,7 @@ import {
   AntDesign,
   Ionicons,
   Feather,
+  Entypo,
   MaterialIcons,
   MaterialCommunityIcons,
 } from "@expo/vector-icons";
@@ -15,6 +16,7 @@ import {
   Platform,
   Text,
   TouchableOpacity,
+  TouchableWithoutFeedback,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import Constants from "expo-constants";
@@ -47,7 +49,7 @@ const StoreGetStartedScreen = () => {
   const [storeCreated, setStoreCreated] = useState(false);
   const [image, setImage] = useState(null);
   const [storeHandle, setStoreHandle] = useState(user.username || "");
-  const [description, setDescription] = useState("");
+  const [location, setLocation] = useState("");
   const [website, setWebsite] = useState(user.website || "");
   const [uploading, setUploading] = useState(false);
   const [uploadingPercentage, setUploadingPercentage] = useState(0);
@@ -134,7 +136,7 @@ const StoreGetStartedScreen = () => {
           const storeData = {
             id: user.id,
             storeHandle: `${storeHandle.toLowerCase()}.tv`,
-            description,
+            location,
             logo: downloadURL,
             website: website.toLowerCase(),
             tvOwnerName: user.name,
@@ -163,8 +165,8 @@ const StoreGetStartedScreen = () => {
     if (storeHandle.trim() === "") {
       setErrorMessage("Store name is required");
       return;
-    } else if (description.trim() === "") {
-      setErrorMessage("Tv Description is required");
+    } else if (location.trim() === "") {
+      setErrorMessage("Location is required");
       return;
     } else if (image.trim() === "") {
       setErrorMessage("Store Logo is required");
@@ -197,21 +199,19 @@ const StoreGetStartedScreen = () => {
       index={0}
       setIndex={setIndex}
     />,
-    // <SetupTvInfo
-    //   value={description}
-    //   onChangeText={setDescription}
-    //   placeholder={"Description"}
-    //   content={{
-    //     headline: "Tv Description",
-    //     body: `Give a brief summary of the type of content your viewers should be expecting`,
-    //     illustration: (
-    //       <MaterialIcons name="speaker-notes" size={50} color="#666666" />
-    //     ),
-    //   }}
-    //   isImage={false}
-    //   index={1}
-    //   setIndex={setIndex}
-    // />,
+    <SetupTvInfo
+      value={location}
+      onChangeText={setLocation}
+      placeholder={"Location"}
+      content={{
+        headline: "Location",
+        body: ``,
+        illustration: <Entypo name="location-pin" size={50} color="#666666" />,
+      }}
+      isImage={false}
+      index={1}
+      setIndex={setIndex}
+    />,
     <SetupTvInfo
       value={website}
       onChangeText={setWebsite}
@@ -291,9 +291,7 @@ const StoreGetStartedScreen = () => {
             <AntDesign name="close" size={20} color="#ffffff" />
           </TouchableOpacity>
         </View>
-        <Text style={{ ...styles.title, fontSize: 14 }}>
-          Setup XStore Profile
-        </Text>
+        <Text style={{ ...styles.title, fontSize: 14 }}>Setup XStore</Text>
       </View>
       <View
         style={{
@@ -376,7 +374,7 @@ const StoreGetStartedScreen = () => {
 
       <View style={{ ...styles.buttonContainer, left: 10 }}>
         {index ? (
-          <TouchableOpacity
+          <TouchableWithoutFeedback
             onPress={() => {
               if (index == 0) {
                 scrollToIndex(0);
@@ -397,16 +395,18 @@ const StoreGetStartedScreen = () => {
                 Prev
               </Text>
             </View>
-          </TouchableOpacity>
+          </TouchableWithoutFeedback>
         ) : null}
       </View>
       <View style={styles.buttonContainer}>
-        <TouchableOpacity
+        <TouchableWithoutFeedback
           onPress={() => {
             if (index == 0) {
               scrollToIndex(1);
             } else if (index == 1) {
               scrollToIndex(2);
+            } else if (index == 2) {
+              scrollToIndex(3);
             } else {
               checkStoreHandleAndCreateStore();
             }
@@ -415,7 +415,7 @@ const StoreGetStartedScreen = () => {
           <View
             style={
               index >= 3
-                ? { ...styles.button, width: 100, backgroundColor: "#006eff" }
+                ? { ...styles.button, width: 120, backgroundColor: "#006eff" }
                 : { ...styles.button }
             }
           >
@@ -432,7 +432,7 @@ const StoreGetStartedScreen = () => {
               <Ionicons name="ios-arrow-forward" size={20} color="black" />
             )}
           </View>
-        </TouchableOpacity>
+        </TouchableWithoutFeedback>
       </View>
     </>
   );

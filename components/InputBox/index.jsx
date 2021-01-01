@@ -1,4 +1,5 @@
 import {
+  AntDesign,
   MaterialCommunityIcons,
   FontAwesome5,
   Entypo,
@@ -8,6 +9,7 @@ import React, { useEffect, useState } from "react";
 import {
   View,
   ImageBackground,
+  Text,
   TextInput,
   TouchableOpacity,
   TouchableWithoutFeedback,
@@ -25,6 +27,8 @@ const InputBox = (props) => {
     isPrivateChannel,
     getMessagesRef,
     endUser,
+    reply,
+    setReply,
   } = props;
   const [message, setMessage] = useState("");
   const [storageRef, setStorageRef] = useState(firebase.storage().ref());
@@ -38,6 +42,7 @@ const InputBox = (props) => {
   const [error, setError] = useState([]);
   const [modal, setModal] = useState(false);
   const [isFriends, setIsFriends] = useState(false);
+  const [replyingMessage, setReplyingMessage] = useState(false);
   const [emojiPicker, setEmojiPicker] = useState(false);
   useEffect(() => {
     if (message) {
@@ -46,23 +51,23 @@ const InputBox = (props) => {
       typingRef.child(channel.id).child(user.id).remove();
     }
   }, [message]);
-  function createMessage(
-    fileUrl = null,
-    audio = null,
-    video = null,
-    photo = null
-  ) {
+  function createMessage(fileUrl = null, audio = null, video = null) {
     const messageData = {
       id: uuidv4().split("-").join(""),
       timestamp: firebase.database.ServerValue.TIMESTAMP,
-      user: {
-        id: user.id,
-        name: user.name,
-      },
+      uid: user.id,
+      username: user.name,
       read: false,
     };
+    if (reply.reply_msg) {
+      messageData["reply_msg"] = reply.reply_msg;
+      messageData["reply_uid"] = reply.reply_uid;
+      messageData["reply_username"] = reply.reply_username;
+    }
     if (fileUrl && fileUrl !== null) {
       messageData["image"] = fileUrl;
+    } else if (audio && audio !== null) {
+      messageData["audio"] = audio;
     } else {
       messageData["content"] = message;
     }
@@ -117,13 +122,12 @@ const InputBox = (props) => {
           .then(async () => {
             setLoading(true);
             setMessage("");
+            setReply({});
+            setReplyingMessage(false);
             setError([]);
             typingRef.child(channel.id).child(user.id).remove();
             const ownerRef = firestore.collection("users").doc(endUser.id);
             const ownerSnapShot = await ownerRef.get();
-            // const title =
-            //   user.username.split("")[0].toUpperCase() +
-            //   user.username.substring(1);
             fetch("https://exp.host/--/api/v2/push/send", {
               method: "POST",
               headers: {
@@ -254,7 +258,47 @@ const InputBox = (props) => {
 
   return (
     <>
-      <ImageBackground style={{ width: "100%" }} source={props.bg}>
+      <ImageBackground
+        style={{ width: "100%", position: "relative" }}
+        source={props.bg}
+      >
+        {replyingMessage ? (
+          <View
+            style={{
+              minHeight: 45,
+              backgroundColor: "#ffffff",
+              padding: 10,
+              borderRadius: 5,
+            }}
+          >
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <Text style={{ color: "#666666", marginBottom: 10 }}>
+                Replying to{" "}
+                {reply.userId === endUser.id
+                  ? `${endUser.name}`
+                  : "your message"}
+              </Text>
+              <TouchableOpacity
+                style={{
+                  marginBottom: 10,
+                }}
+                onPress={() => {
+                  setReply({});
+                  setReplyingMessage(false);
+                }}
+              >
+                <AntDesign name="close" size={18} color="#000000" />
+              </TouchableOpacity>
+            </View>
+            <Text>{reply.message}</Text>
+          </View>
+        ) : null}
         <View style={styles.container}>
           <View
             style={
@@ -270,6 +314,17 @@ const InputBox = (props) => {
               placeholder={"Type a message"}
               style={styles.textInput}
               multiline
+              autoFocus={true}
+              onBlur={() => {
+                if (reply.message) {
+                  setReplyingMessage(true);
+                }
+              }}
+              onFocus={() => {
+                if (reply.message) {
+                  setReplyingMessage(true);
+                }
+              }}
               value={message}
               onChangeText={setMessage}
             />

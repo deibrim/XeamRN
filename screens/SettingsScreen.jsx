@@ -1,6 +1,7 @@
 import {
   AntDesign,
   FontAwesome5,
+  Octicons,
   Ionicons,
   Entypo,
   Feather,
@@ -101,7 +102,7 @@ export default function SettingsScreen() {
           </TouchableOpacity>
         </View>
       </View>
-      <View
+      <ScrollView
         contentContainerStyle={{ width: "100%", alignItems: "center" }}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
@@ -123,7 +124,7 @@ export default function SettingsScreen() {
           <SettingsItemWrapper
             title={"XStore"}
             description={"Sell your product with ease"}
-            icon={<FontAwesome5 name="store-alt" size={20} color="white" />}
+            icon={<AntDesign name="isv" size={20} color="white" />}
             onPress={() =>
               user.isBusinessAccount
                 ? navigation.navigate("UserStoreScreen")
@@ -156,12 +157,39 @@ export default function SettingsScreen() {
             backgroundColor={"gray"}
           />
           <SettingsItemWrapper
+            title={"About xeam"}
+            description={"Get to know xeam"}
+            icon={<AntDesign name="infocirlceo" size={20} color="#006eff" />}
+            onPress={onShare}
+            backgroundColor={"#ffffff"}
+          />
+
+          <SettingsItemWrapper
+            title={"Help and feedback"}
+            description={"How-to's and support"}
+            icon={<AntDesign name="questioncircleo" size={20} color="white" />}
+            onPress={onShare}
+          />
+          <SettingsItemWrapper
+            title={"Suggest features"}
+            description={"We're always working on new features"}
+            icon={<Octicons name="light-bulb" size={20} color="white" />}
+            onPress={onShare}
+          />
+          <SettingsItemWrapper
+            title={"Join the beta community"}
+            description={"Try new features before offical release"}
+            icon={<AntDesign name="addusergroup" size={20} color="white" />}
+            onPress={onShare}
+          />
+          <SettingsItemWrapper
             title={"Share the app"}
             description={"Share this app with your friends"}
             icon={<Feather name="share-2" size={20} color="white" />}
             onPress={onShare}
           />
         </View>
+        <View style={{ height: 100 }}></View>
         <View style={styles.copyright}>
           <Text style={{ color: "gray", fontSize: 16, marginBottom: 10 }}>
             Xeam-Beta v1.0
@@ -173,7 +201,7 @@ export default function SettingsScreen() {
             Xeam
           </Text>
         </View>
-      </View>
+      </ScrollView>
     </>
   );
 }

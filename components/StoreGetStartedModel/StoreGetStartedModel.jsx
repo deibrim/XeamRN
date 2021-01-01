@@ -1,6 +1,7 @@
 import {
   AntDesign,
-  FontAwesome5,
+  Entypo,
+  Octicons,
   Ionicons,
   MaterialCommunityIcons,
 } from "@expo/vector-icons";
@@ -29,22 +30,24 @@ const StoreGetStartedModel = ({ modalVisible, setModalVisible }) => {
       headline: "Obtain the Duo mode of E-commercing",
       body:
         "You can hold an account of your store, presenting the entire product’s elements, to reach potential buyers.",
-      illustration: <FontAwesome5 name="store-alt" size={50} color="#555555" />,
+      illustration: <AntDesign name="isv" size={60} color="#006eff" />,
     },
     {
       headline: "Communicate with your brand.",
       body:
         "Secure your Tv channel for a better credibility of your merchandise.",
-      illustration: (
-        <MaterialCommunityIcons name="voice" size={50} color="#555555" />
-      ),
+      illustration: <Entypo name="megaphone" size={60} color="#006eff" />,
     },
     {
       headline: "Flourish your Store with Creativity.",
       body:
         "Sell & Popularize your products in exchange of profit. Grow your business by connecting with customers.",
       illustration: (
-        <MaterialCommunityIcons name="voice" size={50} color="#555555" />
+        <MaterialCommunityIcons
+          name="lightbulb-on-outline"
+          size={60}
+          color="#006eff"
+        />
       ),
     },
   ];

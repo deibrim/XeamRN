@@ -96,7 +96,7 @@ const SetupTvInfo = ({
               />
               <TouchableOpacity onPress={onPress}>
                 <Text style={{ color: "#006eff", fontSize: 16, marginTop: 10 }}>
-                  Upload Image
+                  Upload
                 </Text>
               </TouchableOpacity>
             </View>

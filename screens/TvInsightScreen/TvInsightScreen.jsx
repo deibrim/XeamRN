@@ -1,5 +1,5 @@
 import { AntDesign, Ionicons, MaterialIcons } from "@expo/vector-icons";
-import { useNavigationState } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
 import React from "react";
 import {
   Dimensions,
@@ -13,7 +13,7 @@ import InsightBox from "../../components/InsightBox/InsightBox";
 import { styles } from "./styles";
 
 const TvInsightScreen = () => {
-  const navigation = useNavigationState();
+  const navigation = useNavigation();
 
   return (
     <>

@@ -5,8 +5,10 @@ import {
   Image,
   Text,
   ScrollView,
+  TouchableOpacity,
   TouchableWithoutFeedback,
 } from "react-native";
+import * as ImagePicker from "expo-image-picker";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigation } from "@react-navigation/native";
 import { setChatBackground } from "../../redux/settings/actions";
@@ -30,6 +32,24 @@ export default function EditChatScreen() {
   const changeBackground = (index) => {
     dispatch(setChatBackground(index));
     setSelected(index);
+  };
+  const pickPictureFromPhone = async () => {
+    try {
+      let result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [9, 16],
+        quality: 1,
+      });
+
+      if (!result.cancelled) {
+        dispatch(setChatBackground(result.uri));
+        setSelected("");
+        // console.log(result.uri);
+      }
+    } catch (err) {
+      console.error(err);
+    }
   };
   return (
     <>
@@ -56,6 +76,49 @@ export default function EditChatScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>BACKGROUND</Text>
           <View style={styles.wallpapers}>
+            <TouchableOpacity
+              style={{
+                alignItems: "center",
+                justifyContent: "center",
+                position: "relative",
+                height: 130,
+                width: "30%",
+                borderRadius: 20,
+                elevation: 2,
+                backgroundColor: "#006eff",
+              }}
+              onPress={pickPictureFromPhone}
+            >
+              <Image
+                source={
+                  typeof chatBackground === "string"
+                    ? {
+                        uri: `${chatBackground}`,
+                      }
+                    : null
+                }
+                style={[
+                  {
+                    ...styles.wallpaperPreview,
+                    width: "100%",
+                    borderWidth: 2,
+                    borderColor:
+                      typeof chatBackground === "string" && "#006eff",
+                  },
+                ]}
+              />
+              <Text
+                style={{
+                  color: "#ffffff",
+                  fontWeight: "bold",
+                  position: "absolute",
+                  fontSize: 14,
+                  textAlign: "center",
+                }}
+              >
+                Pick from device
+              </Text>
+            </TouchableOpacity>
             <TouchableWithoutFeedback onPress={() => changeBackground(1)}>
               <Image
                 source={BG1}

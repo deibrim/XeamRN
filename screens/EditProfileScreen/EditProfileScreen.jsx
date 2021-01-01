@@ -11,6 +11,8 @@ import {
   TouchableOpacity,
   ProgressBarAndroid,
 } from "react-native";
+import CityPicker from "react-native-citys-picker";
+import * as Location from "expo-location";
 import * as ImagePicker from "expo-image-picker";
 import Constants from "expo-constants";
 import { useSelector } from "react-redux";
@@ -36,6 +38,9 @@ const EditProfileScreen = () => {
   const [name, setName] = useState(user.name);
   const [username, setUsername] = useState(user.username || "");
   const [location, setLocation] = useState(user.location || "");
+  const [country, setCountry] = useState(user.location || "");
+  const [region, setRegion] = useState(user.location || "");
+  const [errorMsg, setErrorMsg] = useState(null);
   const [bio, setBio] = useState(user.bio || "");
   const [website, setWebsite] = useState(user.website || "");
   const [headline, setHeadline] = useState(user.headline || "");
@@ -56,7 +61,78 @@ const EditProfileScreen = () => {
         }
       }
     })();
+    !user.location && getLocationAsync();
   }, []);
+
+  async function getLocationAsync() {
+    let { status } = await Location.requestPermissionsAsync();
+    if (status !== "granted") {
+      setErrorMsg("Permission to access location was denied");
+      return;
+    }
+    // const ZOMATO_USER_KEY = process.env['ZOMATO_USER_KEY']
+    const ZOMATO_USER_KEY = `f0f3485828ae2ed93ea6bbfb2d13d75b`;
+    // const proxy = "https://cors-anywhere.herokuapp.com/";
+    let location = await Location.getCurrentPositionAsync({});
+    const latitude = location.coords.latitude;
+    const longitude = location.coords.longitude;
+    // var url = "https://freegeoip.net/json/";
+    fetch(`https://freegeoip.net/json/`)
+      .then((response) => response.json())
+      .then((responseJson) => {
+        console.log(JSON.stringify(responseJson));
+        // this.setState({
+        //   countryName: responseJson.country_name,
+        //   regionName: responseJson.region_name + JSON.stringify(responseJson)
+        // });
+      })
+      .catch((error) => {
+        console.error("errr", error);
+      });
+    // fetch(
+    //   `https://developers.zomato.com/api/v2.1/cities?lat=${latitude}&lon=${longitude}&count=3`,
+    //   {
+    //     method: "GET",
+    //     headers: {
+    //       Accept: "application/json",
+    //       "user-key": ZOMATO_USER_KEY,
+    //     },
+    //   }
+    // )
+    //   .then((response) => response.json())
+    //   .then((responseJson) => {
+    //     const cities = responseJson.location_suggestions;
+    //     console.log("====================================");
+    //     console.log(responseJson);
+    //     console.log("====================================");
+    //     if (cities.length > 1) {
+    //       return console.log(cities[0]);
+    //     } else {
+    //       console.log("Unable to find city for the userLocation");
+    //       return null;
+    //     }
+    //   })
+    //   .catch((error) => {
+    //     console.error(error);
+    //   });
+    // const res = await fetch(
+    //   `https://developers.zomato.com/api/v2.1/cities?lat=${latitude}&lon=${longitude}&count=3`,
+    //   {
+    //     method: "GET",
+    //     headers: {
+    //       Accept: "application/json",
+    //       "user-key": ZOMATO_USER_KEY,
+    //     },
+    //   }
+    // );
+    // const data = res.json();
+
+    // console.log("====================================");
+    // // console.log(location);
+    // console.log(latitude, longitude, data);
+    // console.log("====================================");
+    // setLocation(location);
+  }
 
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -193,6 +269,25 @@ const EditProfileScreen = () => {
           handleChange={setUsername}
           value={username}
         />
+        <CityPicker
+          onSubmit={(params) => {
+            console.log(params);
+            setCountry();
+          }}
+          onCancel={() => console.log("cancel")}
+        >
+          <Text
+            style={{
+              backgroundColor: "#FFF",
+              width: 200,
+              paddingVertical: 20,
+              textAlign: "center",
+              color: "black",
+            }}
+          >
+            Select Region
+          </Text>
+        </CityPicker>
         <EditProfileInputGroup
           label={"Location"}
           handleChange={setLocation}

@@ -12,7 +12,7 @@ import EditProfileScreen from "../screens/EditProfileScreen/EditProfileScreen";
 import ReelScreen from "../screens/ReelScreen";
 import CameraScreen from "../screens/CameraScreen/CameraScreen";
 import FriendListScreen from "../screens/FriendListScreen";
-import ChatRoomScreen from "../screens/ChatRoomScreen";
+import ChatRoomScreen from "../screens/ChatRoomScreen/ChatRoomScreen";
 import ActivitiesScreen from "../screens/ActivitiesScreen";
 import SettingsScreen from "../screens/SettingsScreen";
 import EditChatScreen from "../screens/EditChatScreen/EditChatScreen";

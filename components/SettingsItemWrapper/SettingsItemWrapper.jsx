@@ -12,6 +12,7 @@ const SettingsItemWrapper = ({
       onPress={() => {
         onPress();
       }}
+      style={{ width: "100%" }}
     >
       <View style={{ ...styles.wrapper }}>
         <View
@@ -23,6 +24,7 @@ const SettingsItemWrapper = ({
               backgroundColor: backgroundColor || "#006eff",
               justifyContent: "center",
               alignItems: "center",
+              elevation: 2,
               marginRight: 10,
             },
           ]}

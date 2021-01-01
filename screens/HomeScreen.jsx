@@ -14,6 +14,7 @@ import {
   RefreshControl,
   TouchableOpacity,
 } from "react-native";
+import SkeletonContent from "react-native-skeleton-content";
 import { firestore } from "../firebase/firebase.utils";
 import { useSelector, useDispatch } from "react-redux";
 import TrendingReelPreview from "../components/TrendingReelPreview/TrendingReelPreview";
@@ -35,12 +36,12 @@ export default React.memo(function HomeScreen() {
   const navigation = useNavigation();
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-    getTimeline();
+    // getTimeline();
     wait(2000).then(() => setRefreshing(false));
   }, []);
   useEffect(() => {
     enablePushNotifications();
-    getTimeline();
+    // getTimeline();
     listenForPushNotifications();
     listenForPushNotificationActions();
 
@@ -229,6 +230,27 @@ export default React.memo(function HomeScreen() {
               />
             </View>
           )}
+          <SkeletonContent
+            containerStyle={{
+              flex: 1,
+              width: "100%",
+              flexDirection: "row",
+              justifyContent: "space-evenly",
+              alignItems: "center",
+              flexWrap: "wrap",
+              paddingHorizontal: 10,
+            }}
+            isLoading={true}
+            layout={[
+              { width: "48%", height: 220, marginTop: 6 },
+              { width: "48%", height: 220, marginTop: 6 },
+              { width: "48%", height: 220, marginTop: 6 },
+              { width: "48%", height: 220, marginTop: 6 },
+            ]}
+          >
+            {/* <Text style={styles.normalText}>Your content</Text>
+            <Text style={styles.bigText}>Other content</Text> */}
+          </SkeletonContent>
           <View style={styles.listReels}>
             {reels.map((item, index) => (
               <ReelPreview

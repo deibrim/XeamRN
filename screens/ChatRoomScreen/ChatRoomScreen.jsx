@@ -14,16 +14,21 @@ import {
   Image,
   ImageBackground,
   StyleSheet,
-  ScrollView,
   TouchableWithoutFeedback,
   TouchableOpacity,
 } from "react-native";
 import * as SQLite from "expo-sqlite";
-import firebase from "../firebase/firebase.utils";
-import { setUserPosts } from "../redux/chat/actions";
-import ChatMessage from "../components/ChatMessage";
-import InputBox from "../components/InputBox";
-import CustomInput from "../components/CustomInput/CustomInput";
+import firebase from "../../firebase/firebase.utils";
+import {
+  createMessagesTable,
+  dropMessagesTable,
+  updateMessagesTable,
+} from "../../sqlite/sqlite.functions";
+// import { setUserPosts } from "../../redux/chat/actions";
+import ChatMessage from "../../components/ChatMessage";
+import InputBox from "../../components/InputBox";
+
+import ChatRoomUtils from "../../components/ChatRoomUtils/ChatRoomUtils";
 let flatListRef;
 const ChatRoomScreen = () => {
   const route = useRoute();
@@ -60,136 +65,27 @@ const ChatRoomScreen = () => {
     navigation.goBack();
   };
   const db = SQLite.openDatabase("msgStore.db");
-  const createMessagesTable = (channel) => {
-    const chatroomId = channel.split("/").join("");
-    db.transaction((tx) => {
-      tx.executeSql(
-        `create table if not exists ${chatroomId} (id text, content text, key text, read integer, reply_msg text, reply_uid text, reply_username text, timestamp integer, uid text, username text);`
-      );
-    });
-  };
-  const updateMessagesTable = (arrData, channel) => {
-    // console.log(channel.split("/").join(""));
-    const chatroomId = channel.split("/").join("");
-    db.transaction((tx) => {
-      tx.executeSql(
-        `insert into ${chatroomId} (id, content, key, read, reply_msg, reply_uid, reply_username, timestamp, uid, username) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [...arrData],
-        (__, success) => console.log(success),
-        (__, error) => console.log(error)
-      );
-    });
-  };
-  const getMessagesFormLocalDB = (channel) => {
-    // console.log(channel.split("/").join(""));
+
+  const getMessagesFormLocalDB = (db, channel) => {
     const chatroomId = channel.split("/").join("");
     db.transaction((tx) => {
       tx.executeSql(`select * from ${chatroomId}`, [], (_, { rows }) => {
         if (rows.length !== 0) {
-          messageTransformer(rows._array);
+          console.log("====================================");
+          console.log("COUNT", rows.length);
+          console.log("====================================");
         }
       });
     });
   };
-  function messageTransformer(arrData) {
-    const transformed = [];
-    arrData.forEach((item) => {
-      const {
-        id,
-        content,
-        key,
-        read,
-        reply_msg,
-        reply_uid,
-        reply_username,
-        timestamp,
-        uid,
-        username,
-      } = item;
-      const messageData = {
-        id,
-        timestamp,
-        content,
-        key,
-        user: {
-          id: uid,
-          name: username,
-        },
-        read,
-      };
-      if (reply_msg) {
-        messageData["reply"] = {
-          message: reply_msg,
-          userId: reply_uid,
-          userName: reply_username,
-        };
-      }
-      transformed.push(messageData);
-    });
-    setMessages(transformed);
-    countUniqueUsers(transformed);
-    countUserPosts(transformed);
-  }
-  const dropMessagesTable = (channel) => {
-    const chatroomId = channel.split("/").join("");
-    db.transaction((tx) => {
-      tx.executeSql(`drop table ${chatroomId};`);
-    });
-  };
   useEffect(() => {
-    // dropMessagesTable(channel.id);
-    createMessagesTable(channel.id);
-    getMessagesFormLocalDB(channel.id);
+    // dropMessagesTable(db, channel.id);
+    createMessagesTable(db, channel.id);
+    // getMessagesFormLocalDB(db, channel.id);
     if (channel && user) {
-      removeListeners(listeners);
       addListeners(channel.id);
-      addUserStarsListener(channel.id, user.id);
     }
   }, []);
-
-  // componentWillUnmount() {
-  //   removeListeners(listeners);
-  //   connectedRef.off();
-  // }
-
-  // componentWillUnmount() {
-  //   removeListeners(listeners);
-  //   connectedRef.off();
-  // }
-
-  function removeListeners(listeners) {
-    listeners.forEach((listener) => {
-      listener.ref.child(listener.id).off(listener.event);
-    });
-  }
-
-  // componentDidUpdate(prevProps, prevState) {
-  //   if (this.messagesEnd) {
-  //     this.scrollToBottom();
-  //   }
-  // }
-
-  function addToListeners(id, ref, event) {
-    const index = listeners.findIndex((listener) => {
-      return (
-        listener.id === id && listener.ref === ref && listener.event === event
-      );
-    });
-
-    if (index === -1) {
-      const newListener = { id, ref, event };
-      setListeners(listeners.concat(newListener));
-    }
-  }
-
-  // scrollToBottom = () => {
-  //   this.messagesEnd.scrollIntoView({ behavior: "smooth" });
-  // };
-
-  function addListeners(channelId) {
-    addMessageListener(channelId);
-    addTypingListeners(channelId);
-  }
 
   function addTypingListeners(channelId) {
     let typingUsers = [];
@@ -206,7 +102,6 @@ const ChatRoomScreen = () => {
         setTypingUsers(typingUsers);
       }
     });
-    addToListeners(channelId, typingRef, "child_added");
 
     typingRef.child(channelId).on("child_removed", (snap) => {
       const index = typingUsers.findIndex((user) => user.id === snap.key);
@@ -215,7 +110,6 @@ const ChatRoomScreen = () => {
         setTypingUsers(typingUsers);
       }
     });
-    addToListeners(channelId, typingRef, "child_removed");
 
     connectedRef.on("value", (snap) => {
       if (snap.val() === true) {
@@ -231,6 +125,10 @@ const ChatRoomScreen = () => {
       }
     });
   }
+  function addListeners(channelId) {
+    addMessageListener(channelId);
+    addTypingListeners(channelId);
+  }
 
   function addMessageListener(channelId) {
     const ref = getMessagesRef();
@@ -241,32 +139,43 @@ const ChatRoomScreen = () => {
         (_, { rows }) => {
           if (rows.length == 0) {
             let loadedMessages = [];
-            ref.child(channelId).on("child_added", (snap) => {
-              const { id, content, read, timestamp, user } = snap.val();
+            ref.child(channelId).on("child_added", async (snap) => {
+              const {
+                id,
+                content,
+                read,
+                timestamp,
+                reply_msg,
+                reply_uid,
+                reply_username,
+                uid,
+                username,
+              } = snap.val();
               const transformed = {
                 ...snap.val(),
                 key: snap.key,
               };
               // (id, content, key, read, reply_msg, reply_uid, reply_username, timestamp, uid, username)
-              if (snap.val().reply) {
-                const { reply } = snap.val();
+              if (snap.val().reply_msg) {
                 updateMessagesTable(
+                  db,
                   [
                     id,
                     content,
                     snap.key,
                     read ? 1 : 0,
-                    reply.message,
-                    reply.userId,
-                    reply.userName,
+                    reply_msg,
+                    reply_uid,
+                    reply_username,
                     timestamp,
-                    user.id,
-                    user.name,
+                    uid,
+                    username,
                   ],
                   channelId
                 );
               } else {
                 updateMessagesTable(
+                  db,
                   [
                     id,
                     content,
@@ -276,33 +185,35 @@ const ChatRoomScreen = () => {
                     null,
                     null,
                     timestamp,
-                    user.id,
-                    user.name,
+                    uid,
+                    username,
                   ],
                   channelId
                 );
               }
               loadedMessages.push(transformed);
-              // setMessages(loadedMessages);
-              // countUniqueUsers(loadedMessages);
-              // countUserPosts(loadedMessages);
-
-              getMessagesFormLocalDB(channelId);
+              getMessagesFormLocalDB(db, channelId);
             });
             setMessagesLoading(false);
-            addToListeners(channelId, ref, "child_added");
           } else {
             ref
               .child(channelId)
-              .orderByChild(`read`)
+              .orderByChild(`read`, `uid`)
               .equalTo(false)
+              // .orderByChild(`uid`)
+              .equalTo(route.params.id)
               .on("child_added", (snap) => {
+                console.log("====================================");
+                console.log("COUNT@", snap.hasChildren());
+                console.log("====================================");
                 if (snap.numChildren() !== 0) {
-                  // const mkey = snap.key;
-                  console.log("====================================");
-                  console.log(snap);
-                  console.log("====================================");
-                  if (user.id === snap.val().user.id) {
+                  // console.log("====================================");
+                  // console.log(snap);
+                  // console.log("====================================");
+                  if (user.id === snap.val().uid) {
+                    console.log("====================================");
+                    console.log("TRUE");
+                    console.log("====================================");
                     return;
                   }
                   ref
@@ -310,105 +221,69 @@ const ChatRoomScreen = () => {
                     .orderByChild(`read`)
                     .equalTo(false)
                     .on("child_added", (snap) => {
-                      const { id, content, read, timestamp, user } = snap.val();
-                      if (snap.val().reply) {
-                        const { reply } = snap.val();
-                        updateMessagesTable(
-                          [
-                            id,
-                            content,
-                            snap.key,
-                            read ? 1 : 0,
-                            reply.message,
-                            reply.userId,
-                            reply.userName,
-                            timestamp,
-                            user.id,
-                            user.name,
-                          ],
-                          channelId
-                        );
-                      } else {
-                        updateMessagesTable(
-                          [
-                            id,
-                            content,
-                            snap.key,
-                            read ? 1 : 0,
-                            null,
-                            null,
-                            null,
-                            timestamp,
-                            user.id,
-                            user.name,
-                          ],
-                          channelId
-                        );
-                      }
-                      getMessagesFormLocalDB(channelId);
+                      const {
+                        id,
+                        content,
+                        read,
+                        reply_msg,
+                        reply_uid,
+                        reply_username,
+                        timestamp,
+                        uid,
+                        username,
+                      } = snap.val();
+                      // if (snap.val().reply_msg) {
+                      //   updateMessagesTable(
+                      //     db,
+                      //     [
+                      //       id,
+                      //       content,
+                      //       snap.key,
+                      //       read ? 1 : 0,
+                      //       reply_msg,
+                      //       reply_uid,
+                      //       reply_username,
+                      //       timestamp,
+                      //       uid,
+                      //       username,
+                      //     ],
+                      //     channelId
+                      //   );
+                      // } else {
+                      //   updateMessagesTable(
+                      //     db,
+                      //     [
+                      //       id,
+                      //       content,
+                      //       snap.key,
+                      //       read ? 1 : 0,
+                      //       null,
+                      //       null,
+                      //       null,
+                      //       timestamp,
+                      //       uid,
+                      //       username,
+                      //     ],
+                      //     channelId
+                      //   );
+                      // }
+                      getMessagesFormLocalDB(db, channelId);
                       setMessagesLoading(false);
-                      addToListeners(channelId, ref, "child_added");
                       return;
                     });
                 } else {
-                  // console.log(snap.numChildren());
-                  getMessagesFormLocalDB(channelId);
+                  getMessagesFormLocalDB(db, channelId);
                   setMessagesLoading(false);
-                  addToListeners(channelId, ref, "child_added");
                 }
               });
-            // addToListeners(channelId, ref, "child_added");
           }
         }
       );
     });
   }
 
-  function addUserStarsListener(channelId, userId) {
-    usersRef
-      .child(userId)
-      .child("starred")
-      .once("value")
-      .then((data) => {
-        if (data.val() !== null) {
-          const channelIds = Object.keys(data.val());
-          const prevStarred = channelIds.includes(channelId);
-          setIsChannelStarred(prevStarred);
-        }
-      });
-  }
-
   function getMessagesRef() {
     return privateChannel ? privateMessagesRef : messagesRef;
-  }
-
-  function handleStar() {
-    setIsChannelStarred(!isChannelStarred);
-    starChannel();
-  }
-
-  function starChannel() {
-    if (isChannelStarred) {
-      usersRef.child(`${user.id}/starred`).update({
-        [channel.id]: {
-          name: channel.name,
-          details: channel.details,
-          createdBy: {
-            name: channel.createdBy.name,
-            avatar: channel.createdBy.avatar,
-          },
-        },
-      });
-    } else {
-      usersRef
-        .child(`${user.id}/starred`)
-        .child(channel.id)
-        .remove((err) => {
-          if (err !== null) {
-            console.error(err);
-          }
-        });
-    }
   }
 
   function handleSearchMessages() {
@@ -425,32 +300,6 @@ const ChatRoomScreen = () => {
     }, []);
     setSearchResults(searchResults);
     setTimeout(() => setSearchLoading(false), 1000);
-  }
-
-  function countUniqueUsers(messages) {
-    const uniqueUsers = messages.reduce((acc, message) => {
-      if (!acc.includes(message.user.name)) {
-        acc.push(message.user.name);
-      }
-      return acc;
-    }, []);
-    const numUniqueUsers = uniqueUsers.length;
-    setNumUniqueUsers(numUniqueUsers);
-  }
-
-  function countUserPosts(messages) {
-    let userPosts = messages.reduce((acc, message) => {
-      if (message.user.name in acc) {
-        acc[message.user.name].count += 1;
-      } else {
-        acc[message.user.name] = {
-          avatar: message.user.avatar,
-          count: 1,
-        };
-      }
-      return acc;
-    }, {});
-    dispatch(setUserPosts(userPosts));
   }
 
   function displayChannelName(channel) {
@@ -476,31 +325,31 @@ const ChatRoomScreen = () => {
   const chatBGPicker = () => {
     switch (chatBackground) {
       case 1:
-        return require(`../assets/cwall/1.jpg`);
+        return require(`../../assets/cwall/1.jpg`);
         break;
       case 2:
-        return require(`../assets/cwall/2.jpg`);
+        return require(`../../assets/cwall/2.jpg`);
         break;
       case 3:
-        return require(`../assets/cwall/3.jpg`);
+        return require(`../../assets/cwall/3.jpg`);
         break;
       case 4:
-        return require(`../assets/cwall/4.png`);
+        return require(`../../assets/cwall/4.png`);
         break;
       case 5:
-        return require(`../assets/cwall/5.jpg`);
+        return require(`../../assets/cwall/5.jpg`);
         break;
       case 6:
-        return require(`../assets/cwall/6.jpg`);
+        return require(`../../assets/cwall/6.jpg`);
         break;
       case 7:
-        return require(`../assets/cwall/7.jpg`);
+        return require(`../../assets/cwall/7.jpg`);
         break;
       case 8:
-        return require(`../assets/cwall/8.jpg`);
+        return require(`../../assets/cwall/8.jpg`);
         break;
       case 9:
-        return require(`../assets/cwall/9.jpg`);
+        return require(`../../assets/cwall/9.jpg`);
         break;
       default:
         return { uri: chatBackground };
@@ -617,112 +466,24 @@ const ChatRoomScreen = () => {
         reply={reply}
         setReply={setReply}
       />
-      {scrollToBottom ? (
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity
-            onPress={() => {
-              onScrollToBottom();
-            }}
-          >
-            <View style={styles.button}>
-              <Feather name="chevrons-down" size={20} color="white" />
-            </View>
-          </TouchableOpacity>
-        </View>
-      ) : null}
-      {showMore ? (
-        <TouchableWithoutFeedback
-          onPress={() => {
-            setShowMore(false);
-          }}
-        >
-          <View style={{ ...styles.moreModalContainer, bottom: 0 }}>
-            <View style={styles.modalContainer}>
-              <TouchableOpacity
-                style={styles.modalTextButton}
-                onPress={() => {
-                  setSearching(true);
-                  setShowMore(false);
-                }}
-              >
-                <View style={{ flexDirection: "row", alignItems: "center" }}>
-                  <Feather
-                    name="search"
-                    size={18}
-                    color="black"
-                    style={{ marginRight: 10 }}
-                  />
-                  <Text style={styles.modalText}>Search</Text>
-                </View>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </TouchableWithoutFeedback>
-      ) : null}
-      {searching ? (
-        <View
-          style={{
-            ...styles.moreModalContainer,
-            alignItems: "flex-start",
-            backgroundColor: "transparent",
-            paddingTop: 35,
-            flexDirection: "row",
-            paddingRight: 20,
-          }}
-        >
-          <CustomInput
-            onChange={(e) => {
-              setQuery(e);
-              setSearchLoading(true);
-              handleSearchMessages();
-            }}
-            value={query}
-            placeholder={"Search message"}
-            icon={
-              searchLoading ? (
-                <Image
-                  style={{ marginLeft: 5, width: 18, height: 18 }}
-                  source={require("../assets/loader.gif")}
-                />
-              ) : (
-                <Feather name="search" size={18} color="black" />
-              )
-            }
-            iStyle={{ padding: 0, height: 40, paddingLeft: 10 }}
-            cStyle={{ paddingLeft: 10, height: 40, margin: 0, flex: 1 }}
-          />
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <TouchableOpacity
-              style={{
-                alignItems: "center",
-                justifyContent: "center",
-                width: 25,
-                height: 25,
-                borderRadius: 20,
-                elevation: 2,
-                marginTop: 10,
-                backgroundColor: "#ff4747",
-              }}
-              onPress={() => {
-                setQuery("");
-                setSearching(false);
-              }}
-            >
-              <AntDesign name="close" size={18} color="#ffffff" />
-            </TouchableOpacity>
-          </View>
-        </View>
-      ) : null}
+      <ChatRoomUtils
+        helper={{
+          scrollToBottom,
+          showMore,
+          searching,
+          setShowMore,
+          setSearching,
+          searchLoading,
+          query,
+          setQuery,
+          setSearchLoading,
+          handleSearchMessages,
+        }}
+      />
     </>
   );
 };
-// const scrollToEnd = (index) => {
-//   console.log("====================================");
-//   console.log(flatListRef);
-//   console.log("====================================");
-//   // flatListRef.scrollToEnd();
-// };
-// scrollToEnd();
+
 const styles = StyleSheet.create({
   container: {},
   header: {

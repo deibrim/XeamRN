@@ -58,6 +58,7 @@ const ChatRoomScreen = () => {
   const [index, setIndex] = useState(messages.length);
   const [showMore, setShowMore] = useState(false);
   const [searching, setSearching] = useState(false);
+  const [messageExists, setMessageExists] = useState(false);
   const [query, setQuery] = useState("");
   const [reply, setReply] = useState({});
 
@@ -81,11 +82,24 @@ const ChatRoomScreen = () => {
   useEffect(() => {
     // dropMessagesTable(db, channel.id);
     createMessagesTable(db, channel.id);
+    db.transaction((tx) => {
+      tx.executeSql(
+        `select * from ${channel.id.split("/").join("")}`,
+        [],
+        (_, { rows }) => {
+          if (rows.length > 0) {
+            setMessageExists(true);
+            console.log(rows);
+            setMessages(rows._array);
+          }
+        }
+      );
+    });
     // getMessagesFormLocalDB(db, channel.id);
     if (channel && user) {
       addListeners(channel.id);
     }
-  }, []);
+  }, [channel]);
 
   function addTypingListeners(channelId) {
     let typingUsers = [];
@@ -132,154 +146,141 @@ const ChatRoomScreen = () => {
 
   function addMessageListener(channelId) {
     const ref = getMessagesRef();
-    db.transaction((tx) => {
-      tx.executeSql(
-        `select * from ${channelId.split("/").join("")}`,
-        [],
-        (_, { rows }) => {
-          if (rows.length == 0) {
-            let loadedMessages = [];
-            ref.child(channelId).on("child_added", async (snap) => {
-              const {
-                id,
-                content,
-                read,
-                timestamp,
-                reply_msg,
-                reply_uid,
-                reply_username,
-                uid,
-                username,
-              } = snap.val();
-              const transformed = {
-                ...snap.val(),
-                key: snap.key,
-              };
-              // (id, content, key, read, reply_msg, reply_uid, reply_username, timestamp, uid, username)
-              if (snap.val().reply_msg) {
-                updateMessagesTable(
-                  db,
-                  [
-                    id,
-                    content,
-                    snap.key,
-                    read ? 1 : 0,
-                    reply_msg,
-                    reply_uid,
-                    reply_username,
-                    timestamp,
-                    uid,
-                    username,
-                  ],
-                  channelId
-                );
-              } else {
-                updateMessagesTable(
-                  db,
-                  [
-                    id,
-                    content,
-                    snap.key,
-                    read ? 1 : 0,
-                    null,
-                    null,
-                    null,
-                    timestamp,
-                    uid,
-                    username,
-                  ],
-                  channelId
-                );
-              }
-              loadedMessages.push(transformed);
-              getMessagesFormLocalDB(db, channelId);
-            });
-            setMessagesLoading(false);
-          } else {
-            ref
-              .child(channelId)
-              .orderByChild(`read`, `uid`)
-              .equalTo(false)
-              // .orderByChild(`uid`)
-              .equalTo(route.params.id)
-              .on("child_added", (snap) => {
-                console.log("====================================");
-                console.log("COUNT@", snap.hasChildren());
-                console.log("====================================");
-                if (snap.numChildren() !== 0) {
-                  // console.log("====================================");
-                  // console.log(snap);
-                  // console.log("====================================");
-                  if (user.id === snap.val().uid) {
-                    console.log("====================================");
-                    console.log("TRUE");
-                    console.log("====================================");
-                    return;
-                  }
-                  ref
-                    .child(channelId)
-                    .orderByChild(`read`)
-                    .equalTo(false)
-                    .on("child_added", (snap) => {
-                      const {
-                        id,
-                        content,
-                        read,
-                        reply_msg,
-                        reply_uid,
-                        reply_username,
-                        timestamp,
-                        uid,
-                        username,
-                      } = snap.val();
-                      // if (snap.val().reply_msg) {
-                      //   updateMessagesTable(
-                      //     db,
-                      //     [
-                      //       id,
-                      //       content,
-                      //       snap.key,
-                      //       read ? 1 : 0,
-                      //       reply_msg,
-                      //       reply_uid,
-                      //       reply_username,
-                      //       timestamp,
-                      //       uid,
-                      //       username,
-                      //     ],
-                      //     channelId
-                      //   );
-                      // } else {
-                      //   updateMessagesTable(
-                      //     db,
-                      //     [
-                      //       id,
-                      //       content,
-                      //       snap.key,
-                      //       read ? 1 : 0,
-                      //       null,
-                      //       null,
-                      //       null,
-                      //       timestamp,
-                      //       uid,
-                      //       username,
-                      //     ],
-                      //     channelId
-                      //   );
-                      // }
-                      getMessagesFormLocalDB(db, channelId);
-                      setMessagesLoading(false);
-                      return;
-                    });
-                } else {
-                  getMessagesFormLocalDB(db, channelId);
-                  setMessagesLoading(false);
-                }
-              });
-          }
+    console.log(messageExists);
+    if (!messageExists) {
+      let loadedMessages = [];
+      ref.child(channelId).on("child_added", async (snap) => {
+        const {
+          id,
+          content,
+          read,
+          timestamp,
+          reply_msg,
+          reply_uid,
+          reply_username,
+          uid,
+          username,
+        } = snap.val();
+        const transformed = {
+          ...snap.val(),
+          key: snap.key,
+        };
+        console.log("rows.length == 0");
+        // (id, content, key, read, reply_msg, reply_uid, reply_username, timestamp, uid, username)
+        if (snap.val().reply_msg) {
+          updateMessagesTable(
+            db,
+            [
+              id,
+              content,
+              snap.key,
+              read ? 1 : 0,
+              reply_msg,
+              reply_uid,
+              reply_username,
+              timestamp,
+              uid,
+              username,
+            ],
+            channelId
+          );
+        } else {
+          updateMessagesTable(
+            db,
+            [
+              id,
+              content,
+              snap.key,
+              read ? 1 : 0,
+              null,
+              null,
+              null,
+              timestamp,
+              uid,
+              username,
+            ],
+            channelId
+          );
         }
-      );
-    });
+        loadedMessages.push(transformed);
+        getMessagesFormLocalDB(db, channelId);
+      });
+      setMessagesLoading(false);
+    } else {
+      ref
+        .child(channelId)
+        .orderByChild("read")
+        .equalTo(false)
+        // .orderByChild(`uid`)
+        // .equalTo(route.params.id)
+        .on("child_added", (snap) => {
+          if (snap.numChildren() !== 0) {
+            if (user.id === snap.val().uid) {
+              return;
+            }
+            // ref
+            //   .child(channelId)
+            //   .orderByChild(`read`)
+            //   .equalTo(false)
+            //   .on("child_added", (snap) => {
+            const {
+              id,
+              content,
+              read,
+              reply_msg,
+              reply_uid,
+              reply_username,
+              timestamp,
+              uid,
+              username,
+            } = snap.val();
+            console.log("snap.numChildren() !== 0");
+            if (snap.val().reply_msg) {
+              updateMessagesTable(
+                db,
+                [
+                  id,
+                  content,
+                  snap.key,
+                  read ? 1 : 0,
+                  reply_msg,
+                  reply_uid,
+                  reply_username,
+                  timestamp,
+                  uid,
+                  username,
+                ],
+                channelId
+              );
+            } else {
+              console.log("BUG HERE");
+              updateMessagesTable(
+                db,
+                [
+                  id,
+                  content,
+                  snap.key,
+                  read ? 1 : 0,
+                  null,
+                  null,
+                  null,
+                  timestamp,
+                  uid,
+                  username,
+                ],
+                channelId
+              );
+            }
+            getMessagesFormLocalDB(db, channelId);
+            setMessagesLoading(false);
+            return;
+            // });
+          } else {
+            getMessagesFormLocalDB(db, channelId);
+            setMessagesLoading(false);
+          }
+        });
+    }
   }
 
   function getMessagesRef() {
@@ -465,6 +466,8 @@ const ChatRoomScreen = () => {
         endUser={route.params}
         reply={reply}
         setReply={setReply}
+        messages={messages}
+        setMessages={setMessages}
       />
       <ChatRoomUtils
         helper={{

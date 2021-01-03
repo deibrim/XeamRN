@@ -11,7 +11,6 @@ import {
   TouchableOpacity,
   ProgressBarAndroid,
 } from "react-native";
-import CityPicker from "react-native-citys-picker";
 import * as Location from "expo-location";
 import * as ImagePicker from "expo-image-picker";
 import Constants from "expo-constants";
@@ -67,71 +66,19 @@ const EditProfileScreen = () => {
   async function getLocationAsync() {
     let { status } = await Location.requestPermissionsAsync();
     if (status !== "granted") {
-      setErrorMsg("Permission to access location was denied");
+      setErrorMessage("Permission to access location was denied");
       return;
     }
-    // const ZOMATO_USER_KEY = process.env['ZOMATO_USER_KEY']
-    const ZOMATO_USER_KEY = `f0f3485828ae2ed93ea6bbfb2d13d75b`;
-    // const proxy = "https://cors-anywhere.herokuapp.com/";
-    let location = await Location.getCurrentPositionAsync({});
-    const latitude = location.coords.latitude;
-    const longitude = location.coords.longitude;
-    // var url = "https://freegeoip.net/json/";
-    fetch(`https://freegeoip.net/json/`)
-      .then((response) => response.json())
-      .then((responseJson) => {
-        console.log(JSON.stringify(responseJson));
-        // this.setState({
-        //   countryName: responseJson.country_name,
-        //   regionName: responseJson.region_name + JSON.stringify(responseJson)
-        // });
-      })
-      .catch((error) => {
-        console.error("errr", error);
-      });
-    // fetch(
-    //   `https://developers.zomato.com/api/v2.1/cities?lat=${latitude}&lon=${longitude}&count=3`,
-    //   {
-    //     method: "GET",
-    //     headers: {
-    //       Accept: "application/json",
-    //       "user-key": ZOMATO_USER_KEY,
-    //     },
-    //   }
-    // )
-    //   .then((response) => response.json())
-    //   .then((responseJson) => {
-    //     const cities = responseJson.location_suggestions;
-    //     console.log("====================================");
-    //     console.log(responseJson);
-    //     console.log("====================================");
-    //     if (cities.length > 1) {
-    //       return console.log(cities[0]);
-    //     } else {
-    //       console.log("Unable to find city for the userLocation");
-    //       return null;
-    //     }
-    //   })
-    //   .catch((error) => {
-    //     console.error(error);
-    //   });
-    // const res = await fetch(
-    //   `https://developers.zomato.com/api/v2.1/cities?lat=${latitude}&lon=${longitude}&count=3`,
-    //   {
-    //     method: "GET",
-    //     headers: {
-    //       Accept: "application/json",
-    //       "user-key": ZOMATO_USER_KEY,
-    //     },
-    //   }
-    // );
-    // const data = res.json();
 
-    // console.log("====================================");
-    // // console.log(location);
-    // console.log(latitude, longitude, data);
-    // console.log("====================================");
-    // setLocation(location);
+    let location = await Location.getCurrentPositionAsync({});
+    const address = await Location.reverseGeocodeAsync(location.coords);
+    const addressObj = address[0];
+    setLocation(`${addressObj.city}, ${addressObj.country}`);
+    addressObj.country.toLowerCase() === "nigeria"
+      ? setLocation(
+          `${addressObj.city}, ${addressObj.region} State, ${addressObj.country}`
+        )
+      : setLocation(`${addressObj.city}, ${addressObj.country}`);
   }
 
   const pickImage = async () => {
@@ -269,7 +216,7 @@ const EditProfileScreen = () => {
           handleChange={setUsername}
           value={username}
         />
-        <CityPicker
+        {/* <CityPicker
           onSubmit={(params) => {
             console.log(params);
             setCountry();
@@ -287,7 +234,7 @@ const EditProfileScreen = () => {
           >
             Select Region
           </Text>
-        </CityPicker>
+        </CityPicker> */}
         <EditProfileInputGroup
           label={"Location"}
           handleChange={setLocation}

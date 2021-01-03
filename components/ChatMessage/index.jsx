@@ -107,7 +107,7 @@ const ChatMessage = (props) => {
               },
             ]}
           >
-            {message.reply_msg !== undefined ? (
+            {message.reply_msg !== null ? (
               <View
                 style={{
                   borderLeftWidth: 4,

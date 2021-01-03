@@ -3,6 +3,7 @@ import { ActionTypes } from "./types";
 const INITIAL_STATE = {
   currentUser: null,
   currentUserTvProfile: null,
+  currentUserXStore: null,
 };
 
 const userReducer = (state = INITIAL_STATE, action) => {
@@ -16,6 +17,11 @@ const userReducer = (state = INITIAL_STATE, action) => {
       return {
         ...state,
         currentUserTvProfile: action.payload,
+      };
+    case ActionTypes.SET_CURRENT_USER_XSTORE:
+      return {
+        ...state,
+        currentUserXStore: action.payload,
       };
     default:
       return state;

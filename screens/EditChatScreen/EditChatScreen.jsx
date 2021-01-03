@@ -103,7 +103,9 @@ export default function EditChatScreen() {
                     width: "100%",
                     borderWidth: 2,
                     borderColor:
-                      typeof chatBackground === "string" && "#006eff",
+                      typeof chatBackground === "string"
+                        ? "#006eff"
+                        : "#ecf2fa",
                   },
                 ]}
               />

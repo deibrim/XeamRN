@@ -127,7 +127,7 @@ export default function SettingsScreen() {
             icon={<AntDesign name="isv" size={20} color="white" />}
             onPress={() =>
               user.isBusinessAccount
-                ? navigation.navigate("UserStoreScreen")
+                ? navigation.navigate("XStoreScreen")
                 : navigation.navigate("StoreGetStartedScreen")
             }
           />

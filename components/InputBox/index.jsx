@@ -17,6 +17,8 @@ import {
 import { v4 as uuidv4 } from "uuid";
 import EmojiBoard from "react-native-emoji-board";
 import firebase, { firestore } from "../../firebase/firebase.utils";
+import * as SQLite from "expo-sqlite";
+import { updateMessagesTable } from "../../sqlite/sqlite.functions";
 import styles from "./styles";
 
 const InputBox = (props) => {
@@ -44,6 +46,9 @@ const InputBox = (props) => {
   const [isFriends, setIsFriends] = useState(false);
   const [replyingMessage, setReplyingMessage] = useState(false);
   const [emojiPicker, setEmojiPicker] = useState(false);
+
+  const db = SQLite.openDatabase("msgStore.db");
+  const mid = uuidv4().split("-").join("");
   useEffect(() => {
     if (message) {
       typingRef.child(channel.id).child(user.id).set(`${currentUser.username}`);
@@ -53,8 +58,8 @@ const InputBox = (props) => {
   }, [message]);
   function createMessage(fileUrl = null, audio = null, video = null) {
     const messageData = {
-      id: uuidv4().split("-").join(""),
-      timestamp: firebase.database.ServerValue.TIMESTAMP,
+      id: mid,
+      timestamp: Date.now(),
       uid: user.id,
       username: user.name,
       read: false,
@@ -71,6 +76,7 @@ const InputBox = (props) => {
     } else {
       messageData["content"] = message;
     }
+    setMessage("");
     return messageData;
   }
 
@@ -84,7 +90,9 @@ const InputBox = (props) => {
   }
 
   async function sendMessage() {
-    const { getMessagesRef } = props;
+    const createMes = createMessage();
+    const { getMessagesRef, messages, setMessages } = props;
+    setMessages([...messages, createMes]);
     await firebase
       .database()
       .ref("privateMessages")
@@ -111,13 +119,76 @@ const InputBox = (props) => {
         }
         send();
       });
+    // function updateLocalDb(msg) {
+    //   const {
+    //     id,
+    //     content,
+    //     read,
+    //     timestamp,
+    //     reply_msg,
+    //     reply_uid,
+    //     reply_username,
+    //     uid,
+    //     username,
+    //   } = msg;
+    //   // console.log("====================================");
+    //   // console.log(msg);
+    //   // console.log(msg.reply_msg);
+    //   if (msg.reply_msg) {
+    //     // console.log("True ====================================");
+    //     updateMessagesTable(
+    //       db,
+    //       [
+    //         id,
+    //         content,
+    //         mid,
+    //         read ? 1 : 0,
+    //         reply_msg,
+    //         reply_uid,
+    //         reply_username,
+    //         timestamp,
+    //         uid,
+    //         username,
+    //       ],
+    //       channel.id
+    //     );
+    //   } else {
+    //     // console.log("False ====================================");
+    //     updateMessagesTable(
+    //       db,
+    //       [
+    //         id,
+    //         content,
+    //         mid,
+    //         read ? 1 : 0,
+    //         null,
+    //         null,
+    //         null,
+    //         timestamp,
+    //         uid,
+    //         username,
+    //       ],
+    //       channel.id
+    //     );
+    //   }
+    //   const chatroomId = channel.id.split("/").join("");
+    //   db.transaction((tx) => {
+    //     tx.executeSql(`select * from ${chatroomId}`, [], (_, { rows }) => {
+    //       if (rows.length !== 0) {
+    //         console.log("====================================");
+    //         console.log("COUNT", rows);
+    //         console.log("====================================");
+    //       }
+    //     });
+    //   });
+    // }
     async function send() {
-      const createMes = createMessage();
+      // updateLocalDb(createMes);
       if (message.trim() !== "") {
         setLoading(true);
         await getMessagesRef()
           .child(channel.id)
-          .push()
+          .child(mid)
           .set(createMes)
           .then(async () => {
             setLoading(true);

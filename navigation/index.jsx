@@ -18,7 +18,11 @@ import {
   createUserProfileDocument,
   firestore,
 } from "../firebase/firebase.utils";
-import { setCurrentUser, setCurrentUserTvProfile } from "../redux/user/actions";
+import {
+  setCurrentUser,
+  setCurrentUserTvProfile,
+  setCurrentUserXStore,
+} from "../redux/user/actions";
 import ForgotPasswordScreen from "../screens/ForgotPasswordScreen";
 
 // If you are not familiar with React Navigation, we recommend going through the
@@ -36,6 +40,11 @@ function Navigation({ colorScheme }) {
             const userRef = firestore.doc(`xeamTvs/${snapShot.id}`);
             const snapshot = await userRef.get();
             dispatch(setCurrentUserTvProfile({ ...snapshot.data() }));
+          }
+          if (snapShot.data().isBusinessAccount) {
+            const xStoreRef = firestore.doc(`xeamStores/${snapShot.id}`);
+            const snapshot = await xStoreRef.get();
+            dispatch(setCurrentUserXStore({ ...snapshot.data() }));
           }
         });
       }

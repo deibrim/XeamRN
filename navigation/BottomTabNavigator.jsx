@@ -26,6 +26,8 @@ import TvProfileScreen from "../screens/TvProfileScreen/TvProfileScreen";
 import TvInsightScreen from "../screens/TvInsightScreen/TvInsightScreen";
 import EditTvProfileScreen from "../screens/EditTvProfileScreen/EditTvProfileScreen";
 import StoreGetStartedScreen from "../screens/StoreGetStartedScreen/StoreGetStartedScreen";
+import XStoreScreen from "../screens/XStoreScreen/XStoreScreen";
+import EditXStoreScreen from "../screens/EditXStoreScreen/EditXStoreScreen";
 import { useSelector } from "react-redux";
 
 const BottomTab = createBottomTabNavigator();
@@ -90,6 +92,12 @@ export default function BottomTabNavigator() {
         return false;
         break;
       case "TvInsightScreen":
+        return false;
+        break;
+      case "XStoreScreen":
+        return false;
+        break;
+      case "EditXStoreScreen":
         return false;
         break;
       default:
@@ -204,6 +212,20 @@ function HomeScreenNavigator() {
       <ScreenStack.Screen
         name="TvProfileScreen"
         component={TvProfileScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <ScreenStack.Screen
+        name="XStoreScreen"
+        component={XStoreScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <ScreenStack.Screen
+        name="EditXStoreScreen"
+        component={EditXStoreScreen}
         options={{
           headerShown: false,
         }}
@@ -369,6 +391,20 @@ function SettingsScreenNavigator() {
       <ScreenStack.Screen
         name="StoreGetStartedScreen"
         component={StoreGetStartedScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <ScreenStack.Screen
+        name="XStoreScreen"
+        component={XStoreScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <ScreenStack.Screen
+        name="EditXStoreScreen"
+        component={EditXStoreScreen}
         options={{
           headerShown: false,
         }}

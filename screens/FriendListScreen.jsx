@@ -26,7 +26,7 @@ function FriendListScreen({ setCurrentChannel, setPrivateChannel }) {
   const [localDbFriends, setLocalDbFriends] = useState({});
   const [activeChannel, setActiveChannel] = useState("");
   const [refreshing, setRefreshing] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   function useForceUpdate() {
     const [value, setValue] = useState(0);
     return [() => setValue(value + 1), value];
@@ -64,10 +64,10 @@ function FriendListScreen({ setCurrentChannel, setPrivateChannel }) {
   };
   useEffect(() => {
     // dropTable();
-    createTable();
-    getDataFromTable();
+    // createTable();
+    // getDataFromTable();
     if (user) {
-      addListeners(user.id);
+      // addListeners(user.id);
     }
   }, []);
 
@@ -160,7 +160,7 @@ function FriendListScreen({ setCurrentChannel, setPrivateChannel }) {
           paddingTop: 10,
         }}
       >
-        {/* {loading && (
+        {loading && (
           <View
             style={{
               flex: 1,
@@ -171,18 +171,15 @@ function FriendListScreen({ setCurrentChannel, setPrivateChannel }) {
               backgroundColor: "transparent",
             }}
           >
-            <Image
-              style={{ marginLeft: 5, width: 30, height: 30 }}
-              source={require("../assets/loader.gif")}
-            />
+            <Text style={styles.chatCount}>Under Construction</Text>
           </View>
-        )} */}
-        <FlatList
+        )}
+        {/* <FlatList
           data={friends}
           renderItem={({ item }) => <ChatListItem user={item} />}
           keyExtractor={(item, index) => index.toString()}
           extraData={friends}
-        />
+        /> */}
       </View>
     </>
   );

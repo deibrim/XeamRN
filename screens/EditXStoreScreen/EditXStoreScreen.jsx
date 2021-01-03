@@ -41,7 +41,7 @@ const wait = (timeout) => {
     })
   } */
 }
-const StoreGetStartedScreen = () => {
+const EditXStoreScreen = () => {
   const user = useSelector((state) => state.user.currentUser);
   const dispatch = useDispatch();
   const navigation = useNavigation();
@@ -69,11 +69,7 @@ const StoreGetStartedScreen = () => {
         }
       }
     })();
-    user.isBusinessAccount
-      ? navigation.navigate("XStoreScreen")
-      : navigation.navigate("StoreGetStartedScreen");
-    // !user.location &&
-    getLocationAsync();
+    !user.location && getLocationAsync();
   }, []);
   async function getLocationAsync() {
     let { status } = await Location.requestPermissionsAsync();
@@ -83,7 +79,6 @@ const StoreGetStartedScreen = () => {
     }
 
     let location = await Location.getCurrentPositionAsync({});
-
     const address = await Location.reverseGeocodeAsync(location.coords);
     const addressObj = address[0];
     setLocation(`${addressObj.city}, ${addressObj.country}`);
@@ -119,12 +114,12 @@ const StoreGetStartedScreen = () => {
   const onStoreCreated = useCallback(() => {
     setStoreCreated(true);
     wait(2000).then(async () => {
-      const userRef = firestore.doc(`xeamStores/${user.id}`);
+      const userRef = firestore.doc(`stores/${user.id}`);
       const snapShot = await userRef.get();
       dispatch(setCurrentUserTvProfile({ ...snapShot.data() }));
       const resetAction = navigation.reset({
-        index: 1,
-        actions: [navigation.navigate("XStoreScreen")],
+        index: 0,
+        actions: [navigation.navigate("TvProfileScreen")],
       });
       navigation.dispatch(resetAction);
       setStoreCreated(false);
@@ -133,9 +128,7 @@ const StoreGetStartedScreen = () => {
   const uploadLogoToStorage = async () => {
     const response = await fetch(image);
     const blob = await response.blob();
-    const storageRef = firebase
-      .storage()
-      .ref(`xeamStores/${user.id}/store_logo`);
+    const storageRef = firebase.storage().ref(`tv/${user.id}/tv_logo`);
     const uploadTask = storageRef.put(blob);
     uploadTask.on(
       "state_changed",
@@ -158,10 +151,10 @@ const StoreGetStartedScreen = () => {
       () => {
         uploadTask.snapshot.ref.getDownloadURL().then(async (downloadURL) => {
           setImage(downloadURL);
-          setUploading(" Creating XStore...");
+          setUploading(" Creating profile...");
           const storeData = {
             id: user.id,
-            storeHandle: `${storeHandle.toLowerCase()}.store`,
+            storeHandle: `${storeHandle.toLowerCase()}.tv`,
             location,
             logo: downloadURL,
             website: website.toLowerCase(),
@@ -169,7 +162,7 @@ const StoreGetStartedScreen = () => {
             tvOwnerUsername: user.username,
           };
 
-          firestore.collection("xeamStores").doc(user.id).set(storeData);
+          firestore.collection("stores").doc(user.id).set(storeData);
           const userRef = firestore.doc(`users/${user.id}`);
           await userRef.update({ isBusinessAccount: true });
           setLoading(false);
@@ -178,7 +171,7 @@ const StoreGetStartedScreen = () => {
       }
     );
   };
-  const onCreateStore = async () => {
+  const onCreateTv = async () => {
     setLoading(true);
 
     try {
@@ -199,16 +192,16 @@ const StoreGetStartedScreen = () => {
       return;
     }
     setErrorMessage("");
-    const storesRef = await firestore
-      .collection("xeamStores")
+    const tvsRef = await firestore
+      .collection("stores")
       .where("storeHandle", "==", `${storeHandle.toLowerCase()}`);
-    const snapshot = await storesRef.get();
+    const snapshot = await tvsRef.get();
     if (snapshot.docs.length > 0) {
       setErrorMessage("Store name already existed");
       setLoading(false);
       return;
     }
-    onCreateStore();
+    onCreateTv();
   };
 
   const Procedure = [
@@ -285,7 +278,7 @@ const StoreGetStartedScreen = () => {
         style={{ marginBottom: 30 }}
       />
       <Text style={{ color: "#111111", fontSize: 18, marginBottom: 20 }}>
-        Getting Your Store Ready!
+        Getting Your Profile Ready!
       </Text>
       <Image
         style={{ width: 35, height: 35 }}
@@ -464,4 +457,4 @@ const StoreGetStartedScreen = () => {
   );
 };
 
-export default StoreGetStartedScreen;
+export default EditXStoreScreen;

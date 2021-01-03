@@ -293,9 +293,9 @@ export default function ProfileScreen() {
         )}
         <View style={{ marginVertical: 5 }}></View>
         {user.isBusinessAccount && (
-          <TouchableOpacity onPress={() => {}}>
+          <TouchableOpacity onPress={() => navigation.navigate("XStoreScreen")}>
             <View style={styles.button}>
-              <FontAwesome5 name="store-alt" size={20} color="white" />
+              <AntDesign name="isv" size={20} color="white" />
             </View>
           </TouchableOpacity>
         )}

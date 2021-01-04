@@ -1,9 +1,9 @@
 import { AntDesign, Ionicons, Fontisto } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
 import {
+  Dimensions,
   Text,
   View,
-  StyleSheet,
   Image,
   TouchableOpacity,
   ScrollView,
@@ -11,9 +11,11 @@ import {
 import { useSelector, useDispatch } from "react-redux";
 import { firestore, auth } from "../../firebase/firebase.utils";
 import { useNavigation } from "@react-navigation/native";
-// import { setCurrentUser } from "../../redux/user/actions";
+import { LineChart } from "react-native-chart-kit";
 import { setTvReels } from "../../redux/reel/actions";
 import ReelPreview from "../../components/ReelPreview/ReelPreview";
+import { styles } from "./styles";
+import AppButton from "../../components/AppButton/AppButton";
 
 export default function XStoreScreen() {
   const user = useSelector((state) => state.user.currentUser);
@@ -21,6 +23,7 @@ export default function XStoreScreen() {
   const reels = useSelector((state) => state.reel.tvReels);
   const [followerCount, setFollowerCount] = useState(0);
   const [focused, setFocused] = useState("reels");
+  const [filter, setFilter] = useState("thisWeek");
   const [loading, setLoading] = useState(false);
   const [loadingReels, setLoadingReels] = useState(false);
   const dispatch = useDispatch();
@@ -82,28 +85,11 @@ export default function XStoreScreen() {
           style={{
             flexDirection: "row",
             // width: 70,
-            justifyContent: "flex-end",
+            justifyContent: "space-between",
           }}
         >
-          {/* <TouchableOpacity
-            onPress={() => navigation.navigate("EditProfileScreen")}
-          >
+          <TouchableOpacity onPress={() => {}}>
             <AntDesign name="edit" size={20} color="black" />
-          </TouchableOpacity> */}
-          <TouchableOpacity onPress={() => {}}>
-            <Fontisto name="star" size={15} color="#006eff" />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => {}}>
-            <Fontisto name="star" size={15} color="#006eff" />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => {}}>
-            <Fontisto name="star" size={15} color="#006eff" />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => {}}>
-            <Fontisto name="star" size={15} color="#999999" />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => {}}>
-            <Fontisto name="star" size={15} color="#999999" />
           </TouchableOpacity>
         </View>
       </View>
@@ -128,226 +114,279 @@ export default function XStoreScreen() {
           <View style={styles.userPreview}>
             <View
               style={{
+                width: "30%",
+                // backgroundColor: "#006aff",
+                padding: 10,
+                borderTopRightRadius: 100,
+                borderBottomRightRadius: 100,
                 flexDirection: "row",
-                justifyContent: "space-evenly",
-                alignItems: "center",
-                width: "100%",
+                justifyContent: "flex-end",
+                marginVertical: 20,
+                marginRight: 10,
               }}
             >
-              <View>
-                <Text
-                  style={{ textAlign: "center", marginTop: 5, fontSize: 16 }}
-                >
-                  Products
-                </Text>
-                <Text
-                  style={{
-                    textAlign: "center",
-                    marginTop: 5,
-                    fontSize: 16,
-                    fontWeight: "bold",
-                  }}
-                >
-                  0
-                </Text>
-              </View>
-              <View
+              <Image
                 style={{
-                  width: "30%",
-                  // backgroundColor: "#006aff",
-                  padding: 10,
-                  borderBottomLeftRadius: 100,
-                  borderBottomRightRadius: 100,
-                  flexDirection: "row",
-                  justifyContent: "center",
+                  width: 80,
+                  height: 80,
+                  resizeMode: "cover",
+                  borderRadius: 50,
+                  borderWidth: 3,
+                  borderColor: "#006eff",
                 }}
-              >
-                <Image
-                  style={{
-                    width: 90,
-                    height: 90,
-                    resizeMode: "cover",
-                    borderRadius: 50,
-                    borderWidth: 2,
-                    borderColor: "#fff",
-                  }}
-                  source={{ uri: `${xStore.logo}` }}
-                />
-              </View>
-              <View>
-                <Text
-                  style={{ textAlign: "center", marginTop: 5, fontSize: 16 }}
-                >
-                  Stocks
-                </Text>
-                <Text
-                  style={{
-                    textAlign: "center",
-                    marginTop: 5,
-                    fontSize: 16,
-                    fontWeight: "bold",
-                  }}
-                >
-                  0
-                </Text>
-              </View>
+                source={{ uri: `${xStore.logo}` }}
+              />
             </View>
             <View style={styles.userInfo}>
-              <Text
-                style={{
-                  color: "#42414C",
-                  textAlign: "center",
-                  fontSize: 22,
-                  fontWeight: "bold",
-                  marginBottom: 10,
-                }}
-              >
-                @{xStore.storeHandle}
+              <Text style={{ cprofile_picolor: "#42414C", fontSize: 14 }}>
+                TOTAL REVENUE
               </Text>
               <Text
                 style={{
-                  color: "#42414C",
-                  textAlign: "center",
-                  fontSize: 16,
+                  color: "#006eff",
+                  fontSize: 25,
                   fontWeight: "500",
+                  fontWeight: "bold",
                 }}
               >
-                {xStore.location}
+                $2,050
               </Text>
+              <View
+                style={{
+                  flexDirection: "row",
+                  marginVertical: 5,
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: 12,
+                    color: "gray",
+                    marginRight: 10,
+                    fontWeight: "bold",
+                  }}
+                >
+                  10,010 orders
+                </Text>
+                <Text
+                  style={{ fontSize: 12, color: "gray", fontWeight: "bold" }}
+                >
+                  1010 products
+                </Text>
+              </View>
             </View>
           </View>
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-evenly",
-              alignItems: "center",
-              paddingHorizontal: 20,
-            }}
-          ></View>
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-around",
-              alignItems: "center",
-              paddingHorizontal: 20,
-              marginTop: 20,
-              height: 60,
-              paddingVertical: 15,
-              elevation: 2,
-            }}
-          ></View>
 
           <ScrollView>
-            {focused === "reels" && (
-              <View style={styles.listReels}>
-                {loadingReels && (
-                  <View
-                    style={{
-                      flex: 1,
-                      minHeight: 150,
-                      width: "100%",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      backgroundColor: "transparent",
-                    }}
-                  >
-                    <Image
-                      style={{ marginLeft: 5, width: 30, height: 30 }}
-                      source={require("../../assets/loader.gif")}
-                    />
-                  </View>
-                )}
-                {reels.map((item, index) => (
-                  <ReelPreview
-                    key={index}
-                    data={{ ...item, index }}
-                    reels={reels}
-                  />
-                ))}
+            {graph(Dimensions, filter, setFilter)}
+            <View style={styles.section}>
+              <View
+                style={{
+                  flexDirection: "row",
+                  width: "100%",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <Text style={styles.sectionTitle}>Top Selling</Text>
+                {filterButtons(filter, setFilter, {
+                  flexDirection: "row",
+                })}
               </View>
-            )}
+            </View>
           </ScrollView>
         </View>
       )}
-      {/* <View style={{ ...styles.buttonContainer }}>
+      <View
+        style={{
+          height: 80,
+          width: "100%",
+          position: "absolute",
+          bottom: 0,
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
         <TouchableOpacity
-          onPress={() => navigation.navigate("EditXStoreScreen")}
+          style={{
+            height: 50,
+            width: "90%",
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            backgroundColor: "#ffffff",
+            elevation: 5,
+            borderRadius: 25,
+            paddingHorizontal: 20,
+          }}
         >
-          <View style={styles.button}>
-            <AntDesign name="edit" size={20} color="white" />
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+            }}
+          >
+            <Text style={{ color: "#444444", fontSize: 16 }}>My Products</Text>
+            <Text
+              style={{
+                color: "#444444",
+                fontSize: 18,
+                marginLeft: 5,
+                fontWeight: "bold",
+              }}
+            >
+              {"10"}
+            </Text>
+          </View>
+          <View
+            style={{
+              height: 25,
+              width: 25,
+              backgroundColor: "#006eff",
+              justifyContent: "center",
+              alignItems: "center",
+              borderRadius: 15,
+            }}
+          >
+            <Ionicons name="ios-arrow-forward" size={20} color="#ffffff" />
           </View>
         </TouchableOpacity>
-        <View style={{ marginVertical: 5 }}></View>
-        <TouchableOpacity
-          onPress={() => navigation.navigate("TvInsightScreen")}
-        >
-          <View style={styles.button}>
-            <Ionicons name="ios-stats" size={20} color="white" />
-          </View>
-        </TouchableOpacity>
-      </View> */}
+      </View>
     </>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-  },
-  header: {
-    flexDirection: "row",
-    width: "100%",
-    alignItems: "center",
-    paddingTop: 40,
-    paddingBottom: 10,
-    paddingHorizontal: 20,
-    zIndex: 1,
-    minHeight: 80,
-    backgroundColor: "#ffffff",
-    justifyContent: "space-between",
-    elevation: 4,
-  },
-  userPreview: {
-    // flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingBottom: 30,
-  },
-  title: {
-    color: "#42414C",
-    fontSize: 20,
-    marginLeft: 10,
-    marginBottom: 1,
-  },
-  listReels: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    flexWrap: "wrap",
-    paddingHorizontal: 10,
-    paddingVertical: 10,
-    paddingBottom: 20,
-  },
-  buttonContainer: {
-    position: "absolute",
-    bottom: 20,
-    right: 20,
-  },
-  button: {
-    flexDirection: "row",
-    backgroundColor: "#006eff",
-    elevation: 2,
-    alignItems: "center",
-    justifyContent: "center",
-    height: 50,
-    width: 50,
-    borderRadius: 25,
-  },
-  buttonText: {
-    color: "#111111",
-    fontSize: 16,
-    fontWeight: "bold",
-    marginBottom: 2,
-    marginRight: 5,
-  },
-});
+function graph(Dimensions, filter, setFilter) {
+  return (
+    <View style={{ alignItems: "center", width: "100%" }}>
+      <View
+        style={{
+          backgroundColor: "#609FF3",
+          borderRadius: 16,
+        }}
+      >
+        <View
+          style={{
+            width: "100%",
+            backgroundColor: "#609FF3",
+            borderRadius: 16,
+            padding: 20,
+            paddingBottom: 0,
+          }}
+        >
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+            }}
+          >
+            <Text
+              style={{
+                color: "#ffffff",
+                fontSize: 18,
+                fontWeight: "600",
+              }}
+            >
+              Product Sold
+            </Text>
+            <View
+              style={{
+                backgroundColor: "green",
+                borderRadius: 10,
+                paddingHorizontal: 5,
+                paddingVertical: 2,
+                marginLeft: 5,
+              }}
+            >
+              <Text
+                style={{
+                  color: "#ffffff",
+                  fontSize: 10,
+                  fontWeight: "bold",
+                }}
+              >
+                {" + 20% "}
+              </Text>
+            </View>
+          </View>
+          {filterButtons(filter, setFilter, {
+            flexDirection: "row",
+            height: 65,
+            paddingVertical: 10,
+          })}
+        </View>
+        <LineChart
+          data={{
+            labels: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+            datasets: [
+              {
+                data: [
+                  Math.random() * 100,
+                  Math.random() * 100,
+                  Math.random() * 100,
+                  Math.random() * 100,
+                  Math.random() * 100,
+                  Math.random() * 100,
+                  Math.random() * 100,
+                ],
+              },
+            ],
+          }}
+          width={Dimensions.get("screen").width - 20}
+          height={200}
+          chartConfig={{
+            backgroundColor: "#006eff",
+            backgroundGradientFrom: "#227FFB",
+            backgroundGradientTo: "#609FF3",
+            decimalPlaces: 0,
+            color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+            style: {
+              borderRadius: 16,
+            },
+          }}
+          bezier
+          style={{
+            borderRadius: 16,
+          }}
+        />
+      </View>
+    </View>
+  );
+}
+
+function filterButtons(filter, setFilter, styl) {
+  return (
+    <View style={styl}>
+      <AppButton
+        title={"This Week"}
+        customStyle={
+          filter === "thisWeek"
+            ? { ...styles.btn, backgroundColor: "#ffffff", marginRight: 10 }
+            : {
+                ...styles.btn,
+                backgroundColor: "#ecf2fa",
+                elvation: 5,
+                marginRight: 10,
+              }
+        }
+        textStyle={{ fontSize: 12, color: "#006eff" }}
+        onPress={() => {
+          setFilter("thisWeek");
+        }}
+      />
+      <AppButton
+        title={"This Month"}
+        customStyle={
+          filter === "thisMonth"
+            ? { ...styles.btn, backgroundColor: "#ffffff" }
+            : { ...styles.btn, backgroundColor: "#ecf2fa", elvation: 5 }
+        }
+        textStyle={{ fontSize: 12, color: "#006eff" }}
+        onPress={() => {
+          setFilter("thisMonth");
+        }}
+      />
+    </View>
+  );
+}

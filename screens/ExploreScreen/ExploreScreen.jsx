@@ -1,11 +1,10 @@
-import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
+import { AntDesign, Feather } from "@expo/vector-icons";
 import React, { useState, useCallback } from "react";
 import {
   View,
   Image,
   Text,
   ScrollView,
-  RefreshControl,
   TouchableOpacity,
   FlatList,
 } from "react-native";
@@ -56,10 +55,15 @@ export default function ExploreScreen() {
   return (
     <>
       <View style={styles.header}>
-        <TouchableOpacity
+        {/* <TouchableOpacity
           onPress={() => navigation.navigate("ScanCameraScreen")}
         >
           <MaterialCommunityIcons name="qrcode-scan" size={24} color="gray" />
+        </TouchableOpacity> */}
+        <TouchableOpacity
+          onPress={() => navigation.navigate("CollectionScreen")}
+        >
+          <AntDesign name="isv" size={24} color="gray" />
         </TouchableOpacity>
         <CustomInput
           onChange={(e) => {
@@ -93,162 +97,136 @@ export default function ExploreScreen() {
         </View>
       </View>
       <View style={styles.container}>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={{ paddingHorizontal: 5, height: 65, paddingVertical: 10 }}
-        >
-          <AppButton
-            title={"All"}
-            customStyle={
-              active === "all"
-                ? { ...styles.btn }
-                : { ...styles.btn, backgroundColor: "#ecf2fa", elvation: 5 }
-            }
-            textStyle={
-              active === "all"
-                ? { fontSize: 12 }
-                : { fontSize: 12, color: "#555555" }
-            }
-            onPress={() => {
-              setActive("all");
-            }}
-          />
-          <AppButton
-            title={"People"}
-            customStyle={
-              active === "people"
-                ? { ...styles.btn }
-                : { ...styles.btn, backgroundColor: "#ecf2fa", elvation: 5 }
-            }
-            textStyle={
-              active === "people"
-                ? { fontSize: 12 }
-                : { fontSize: 12, color: "#555555" }
-            }
-            onPress={() => {
-              setActive("people");
-            }}
-          />
-          <AppButton
-            title={"Tvs"}
-            customStyle={
-              active === "tv"
-                ? { ...styles.btn }
-                : { ...styles.btn, backgroundColor: "#ecf2fa", elvation: 5 }
-            }
-            textStyle={
-              active === "tv"
-                ? { fontSize: 12 }
-                : { fontSize: 12, color: "#555555" }
-            }
-            onPress={() => {
-              setActive("tv");
-            }}
-          />
-          <AppButton
-            title={"Stores"}
-            customStyle={
-              active === "store"
-                ? { ...styles.btn }
-                : { ...styles.btn, backgroundColor: "#ecf2fa", elvation: 5 }
-            }
-            textStyle={
-              active === "store"
-                ? { fontSize: 12 }
-                : { fontSize: 12, color: "#555555" }
-            }
-            onPress={() => {
-              setActive("store");
-            }}
-          />
-          <AppButton
-            title={"Tags"}
-            customStyle={
-              active === "tag"
-                ? { ...styles.btn }
-                : { ...styles.btn, backgroundColor: "#ecf2fa", elvation: 5 }
-            }
-            textStyle={
-              active === "tag"
-                ? { fontSize: 12 }
-                : { fontSize: 12, color: "#555555" }
-            }
-            onPress={() => {
-              setActive("tag");
-            }}
-          />
-        </ScrollView>
-        {/* <ScrollView>
-          {foundUsers.map((item, index) => (
-            <TouchableOpacity
-              key={index}
-              onPress={() => {
-                item.id === user.id
-                  ? navigation.navigate("ProfileScreen")
-                  : navigation.navigate("UserProfileScreen", {
-                      userId: item.id,
-                    });
-              }}
-            >
-              <View style={styles.userContainer}>
-                <View style={styles.lefContainer}>
-                  <View style={{ position: "relative" }}>
-                    <Image
-                      source={{ uri: item.profile_pic }}
-                      style={styles.avatar}
-                    />
-                  </View>
-                  <View style={styles.midContainer}>
-                    <Text style={styles.username}>
-                      {item.username.split("")[0].toUpperCase() +
-                        item.username.substring(1)}
-                    </Text>
-                    <Text numberOfLines={2} style={styles.highlight}>
-                      {item.name} | {item.headline}
-                    </Text>
-                  </View>
-                </View>
-              </View>
-            </TouchableOpacity>
-          ))}
-        </ScrollView> */}
+        {filterButtons(active, setActive)}
+
         <FlatList
           data={foundUsers}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              onPress={() => {
-                item.id === user.id
-                  ? navigation.navigate("ProfileScreen")
-                  : navigation.navigate("UserProfileScreen", {
-                      userId: item.id,
-                    });
-              }}
-            >
-              <View style={styles.userContainer}>
-                <View style={styles.lefContainer}>
-                  <View style={{ position: "relative" }}>
-                    <Image
-                      source={{ uri: item.profile_pic }}
-                      style={styles.avatar}
-                    />
-                  </View>
-                  <View style={styles.midContainer}>
-                    <Text style={styles.username}>
-                      {item.username.split("")[0].toUpperCase() +
-                        item.username.substring(1)}
-                    </Text>
-                    <Text numberOfLines={2} style={styles.highlight}>
-                      {item.name} | {item.headline}
-                    </Text>
-                  </View>
-                </View>
-              </View>
-            </TouchableOpacity>
-          )}
+          renderItem={({ item }) => foundUserPreview(item)}
           keyExtractor={(item, index) => index.toString()}
         />
       </View>
     </>
+  );
+}
+
+function foundUserPreview(item) {
+  return (
+    <TouchableOpacity
+      onPress={() => {
+        item.id === user.id
+          ? navigation.navigate("ProfileScreen")
+          : navigation.navigate("UserProfileScreen", {
+              userId: item.id,
+            });
+      }}
+    >
+      <View style={styles.userContainer}>
+        <View style={styles.lefContainer}>
+          <View style={{ position: "relative" }}>
+            <Image source={{ uri: item.profile_pic }} style={styles.avatar} />
+          </View>
+          <View style={styles.midContainer}>
+            <Text style={styles.username}>
+              {item.username.split("")[0].toUpperCase() +
+                item.username.substring(1)}
+            </Text>
+            <Text numberOfLines={2} style={styles.highlight}>
+              {item.name} | {item.headline}
+            </Text>
+          </View>
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
+}
+
+function filterButtons(active, setActive) {
+  return (
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      style={{ paddingHorizontal: 5, height: 65, paddingVertical: 10 }}
+    >
+      <AppButton
+        title={"All"}
+        customStyle={
+          active === "all"
+            ? { ...styles.btn }
+            : { ...styles.btn, backgroundColor: "#ecf2fa", elvation: 5 }
+        }
+        textStyle={
+          active === "all"
+            ? { fontSize: 12 }
+            : { fontSize: 12, color: "#555555" }
+        }
+        onPress={() => {
+          setActive("all");
+        }}
+      />
+      <AppButton
+        title={"People"}
+        customStyle={
+          active === "people"
+            ? { ...styles.btn }
+            : { ...styles.btn, backgroundColor: "#ecf2fa", elvation: 5 }
+        }
+        textStyle={
+          active === "people"
+            ? { fontSize: 12 }
+            : { fontSize: 12, color: "#555555" }
+        }
+        onPress={() => {
+          setActive("people");
+        }}
+      />
+      <AppButton
+        title={"Tvs"}
+        customStyle={
+          active === "tv"
+            ? { ...styles.btn }
+            : { ...styles.btn, backgroundColor: "#ecf2fa", elvation: 5 }
+        }
+        textStyle={
+          active === "tv"
+            ? { fontSize: 12 }
+            : { fontSize: 12, color: "#555555" }
+        }
+        onPress={() => {
+          setActive("tv");
+        }}
+      />
+      <AppButton
+        title={"Stores"}
+        customStyle={
+          active === "store"
+            ? { ...styles.btn }
+            : { ...styles.btn, backgroundColor: "#ecf2fa", elvation: 5 }
+        }
+        textStyle={
+          active === "store"
+            ? { fontSize: 12 }
+            : { fontSize: 12, color: "#555555" }
+        }
+        onPress={() => {
+          setActive("store");
+        }}
+      />
+      <AppButton
+        title={"Tags"}
+        customStyle={
+          active === "tag"
+            ? { ...styles.btn }
+            : { ...styles.btn, backgroundColor: "#ecf2fa", elvation: 5 }
+        }
+        textStyle={
+          active === "tag"
+            ? { fontSize: 12 }
+            : { fontSize: 12, color: "#555555" }
+        }
+        onPress={() => {
+          setActive("tag");
+        }}
+      />
+    </ScrollView>
   );
 }

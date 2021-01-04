@@ -5,6 +5,7 @@ import {
   View,
   StyleSheet,
   Image,
+  ImageBackground,
   TouchableOpacity,
   ScrollView,
 } from "react-native";
@@ -69,44 +70,6 @@ export default function TvProfileScreen() {
   //   };
   return (
     <>
-      <View style={styles.header}>
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <TouchableOpacity onPress={onClick}>
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <Ionicons name="ios-arrow-back" size={24} color="black" />
-              <Text style={styles.title}>{tvProfile.tvHandle}</Text>
-            </View>
-          </TouchableOpacity>
-        </View>
-        <View
-          style={{
-            flexDirection: "row",
-            // width: 70,
-            justifyContent: "flex-end",
-          }}
-        >
-          {/* <TouchableOpacity
-            onPress={() => navigation.navigate("EditProfileScreen")}
-          >
-            <AntDesign name="edit" size={20} color="black" />
-          </TouchableOpacity> */}
-          <TouchableOpacity onPress={() => {}}>
-            <Fontisto name="star" size={15} color="#006eff" />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => {}}>
-            <Fontisto name="star" size={15} color="#006eff" />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => {}}>
-            <Fontisto name="star" size={15} color="#006eff" />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => {}}>
-            <Fontisto name="star" size={15} color="#999999" />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => {}}>
-            <Fontisto name="star" size={15} color="#999999" />
-          </TouchableOpacity>
-        </View>
-      </View>
       {loading ? (
         <View
           style={{
@@ -124,97 +87,165 @@ export default function TvProfileScreen() {
           />
         </View>
       ) : (
-        <View style={styles.container}>
-          <View style={styles.userPreview}>
+        <View style={{ backgroundColor: "#ecf2fa", flex: 1 }}>
+          <ImageBackground
+            style={{ flex: 1 }}
+            source={{ uri: `${tvProfile.logo}` }}
+          >
             <View
               style={{
-                flexDirection: "row",
-                justifyContent: "space-evenly",
-                alignItems: "center",
-                width: "100%",
+                flex: 1,
+                backgroundColor: "rgba(0,0,0,0.7)",
               }}
             >
-              <View>
-                <Text
-                  style={{ textAlign: "center", marginTop: 5, fontSize: 16 }}
-                >
-                  Likes
-                </Text>
-                <Text
+              <View style={styles.header}>
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                  <TouchableOpacity onPress={onClick}>
+                    <View
+                      style={{ flexDirection: "row", alignItems: "center" }}
+                    >
+                      <Ionicons
+                        name="ios-arrow-back"
+                        size={24}
+                        color="#ffffff"
+                      />
+                      <Text style={styles.title}>{tvProfile.tvHandle}</Text>
+                    </View>
+                  </TouchableOpacity>
+                </View>
+                <View
                   style={{
-                    textAlign: "center",
-                    marginTop: 5,
-                    fontSize: 16,
-                    fontWeight: "bold",
+                    flexDirection: "row",
+                    // width: 70,
+                    justifyContent: "flex-end",
                   }}
                 >
-                  0
-                </Text>
+                  {/* <TouchableOpacity
+              onPress={() => navigation.navigate("EditProfileScreen")}
+            >
+              <AntDesign name="edit" size={20} color="black" />
+            </TouchableOpacity> */}
+                  <TouchableOpacity onPress={() => {}}>
+                    <Fontisto name="star" size={15} color="#006eff" />
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => {}}>
+                    <Fontisto name="star" size={15} color="#006eff" />
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => {}}>
+                    <Fontisto name="star" size={15} color="#006eff" />
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => {}}>
+                    <Fontisto name="star" size={15} color="#999999" />
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => {}}>
+                    <Fontisto name="star" size={15} color="#999999" />
+                  </TouchableOpacity>
+                </View>
               </View>
-              <View
-                style={{
-                  width: "30%",
-                  // backgroundColor: "#006aff",
-                  padding: 10,
-                  borderBottomLeftRadius: 100,
-                  borderBottomRightRadius: 100,
-                  flexDirection: "row",
-                  justifyContent: "center",
-                }}
-              >
-                <Image
-                  style={{
-                    width: 90,
-                    height: 90,
-                    resizeMode: "cover",
-                    borderRadius: 50,
-                    borderWidth: 2,
-                    borderColor: "#fff",
-                  }}
-                  source={{ uri: `${tvProfile.logo}` }}
-                />
-              </View>
-              <View>
-                <Text
-                  style={{ textAlign: "center", marginTop: 5, fontSize: 16 }}
-                >
-                  Views
-                </Text>
-                <Text
-                  style={{
-                    textAlign: "center",
-                    marginTop: 5,
-                    fontSize: 16,
-                    fontWeight: "bold",
-                  }}
-                >
-                  0
-                </Text>
-              </View>
-            </View>
-            <View style={styles.userInfo}>
-              <Text
-                style={{
-                  color: "#42414C",
-                  textAlign: "center",
-                  fontSize: 22,
-                  fontWeight: "bold",
-                  marginBottom: 10,
-                }}
-              >
-                @{tvProfile.tvHandle}
-              </Text>
-              <Text
-                style={{
-                  color: "#42414C",
-                  textAlign: "center",
-                  fontSize: 16,
-                  fontWeight: "500",
-                }}
-              >
-                {tvProfile.description}
-              </Text>
-              {/* <View
+              <View style={styles.container}>
+                <View style={styles.userPreview}>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      justifyContent: "space-evenly",
+                      alignItems: "center",
+                      width: "100%",
+                      // marginTop: 10,
+                    }}
+                  >
+                    <View>
+                      <Text
+                        style={{
+                          textAlign: "center",
+                          marginTop: 5,
+                          fontSize: 16,
+                          color: "#ffffff",
+                        }}
+                      >
+                        Likes
+                      </Text>
+                      <Text
+                        style={{
+                          textAlign: "center",
+                          marginTop: 5,
+                          fontSize: 16,
+                          fontWeight: "bold",
+                          color: "#ffffff",
+                        }}
+                      >
+                        0
+                      </Text>
+                    </View>
+                    <View
+                      style={{
+                        width: "30%",
+                        // backgroundColor: "#006aff",
+                        padding: 10,
+                        borderBottomLeftRadius: 100,
+                        borderBottomRightRadius: 100,
+                        flexDirection: "row",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <Image
+                        style={{
+                          width: 90,
+                          height: 90,
+                          resizeMode: "cover",
+                          borderRadius: 50,
+                          borderWidth: 2,
+                          borderColor: "#fff",
+                        }}
+                        source={{ uri: `${tvProfile.logo}` }}
+                      />
+                    </View>
+                    <View>
+                      <Text
+                        style={{
+                          textAlign: "center",
+                          marginTop: 5,
+                          fontSize: 16,
+                          color: "#ffffff",
+                        }}
+                      >
+                        Views
+                      </Text>
+                      <Text
+                        style={{
+                          textAlign: "center",
+                          marginTop: 5,
+                          fontSize: 16,
+                          fontWeight: "bold",
+                          color: "#ffffff",
+                        }}
+                      >
+                        0
+                      </Text>
+                    </View>
+                  </View>
+                  <View style={styles.userInfo}>
+                    <Text
+                      style={{
+                        color: "#ffffff",
+                        textAlign: "center",
+                        fontSize: 22,
+                        fontWeight: "bold",
+                        marginBottom: 10,
+                      }}
+                    >
+                      @{tvProfile.tvHandle}
+                    </Text>
+                    <Text
+                      style={{
+                        color: "#ffffff",
+                        textAlign: "center",
+                        fontSize: 16,
+                        fontWeight: "500",
+                      }}
+                    >
+                      {tvProfile.description}
+                    </Text>
+                    {/* <View
                 style={{
                   flexDirection: "row",
                   marginVertical: 5,
@@ -231,15 +262,22 @@ export default function TvProfileScreen() {
                   {user.location || "Washington DC"}
                 </Text>
               </View> */}
+                  </View>
+                </View>
+              </View>
             </View>
-          </View>
+          </ImageBackground>
           <View
             style={{
               flexDirection: "row",
               justifyContent: "space-evenly",
               alignItems: "center",
               paddingHorizontal: 20,
-              //   marginTop: -10,
+              paddingVertical: 20,
+              marginTop: -10,
+              borderTopRightRadius: 10,
+              borderTopLeftRadius: 10,
+              backgroundColor: "#ecf2fa",
             }}
           >
             <View style={{ alignItems: "center", width: 100 }}>
@@ -267,7 +305,6 @@ export default function TvProfileScreen() {
               justifyContent: "space-around",
               alignItems: "center",
               paddingHorizontal: 20,
-              marginTop: 20,
               height: 60,
               paddingVertical: 15,
               elevation: 2,
@@ -357,18 +394,18 @@ export default function TvProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: "transparent",
   },
   header: {
     flexDirection: "row",
     width: "100%",
     alignItems: "center",
-    paddingTop: 40,
+    paddingTop: 20,
     paddingBottom: 10,
     paddingHorizontal: 20,
     zIndex: 1,
     minHeight: 80,
-    backgroundColor: "#ffffff",
+    backgroundColor: "transparent",
     justifyContent: "space-between",
     elevation: 4,
   },
@@ -379,7 +416,7 @@ const styles = StyleSheet.create({
     paddingBottom: 30,
   },
   title: {
-    color: "#42414C",
+    color: "#ffffff",
     fontSize: 20,
     marginLeft: 10,
     marginBottom: 1,

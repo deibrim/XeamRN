@@ -59,4 +59,9 @@ export const styles = StyleSheet.create({
     fontSize: 14,
     color: "grey",
   },
+  btn: {
+    height: 25,
+    paddingHorizontal: 15,
+    marginHorizontal: 5,
+  },
 });

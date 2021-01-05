@@ -28,6 +28,7 @@ import EditTvProfileScreen from "../screens/EditTvProfileScreen/EditTvProfileScr
 import StoreGetStartedScreen from "../screens/StoreGetStartedScreen/StoreGetStartedScreen";
 import XStoreScreen from "../screens/XStoreScreen/XStoreScreen";
 import EditXStoreScreen from "../screens/EditXStoreScreen/EditXStoreScreen";
+import MyProductScreen from "../screens/MyProductScreen/MyProductScreen";
 import { useSelector } from "react-redux";
 
 const BottomTab = createBottomTabNavigator();
@@ -100,6 +101,9 @@ export default function BottomTabNavigator() {
       case "EditXStoreScreen":
         return false;
         break;
+      case "MyProductScreen":
+        return false;
+        break;
       default:
         return true;
         break;
@@ -114,7 +118,7 @@ export default function BottomTabNavigator() {
         showLabel: false,
         style: {
           elevation: 0,
-          height: 60,
+          height: 50,
         },
       }}
     >
@@ -125,7 +129,7 @@ export default function BottomTabNavigator() {
           tabBarVisible: getTabBarVisible(route),
           tabBarIcon: ({ color, focused }) =>
             focused ? (
-              <AntDesign name="appstore1" size={26} color={color} />
+              <AntDesign name="appstore1" size={24} color={color} />
             ) : (
               <AntDesign name="appstore-o" size={22} color={color} />
             ),
@@ -226,6 +230,13 @@ function HomeScreenNavigator() {
       <ScreenStack.Screen
         name="EditXStoreScreen"
         component={EditXStoreScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <ScreenStack.Screen
+        name="MyProductScreen"
+        component={MyProductScreen}
         options={{
           headerShown: false,
         }}
@@ -405,6 +416,13 @@ function SettingsScreenNavigator() {
       <ScreenStack.Screen
         name="EditXStoreScreen"
         component={EditXStoreScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <ScreenStack.Screen
+        name="MyProductScreen"
+        component={MyProductScreen}
         options={{
           headerShown: false,
         }}

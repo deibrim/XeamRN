@@ -36,7 +36,7 @@ export const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   btn: {
-    height: 35,
+    height: 30,
   },
   section: {
     marginVertical: 20,

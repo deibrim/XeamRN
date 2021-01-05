@@ -36,12 +36,12 @@ export default React.memo(function HomeScreen() {
   const navigation = useNavigation();
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-    // getTimeline();
+    getTimeline();
     wait(2000).then(() => setRefreshing(false));
   }, []);
   useEffect(() => {
     enablePushNotifications();
-    // getTimeline();
+    getTimeline();
     listenForPushNotifications();
     listenForPushNotificationActions();
 
@@ -213,7 +213,7 @@ export default React.memo(function HomeScreen() {
             />
             <Text style={styles.sectionTitle}>Feed</Text>
           </View>
-          {loading && (
+          {/* {loading && (
             <View
               style={{
                 flex: 1,
@@ -229,7 +229,7 @@ export default React.memo(function HomeScreen() {
                 source={require("../assets/loader.gif")}
               />
             </View>
-          )}
+          )} */}
           <SkeletonContent
             containerStyle={{
               flex: 1,
@@ -240,7 +240,7 @@ export default React.memo(function HomeScreen() {
               flexWrap: "wrap",
               paddingHorizontal: 10,
             }}
-            isLoading={true}
+            isLoading={loading}
             layout={[
               { width: "48%", height: 220, marginTop: 6 },
               { width: "48%", height: 220, marginTop: 6 },

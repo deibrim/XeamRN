@@ -148,16 +148,22 @@ export default function ProfileScreen() {
                 source={{ uri: `${user.profile_pic}` }}
               />
             </View>
-            <View style={styles.userInfo}>
+            <View style={{ marginLeft: 20 }}>
               <Text
-                style={{ color: "#42414C", fontSize: 22, fontWeight: "bold" }}
+                style={{
+                  color: "#42414C",
+                  fontSize: 22,
+                  fontWeight: "600",
+                  marginBottom: 5,
+                  marginLeft: -2,
+                }}
               >
-                {user.username || "John Doe"}
+                @ {user.username || ""}
               </Text>
               <Text
-                style={{ color: "#42414C", fontSize: 16, fontWeight: "500" }}
+                style={{ color: "#42414C", fontSize: 14, fontWeight: "500" }}
               >
-                {user.headline || "Software Engineer"}
+                {user.headline || ""}
               </Text>
               <View
                 style={{
@@ -170,7 +176,7 @@ export default function ProfileScreen() {
                   name="location-pin"
                   size={18}
                   color="gray"
-                  style={{ marginRight: 5 }}
+                  style={{ marginLeft: -4, marginRight: 3 }}
                 />
                 <Text style={{ fontSize: 14, color: "gray" }}>
                   {user.location || "Washington DC"}
@@ -325,7 +331,7 @@ const styles = StyleSheet.create({
   userPreview: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
+    // justifyContent: "space-between",
     paddingRight: 50,
   },
   title: {
@@ -346,6 +352,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 20,
     right: 20,
+    backgroundColor: "transparent",
   },
   button: {
     flexDirection: "row",

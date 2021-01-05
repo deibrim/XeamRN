@@ -138,7 +138,7 @@ export default function XStoreScreen() {
               />
             </View>
             <View style={styles.userInfo}>
-              <Text style={{ cprofile_picolor: "#42414C", fontSize: 14 }}>
+              <Text style={{ color: "#42414C", fontSize: 14 }}>
                 TOTAL REVENUE
               </Text>
               <Text
@@ -220,6 +220,7 @@ export default function XStoreScreen() {
             borderRadius: 25,
             paddingHorizontal: 20,
           }}
+          onPress={() => navigation.navigate("MyProductScreen")}
         >
           <View
             style={{
@@ -321,15 +322,7 @@ function graph(Dimensions, filter, setFilter) {
             labels: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
             datasets: [
               {
-                data: [
-                  Math.random() * 100,
-                  Math.random() * 100,
-                  Math.random() * 100,
-                  Math.random() * 100,
-                  Math.random() * 100,
-                  Math.random() * 100,
-                  Math.random() * 100,
-                ],
+                data: [100, 0, 0, 0, 0, 0, 0],
               },
             ],
           }}

@@ -1,0 +1,55 @@
+import { StyleSheet } from "react-native";
+export const styles = StyleSheet.create({
+  productCardContainer: {
+    width: "100%",
+    height: 192,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  productCard: {
+    width: "48%",
+    height: 220,
+    position: "relative",
+    marginVertical: 6,
+  },
+  userAddProduct: {
+    position: "absolute",
+    top: 8,
+    left: 8,
+    backgroundColor: "#ffffff",
+    borderRadius: 10,
+    width: 39,
+    height: 39,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  productCardImage: {
+    width: "100%",
+    height: 220,
+    borderRadius: 10,
+  },
+  productCardFooter: {
+    minHeight: 50,
+    width: "100%",
+    position: "absolute",
+    alignItems: "center",
+    justifyContent: "flex-start",
+    bottom: 12,
+  },
+  productCardFooterText: {
+    fontSize: 12,
+    fontWeight: "500",
+    color: "#ffffff",
+    marginLeft: 3,
+  },
+  overlay: {
+    borderRadius: 10,
+    flex: 1,
+    position: "absolute",
+    left: 0,
+    top: 0,
+    // opacity: 0.5,
+    backgroundColor: "#00000025",
+    width: "100%",
+  },
+});

@@ -36,12 +36,12 @@ export default React.memo(function HomeScreen() {
   const navigation = useNavigation();
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-    getTimeline();
+    // getTimeline();
     wait(2000).then(() => setRefreshing(false));
   }, []);
   useEffect(() => {
     enablePushNotifications();
-    getTimeline();
+    // getTimeline();
     listenForPushNotifications();
     listenForPushNotificationActions();
 

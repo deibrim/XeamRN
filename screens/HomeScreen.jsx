@@ -184,25 +184,27 @@ export default React.memo(function HomeScreen() {
         }
         style={styles.container}
       >
-        <View style={styles.trendSection}>
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <Feather
-              name="trending-up"
-              size={22}
-              color="#444444"
-              style={{ marginBottom: 10, marginLeft: 10 }}
-            />
-            <Text style={styles.sectionTitle}>Reels</Text>
+        {!user.following && (
+          <View style={styles.trendSection}>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <Feather
+                name="trending-up"
+                size={22}
+                color="#444444"
+                style={{ marginBottom: 10, marginLeft: 10 }}
+              />
+              <Text style={styles.sectionTitle}>Reels</Text>
+            </View>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={{ paddingLeft: 11 }}
+            >
+              <TrendingReelPreview />
+              <TrendingReelPreview />
+            </ScrollView>
           </View>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={{ paddingLeft: 11 }}
-          >
-            <TrendingReelPreview />
-            <TrendingReelPreview />
-          </ScrollView>
-        </View>
+        )}
         <View style={styles.recentSection}>
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             <MaterialCommunityIcons
@@ -213,23 +215,6 @@ export default React.memo(function HomeScreen() {
             />
             <Text style={styles.sectionTitle}>Feed</Text>
           </View>
-          {/* {loading && (
-            <View
-              style={{
-                flex: 1,
-                minHeight: 100,
-                width: "100%",
-                justifyContent: "center",
-                alignItems: "center",
-                backgroundColor: "transparent",
-              }}
-            >
-              <Image
-                style={{ marginLeft: 5, width: 30, height: 30 }}
-                source={require("../assets/loader.gif")}
-              />
-            </View>
-          )} */}
           <SkeletonContent
             containerStyle={{
               flex: 1,
@@ -247,10 +232,7 @@ export default React.memo(function HomeScreen() {
               { width: "48%", height: 220, marginTop: 6 },
               { width: "48%", height: 220, marginTop: 6 },
             ]}
-          >
-            {/* <Text style={styles.normalText}>Your content</Text>
-            <Text style={styles.bigText}>Other content</Text> */}
-          </SkeletonContent>
+          ></SkeletonContent>
           <View style={styles.listReels}>
             {reels.map((item, index) => (
               <ReelPreview
@@ -306,7 +288,6 @@ const styles = StyleSheet.create({
   },
   trendSection: {
     marginTop: 20,
-    // paddingLeft: 10,
   },
   recentSection: { marginVertical: 20, paddingHorizontal: 0 },
   listReels: {

@@ -14,7 +14,7 @@ const persistConfig = {
   key: "root",
   // storage,
   storage: AsyncStorage,
-  whitelist: ["chat", "user", "reel", "setting", "save"],
+  whitelist: ["user", "reel", "setting", "save"],
 };
 const rootReducer = {
   user: userReducer,

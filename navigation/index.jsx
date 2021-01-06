@@ -47,6 +47,30 @@ function Navigation({ colorScheme }) {
             dispatch(setCurrentUserXStore({ ...snapshot.data() }));
           }
         });
+        const folowersSnapshot = await firestore
+          .collection("followers")
+          .doc(currentUser.id)
+          .collection("userFollowers")
+          .get();
+        dispatch(
+          setCurrentUser({
+            ...currentUser,
+            followers: !folowersSnapshot.empty
+              ? folowersSnapshot.docs.length - 1
+              : 0,
+          })
+        );
+        const followingSnapshot = await firestore
+          .collection("following")
+          .doc(currentUser.id)
+          .collection("userFollowing")
+          .get();
+        dispatch(
+          setCurrentUser({
+            ...currentUser,
+            following: followingSnapshot.docs.length,
+          })
+        );
       }
     });
   }, []);

@@ -7,10 +7,10 @@ export const styles = StyleSheet.create({
     alignItems: "center",
   },
   reelCard: {
-    width: "48%",
+    width: "49.5%",
     height: 220,
     position: "relative",
-    marginVertical: 6,
+    marginVertical: 1,
   },
   userAddReel: {
     position: "absolute",

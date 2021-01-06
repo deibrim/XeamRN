@@ -29,6 +29,7 @@ import StoreGetStartedScreen from "../screens/StoreGetStartedScreen/StoreGetStar
 import XStoreScreen from "../screens/XStoreScreen/XStoreScreen";
 import EditXStoreScreen from "../screens/EditXStoreScreen/EditXStoreScreen";
 import MyProductScreen from "../screens/MyProductScreen/MyProductScreen";
+import UserStoreScreen from "../screens/UserStoreScreen/UserStoreScreen";
 import { useSelector } from "react-redux";
 
 const BottomTab = createBottomTabNavigator();
@@ -102,6 +103,9 @@ export default function BottomTabNavigator() {
         return false;
         break;
       case "MyProductScreen":
+        return false;
+        break;
+      case "UserStoreScreen":
         return false;
         break;
       default:
@@ -339,6 +343,13 @@ function ExploreScreenNavigator() {
       <FriendListScreenStack.Screen
         name="ChatRoom"
         component={ChatRoomScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <FriendListScreenStack.Screen
+        name="UserStoreScreen"
+        component={UserStoreScreen}
         options={{
           headerShown: false,
         }}

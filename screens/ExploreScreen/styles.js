@@ -59,6 +59,17 @@ export const styles = StyleSheet.create({
     fontSize: 14,
     color: "grey",
   },
+  button: {
+    flexDirection: "row",
+    backgroundColor: "#006eff",
+    elevation: 2,
+    alignItems: "center",
+    justifyContent: "center",
+    height: 25,
+    width: 25,
+    borderRadius: 25,
+    marginVertical: 2,
+  },
   btn: {
     height: 25,
     paddingHorizontal: 15,

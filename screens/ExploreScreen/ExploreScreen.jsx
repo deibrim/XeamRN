@@ -61,7 +61,7 @@ export default function ExploreScreen() {
           <MaterialCommunityIcons name="qrcode-scan" size={24} color="gray" />
         </TouchableOpacity> */}
         <TouchableOpacity
-          onPress={() => navigation.navigate("CollectionScreen")}
+          onPress={() => navigation.navigate("UserStoreScreen")}
         >
           <AntDesign name="isv" size={24} color="gray" />
         </TouchableOpacity>
@@ -134,6 +134,26 @@ function foundUserPreview(item) {
               {item.name} | {item.headline}
             </Text>
           </View>
+          <View style={{ marginLeft: "auto" }}>
+            {item.isTvActivated && (
+              <TouchableOpacity
+                onPress={() => navigation.navigate("TvProfileScreen")}
+              >
+                <View style={styles.button}>
+                  <Feather name="tv" size={14} color="white" />
+                </View>
+              </TouchableOpacity>
+            )}
+            {item.isBusinessAccount && (
+              <TouchableOpacity
+                onPress={() => navigation.navigate("XStoreScreen")}
+              >
+                <View style={{ ...styles.button, backgroundColor: "#ffffff" }}>
+                  <AntDesign name="isv" size={14} color="#006eff" />
+                </View>
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
       </View>
     </TouchableOpacity>
@@ -179,7 +199,7 @@ function filterButtons(active, setActive) {
           setActive("people");
         }}
       />
-      <AppButton
+      {/* <AppButton
         title={"Tvs"}
         customStyle={
           active === "tv"
@@ -210,7 +230,7 @@ function filterButtons(active, setActive) {
         onPress={() => {
           setActive("store");
         }}
-      />
+      /> */}
       <AppButton
         title={"Tags"}
         customStyle={

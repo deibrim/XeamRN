@@ -1,5 +1,5 @@
 import { AntDesign, Entypo } from "@expo/vector-icons";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   Dimensions,
   FlatList,
@@ -13,21 +13,30 @@ import {
   View,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
+import { v4 as uuidv4 } from "uuid";
 import { useSelector } from "react-redux";
 import { useNavigation } from "@react-navigation/native";
 import AppButton from "../AppButton/AppButton";
 import { styles } from "./styles";
+import firebase, { firestore } from "../../firebase/firebase.utils";
+import CustomPopUp from "../CustomPopUp/CustomPopUp";
+
 const AddProductModal = ({ modalVisible, setModalVisible }) => {
   const user = useSelector((state) => state.user.currentUser);
   const navigation = useNavigation();
-  const [images, setImages] = useState([
-    "https://static.nike.com/a/images/w_1536,c_limit/9de44154-c8c3-4f77-b47e-d992b7b96379/image.jpg",
-  ]);
-  const [name, setName] = useState("Product Name");
-  const [price, setPrice] = useState("$$$");
+  const [images, setImages] = useState([""]);
+  const [name, setName] = useState("");
+  const [price, setPrice] = useState("");
+  const [oPrice, setOPrice] = useState("");
+  const [quantity, setQuantity] = useState("");
   const [current, setCurrent] = useState("");
   const [sizeText, setSizeText] = useState("Size");
   const [colorText, setColorText] = useState("Color");
+  const [uploading, setUploading] = useState("");
+  const [uploadingCount, setUploadingCount] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [uploadingPercentage, setUploadingPercentage] = useState(0);
+  const [loading, setLoading] = useState(false);
   const [textInputContainerVisible, setTextInputContainerVisible] = useState(
     false
   );
@@ -39,17 +48,111 @@ const AddProductModal = ({ modalVisible, setModalVisible }) => {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
-      aspect: [1, 1],
+      aspect: [9, 16],
       quality: 1,
     });
     if (!result.cancelled) {
       setImages([...images, result.uri]);
     }
   };
-  useEffect(() => {
-    return () => "";
-  }, [images]);
+  const addNewProduct = async (pid, newImage) => {
+    const timestamp = Date.now();
+    const data = {
+      id: pid,
+      name,
+      price: price * 1,
+      oPrice: oPrice * 1,
+      stock: quantity * 1,
+      orders: 0,
+      storeId: user.id,
+      timestamp,
+      images: newImage,
+    };
+    if (colors.length > 0) {
+      data["colors"] = colors;
+    }
+    if (sizes.length > 0) {
+      data["sizes"] = sizes;
+    }
+    await firestore
+      .collection("products")
+      .doc(user.id)
+      .collection("my_products")
+      .doc(pid)
+      .set(data);
 
+    setImages([""]);
+    setName("");
+    setPrice("");
+    setOPrice("");
+    setQuantity("");
+    setCurrent("");
+    setSizeText("");
+    setColorText("");
+    setUploading("");
+    setUploadingPercentage(0);
+    setLoading(false);
+    setTextInputContainerVisible(false);
+    setColors([]);
+    setSizes([]);
+    setErrorMessage("");
+    setModalVisible(false);
+  };
+  function uploadData() {
+    if (name.trim() === "") {
+      setErrorMessage("Product name is required!");
+      return;
+    } else if (price.trim() === "") {
+      setErrorMessage("New price is required!");
+      return;
+    } else if (quantity.trim() === "") {
+      setErrorMessage("Stock is required!");
+      return;
+    } else if (images.length - 1 === 0) {
+      setErrorMessage("Minimum of an image is required!");
+      return;
+    }
+    setLoading(true);
+    const pid = uuidv4().split("-").join("");
+    const newImage = [];
+    const filterOut = images.filter((item, i) => i !== 0);
+    filterOut.forEach(async (item, index) => {
+      const response = await fetch(item);
+      const blob = await response.blob();
+      const storageRef = firebase
+        .storage()
+        .ref(`products/${user.id}/${pid}/${index}`);
+      const uploadTask = storageRef.put(blob);
+      uploadTask.on(
+        "state_changed",
+        (snapshot) => {
+          let progressPercentage =
+            (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          setUploadingPercentage(Math.floor(progressPercentage));
+          switch (snapshot.state) {
+            case firebase.storage.TaskState.PAUSED:
+              setUploading("paused");
+              break;
+            case firebase.storage.TaskState.RUNNING:
+              setUploading(`Uploading...`);
+              break;
+          }
+        },
+        (error) => {
+          console.log(error);
+        },
+        () => {
+          uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
+            newImage.push(downloadURL);
+            setUploading(``);
+            if (newImage.length === images.length - 1) {
+              addNewProduct(pid, newImage);
+            }
+          });
+        }
+      );
+    });
+  }
   return (
     <>
       <View style={{ position: "absolute", top: 0 }}>
@@ -60,31 +163,87 @@ const AddProductModal = ({ modalVisible, setModalVisible }) => {
           onRequestClose={() => {}}
           style={{
             width: "100%",
-            // position: "absolute",
-            // top: 0,
-            // bottom: 0,
-            // left: 0,
-            // right: 0,
             height: Dimensions.get("screen").height,
           }}
         >
+          {errorMessage.trim() !== "" ? (
+            <View
+              style={{
+                position: "absolute",
+                top: 110,
+                width: "100%",
+                alignItems: "center",
+              }}
+            >
+              <CustomPopUp
+                message={`${errorMessage}`}
+                type={"error"}
+                customStyles={{
+                  backgroundColor: "red",
+                  borderRadius: 30,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+                customTextStyles={{ color: "#ffffff", textAlign: "center" }}
+              />
+            </View>
+          ) : null}
+          {loading && (
+            <View
+              style={{
+                position: "absolute",
+                minHeight: 200,
+                width: "100%",
+                top: 0,
+                bottom: 0,
+                left: 0,
+                right: 0,
+                flex: 1,
+                justifyContent: "center",
+                alignItems: "center",
+                backgroundColor: "#000",
+                opacity: 0.6,
+                zIndex: 999999999999999999,
+              }}
+            >
+              <Text
+                style={{ color: "#ffffff", fontSize: 18, marginBottom: 20 }}
+              >
+                {uploading}
+              </Text>
+              <Text
+                style={{ color: "#ffffff", fontSize: 18, marginBottom: 20 }}
+              >
+                {uploadingPercentage}%
+              </Text>
+              <Image
+                style={{ marginLeft: 5, width: 40, height: 40 }}
+                source={require("../../assets/loader.gif")}
+              />
+            </View>
+          )}
           {textInputContainerVisible &&
             textInputContainer(
               current,
               name,
               price,
+              oPrice,
+              quantity,
               colors,
               sizes,
               sizeText,
               colorText,
               setName,
               setPrice,
+              setOPrice,
+              setQuantity,
               setColors,
               setSizes,
               setSizeText,
               setColorText,
               textInputContainerVisible,
-              setTextInputContainerVisible
+              setTextInputContainerVisible,
+              setErrorMessage
             )}
           <View
             style={{
@@ -124,19 +283,17 @@ const AddProductModal = ({ modalVisible, setModalVisible }) => {
                   renderItem={(item) => {
                     return item.index === 0 ? (
                       <ImageBackground
-                        source={{
-                          uri: item.item,
-                        }}
+                        source={require("../../assets/images/placeholder.png")}
                         style={{
                           height: Dimensions.get("screen").height / 1.5,
                           width: Dimensions.get("screen").width,
                         }}
+                        resizeMode={"cover"}
                       >
                         <View
                           style={{
                             height: "100%",
                             width: "100%",
-                            backgroundColor: "#00000035",
                             justifyContent: "center",
                             alignItems: "center",
                           }}
@@ -164,7 +321,6 @@ const AddProductModal = ({ modalVisible, setModalVisible }) => {
                 />
                 <View
                   style={{
-                    // flex: 1,
                     minHeight: 250,
                     width: "100%",
                     backgroundColor: "#ecf2fa",
@@ -173,134 +329,252 @@ const AddProductModal = ({ modalVisible, setModalVisible }) => {
                     padding: 20,
                   }}
                 >
-                  {productInfo(
-                    name,
-                    () => {
-                      setTextInputContainerVisible(true);
-                      setCurrent("name");
-                    },
-                    { fontSize: 20 }
-                  )}
-                  {productInfo(
-                    price,
-                    () => {
-                      setTextInputContainerVisible(true);
-                      setCurrent("price");
-                    },
-                    {
-                      fontSize: 17,
-                      color: "#777777",
-                    }
-                  )}
                   <View>
                     {productInfo(
-                      "Sizes",
+                      "Product name",
                       () => {
                         setTextInputContainerVisible(true);
-                        setCurrent("size");
+                        setCurrent("name");
                       },
                       {
-                        fontSize: 16,
+                        fontSize: 15,
+                        letterSpacing: 2,
                       },
                       { marginBottom: 0 }
                     )}
-                    <View
+                    <Text
                       style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        marginVertical: 10,
+                        fontSize: 18,
+                        color: "#777777",
+                        marginLeft: 0,
+                        marginBottom: 10,
                       }}
                     >
-                      {sizes.map((item, index) => (
-                        <View
-                          key={index}
-                          style={{
-                            height: 40,
-                            width: 40,
-                            borderRadius: 10,
-                            backgroundColor: "#ecf2fa",
-                            elevation: 2,
-                            alignItems: "center",
-                            justifyContent: "center",
-                            marginHorizontal: 5,
-                            position: "relative",
-                          }}
-                        >
-                          <TouchableOpacity
-                            style={{
-                              position: "absolute",
-                              top: -5,
-                              right: -5,
-                              width: 20,
-                              height: 20,
-                            }}
-                            onPress={() => {
-                              const filter = sizes.filter(
-                                (item, ind) => ind !== index
-                              );
-                              setSizes(filter);
-                            }}
-                          >
-                            <AntDesign name="close" size={15} color="#ff4747" />
-                          </TouchableOpacity>
-                          <Text style={{ fontSize: 20 }}>{item}</Text>
-                        </View>
-                      ))}
+                      {name}
+                    </Text>
+                  </View>
+
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    <View>
+                      {productInfo(
+                        "Old price",
+                        () => {
+                          setTextInputContainerVisible(true);
+                          setCurrent("oPrice");
+                        },
+                        {
+                          fontSize: 15,
+                          letterSpacing: 2,
+                        },
+                        { marginBottom: 0 }
+                      )}
+                      <Text
+                        style={{
+                          fontSize: 17,
+                          color: "#777777",
+                          marginLeft: 10,
+                          marginBottom: 10,
+                        }}
+                      >
+                        {oPrice}
+                      </Text>
+                    </View>
+                    <View>
+                      {productInfo(
+                        "New price",
+                        () => {
+                          setTextInputContainerVisible(true);
+                          setCurrent("price");
+                        },
+                        {
+                          fontSize: 15,
+                          letterSpacing: 2,
+                        },
+                        { marginBottom: 0 }
+                      )}
+                      <Text
+                        style={{
+                          fontSize: 17,
+                          color: "#777777",
+                          marginLeft: 10,
+                          marginBottom: 10,
+                        }}
+                      >
+                        {price}
+                      </Text>
+                    </View>
+                    <View>
+                      {productInfo(
+                        "Stock",
+                        () => {
+                          setTextInputContainerVisible(true);
+                          setCurrent("quantity");
+                        },
+                        {
+                          fontSize: 15,
+                          letterSpacing: 2,
+                        },
+                        { marginBottom: 0 }
+                      )}
+                      <Text
+                        style={{
+                          fontSize: 17,
+                          color: "#777777",
+                          marginLeft: 10,
+                          marginBottom: 10,
+                        }}
+                      >
+                        {quantity}
+                      </Text>
                     </View>
                   </View>
-                  <View>
-                    {productInfo(
-                      "Colors",
-                      () => {
-                        setTextInputContainerVisible(true);
-                        setCurrent("color");
-                      },
-                      {
-                        fontSize: 16,
-                      },
-                      { marginBottom: 0 }
-                    )}
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        marginVertical: 10,
-                      }}
-                    >
-                      {colors.map((item, index) => (
-                        <View
-                          key={index}
-                          style={{
-                            height: 30,
-                            width: 30,
-                            borderRadius: 20,
-                            backgroundColor: item,
-                            elevation: 2,
-                            alignItems: "center",
-                            justifyContent: "center",
-                            marginHorizontal: 5,
-                            position: "relative",
-                          }}
-                        >
-                          <TouchableOpacity
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <View style={{ flex: 1, alignSelf: "flex-start" }}>
+                      {productInfo(
+                        "Sizes",
+                        () => {
+                          setTextInputContainerVisible(true);
+                          setCurrent("size");
+                        },
+                        {
+                          fontSize: 16,
+                          letterSpacing: 2,
+                        },
+                        { marginBottom: 0 }
+                      )}
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "flex-start",
+
+                          width: "100%",
+                          flexWrap: "wrap",
+                          marginVertical: 5,
+                        }}
+                      >
+                        {sizes.map((item, index) => (
+                          <View
+                            key={index}
                             style={{
-                              position: "absolute",
-                              top: -5,
-                              right: -5,
-                              width: 20,
-                              height: 20,
-                            }}
-                            onPress={() => {
-                              const filter = colors.filter(
-                                (item, ind) => ind !== index
-                              );
-                              setColors(filter);
+                              height: 35,
+                              width: 35,
+                              borderRadius: 10,
+                              backgroundColor: "#ecf2fa",
+                              elevation: 2,
+                              alignItems: "center",
+                              justifyContent: "center",
+                              marginRight: 10,
+                              position: "relative",
+                              marginVertical: 5,
                             }}
                           >
-                            <AntDesign name="close" size={15} color="#ff4747" />
-                          </TouchableOpacity>
-                        </View>
-                      ))}
+                            <TouchableOpacity
+                              style={{
+                                position: "absolute",
+                                top: -5,
+                                right: -5,
+                                width: 20,
+                                height: 20,
+                              }}
+                              onPress={() => {
+                                const filter = sizes.filter(
+                                  (item, ind) => ind !== index
+                                );
+                                setSizes(filter);
+                              }}
+                            >
+                              <AntDesign
+                                name="close"
+                                size={15}
+                                color="#ff4747"
+                              />
+                            </TouchableOpacity>
+                            <Text style={{ fontSize: 16 }}>{item}</Text>
+                          </View>
+                        ))}
+                      </View>
+                    </View>
+                    <View
+                      style={{
+                        flex: 1,
+                        alignSelf: "flex-start",
+                      }}
+                    >
+                      {productInfo(
+                        "Colors",
+                        () => {
+                          setTextInputContainerVisible(true);
+                          setCurrent("color");
+                        },
+                        {
+                          fontSize: 16,
+                          letterSpacing: 2,
+                        },
+                        { marginBottom: 0 }
+                      )}
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                          width: "100%",
+                          flexWrap: "wrap",
+                          marginVertical: 5,
+                          marginBottom: 0,
+                        }}
+                      >
+                        {colors.map((item, index) => (
+                          <View
+                            key={index}
+                            style={{
+                              height: 35,
+                              width: 35,
+                              borderRadius: 20,
+                              backgroundColor: item,
+                              elevation: 2,
+                              alignItems: "center",
+                              justifyContent: "center",
+                              marginRight: 10,
+                              position: "relative",
+                              marginVertical: 5,
+                            }}
+                          >
+                            <TouchableOpacity
+                              style={{
+                                position: "absolute",
+                                top: -5,
+                                right: -5,
+                                width: 20,
+                                height: 20,
+                              }}
+                              onPress={() => {
+                                const filter = colors.filter(
+                                  (item, ind) => ind !== index
+                                );
+                                setColors(filter);
+                              }}
+                            >
+                              <AntDesign
+                                name="close"
+                                size={15}
+                                color="#ff4747"
+                              />
+                            </TouchableOpacity>
+                          </View>
+                        ))}
+                      </View>
                     </View>
                   </View>
                 </View>
@@ -328,7 +602,7 @@ const AddProductModal = ({ modalVisible, setModalVisible }) => {
             <View style={{ width: "100%", alignItems: "center" }}>
               <AppButton
                 onPress={() => {
-                  setModalVisible(false);
+                  uploadData();
                 }}
                 title={"Add Product"}
                 customStyle={{ width: "90%", margin: 10 }}
@@ -418,18 +692,23 @@ function textInputContainer(
   current,
   name,
   price,
+  oPrice,
+  quantity,
   colors,
   sizes,
   sizeText,
   colorText,
   setName,
   setPrice,
+  setOPrice,
+  setQuantity,
   setColors,
   setSizes,
   setSizeText,
   setColorText,
   textInputContainerVisible,
-  setTextInputContainerVisible
+  setTextInputContainerVisible,
+  setErrorMessage
 ) {
   return (
     <ScrollView
@@ -462,22 +741,40 @@ function textInputContainer(
           underlineColorAndroid="transparent"
           placeholder=""
           placeholderTextColor="#000000"
+          keyboardType={
+            current === "price"
+              ? "number-pad"
+              : current === "oPrice"
+              ? "number-pad"
+              : current === "quantity"
+              ? "number-pad"
+              : "default"
+          }
           autoFocus={true}
           autoCapitalize="none"
           onChangeText={(e) => {
+            setErrorMessage("");
             current === "name"
               ? setName(e)
               : current === "price"
               ? setPrice(e)
+              : current === "oPrice"
+              ? setOPrice(e)
+              : current === "quantity"
+              ? setQuantity(e)
               : current === "size"
-              ? setSizeText(e)
-              : setColorText(e);
+              ? setSizeText(e.toUpperCase())
+              : setColorText(e.toLowerCase());
           }}
           value={
             current === "name"
               ? name
               : current === "price"
               ? price
+              : current === "oPrice"
+              ? oPrice
+              : current === "quantity"
+              ? quantity
               : current === "size"
               ? sizeText
               : colorText
@@ -519,9 +816,9 @@ function textInputContainer(
             }}
             onPress={() => {
               current === "size"
-                ? (setSizes([...sizes, sizeText]), setSizeText("Size"))
+                ? setSizes([...sizes, sizeText])
                 : current === "color"
-                ? (setColors([...colors, colorText]), setColorText("Color"))
+                ? setColors([...colors, colorText])
                 : "";
               setTextInputContainerVisible(!textInputContainerVisible);
             }}

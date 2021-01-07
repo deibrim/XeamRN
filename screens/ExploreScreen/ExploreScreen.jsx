@@ -43,9 +43,9 @@ export default function ExploreScreen() {
     const usersRef = firestore
       .collection("users")
       .where("username", ">=", `${query.toLowerCase()}`)
-      .orderBy("username", "desc")
-      // .startAt(query.toLowerCase())
-      .endAt(query.toLowerCase() + "\uf8ff");
+      .orderBy("username", "desc");
+    // .startAt(query.toLowerCase())
+    // .endAt(query.toLowerCase() + "\uf8ff");
     const usersArr = [];
     (await usersRef.get()).docs.forEach((doc) => {
       usersArr.push(doc.data());
@@ -61,7 +61,7 @@ export default function ExploreScreen() {
           <MaterialCommunityIcons name="qrcode-scan" size={24} color="gray" />
         </TouchableOpacity> */}
         <TouchableOpacity
-          onPress={() => navigation.navigate("UserStoreScreen")}
+          onPress={() => navigation.navigate("XStoreProductsScreen")}
         >
           <AntDesign name="isv" size={24} color="gray" />
         </TouchableOpacity>
@@ -97,11 +97,19 @@ export default function ExploreScreen() {
         </View>
       </View>
       <View style={styles.container}>
-        {filterButtons(active, setActive)}
+        <View
+          style={{
+            height: 50,
+            backgroundColor: "#ecf2fa",
+            justifyContent: "center",
+          }}
+        >
+          {filterButtons(active, setActive)}
+        </View>
 
         <FlatList
           data={foundUsers}
-          renderItem={({ item }) => foundUserPreview(item)}
+          renderItem={({ item }) => foundUserPreview(item, user, navigation)}
           keyExtractor={(item, index) => index.toString()}
         />
       </View>
@@ -109,7 +117,7 @@ export default function ExploreScreen() {
   );
 }
 
-function foundUserPreview(item) {
+function foundUserPreview(item, user, navigation) {
   return (
     <TouchableOpacity
       onPress={() => {
@@ -130,14 +138,24 @@ function foundUserPreview(item) {
               {item.username.split("")[0].toUpperCase() +
                 item.username.substring(1)}
             </Text>
-            <Text numberOfLines={2} style={styles.highlight}>
-              {item.name} | {item.headline}
+            <Text
+              numberOfLines={1}
+              ellipsizeMode={"tail"}
+              style={styles.highlight}
+            >
+              {item.name} {item.headline && "|"} {item.headline}
             </Text>
           </View>
           <View style={{ marginLeft: "auto" }}>
             {item.isTvActivated && (
               <TouchableOpacity
-                onPress={() => navigation.navigate("TvProfileScreen")}
+                onPress={() => {
+                  item.id === user.id
+                    ? navigation.navigate("TvProfileScreen")
+                    : navigation.navigate("UserTvProfileScreen", {
+                        userTvId: item.id,
+                      });
+                }}
               >
                 <View style={styles.button}>
                   <Feather name="tv" size={14} color="white" />
@@ -146,7 +164,9 @@ function foundUserPreview(item) {
             )}
             {item.isBusinessAccount && (
               <TouchableOpacity
-                onPress={() => navigation.navigate("XStoreScreen")}
+                onPress={() =>
+                  navigation.navigate("UserStoreScreen", { storeId: user.id })
+                }
               >
                 <View style={{ ...styles.button, backgroundColor: "#ffffff" }}>
                   <AntDesign name="isv" size={14} color="#006eff" />
@@ -161,92 +181,36 @@ function foundUserPreview(item) {
 }
 
 function filterButtons(active, setActive) {
+  function FilterButton({ title, value }) {
+    return (
+      <AppButton
+        title={title}
+        customStyle={
+          active === value
+            ? { ...styles.btn }
+            : { ...styles.btn, backgroundColor: "#ecf2fa", elvation: 5 }
+        }
+        textStyle={
+          active === value
+            ? { fontSize: 12 }
+            : { fontSize: 12, color: "#555555" }
+        }
+        onPress={() => {
+          setActive(value);
+        }}
+      />
+    );
+  }
   return (
     <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
       style={{ paddingHorizontal: 5, height: 65, paddingVertical: 10 }}
     >
-      <AppButton
-        title={"All"}
-        customStyle={
-          active === "all"
-            ? { ...styles.btn }
-            : { ...styles.btn, backgroundColor: "#ecf2fa", elvation: 5 }
-        }
-        textStyle={
-          active === "all"
-            ? { fontSize: 12 }
-            : { fontSize: 12, color: "#555555" }
-        }
-        onPress={() => {
-          setActive("all");
-        }}
-      />
-      <AppButton
-        title={"People"}
-        customStyle={
-          active === "people"
-            ? { ...styles.btn }
-            : { ...styles.btn, backgroundColor: "#ecf2fa", elvation: 5 }
-        }
-        textStyle={
-          active === "people"
-            ? { fontSize: 12 }
-            : { fontSize: 12, color: "#555555" }
-        }
-        onPress={() => {
-          setActive("people");
-        }}
-      />
-      {/* <AppButton
-        title={"Tvs"}
-        customStyle={
-          active === "tv"
-            ? { ...styles.btn }
-            : { ...styles.btn, backgroundColor: "#ecf2fa", elvation: 5 }
-        }
-        textStyle={
-          active === "tv"
-            ? { fontSize: 12 }
-            : { fontSize: 12, color: "#555555" }
-        }
-        onPress={() => {
-          setActive("tv");
-        }}
-      />
-      <AppButton
-        title={"Stores"}
-        customStyle={
-          active === "store"
-            ? { ...styles.btn }
-            : { ...styles.btn, backgroundColor: "#ecf2fa", elvation: 5 }
-        }
-        textStyle={
-          active === "store"
-            ? { fontSize: 12 }
-            : { fontSize: 12, color: "#555555" }
-        }
-        onPress={() => {
-          setActive("store");
-        }}
-      /> */}
-      <AppButton
-        title={"Tags"}
-        customStyle={
-          active === "tag"
-            ? { ...styles.btn }
-            : { ...styles.btn, backgroundColor: "#ecf2fa", elvation: 5 }
-        }
-        textStyle={
-          active === "tag"
-            ? { fontSize: 12 }
-            : { fontSize: 12, color: "#555555" }
-        }
-        onPress={() => {
-          setActive("tag");
-        }}
-      />
+      <FilterButton title={"All"} value={"all"} />
+      <FilterButton title={"People"} value={"people"} />
+      <FilterButton title={"Giveaways"} value={"giveaways"} />
+      <FilterButton title={"Tags"} value={"tags"} />
     </ScrollView>
   );
 }

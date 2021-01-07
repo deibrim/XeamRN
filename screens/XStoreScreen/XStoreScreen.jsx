@@ -16,6 +16,7 @@ import { setTvReels } from "../../redux/reel/actions";
 import ReelPreview from "../../components/ReelPreview/ReelPreview";
 import { styles } from "./styles";
 import AppButton from "../../components/AppButton/AppButton";
+import Graph from "../../components/Graph/Graph";
 
 export default function XStoreScreen() {
   const user = useSelector((state) => state.user.currentUser);
@@ -88,7 +89,9 @@ export default function XStoreScreen() {
             justifyContent: "space-between",
           }}
         >
-          <TouchableOpacity onPress={() => {}}>
+          <TouchableOpacity
+            onPress={() => navigation.navigate("EditXStoreScreen")}
+          >
             <AntDesign name="edit" size={20} color="black" />
           </TouchableOpacity>
         </View>
@@ -179,7 +182,12 @@ export default function XStoreScreen() {
           </View>
 
           <ScrollView>
-            {graph(Dimensions, filter, setFilter)}
+            <Graph
+              Dimensions={Dimensions}
+              filter={filter}
+              setFilter={setFilter}
+            />
+            {/* {graph(Dimensions, filter, setFilter)} */}
             <View style={styles.section}>
               <View
                 style={{

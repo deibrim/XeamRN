@@ -26,7 +26,7 @@ import firebase, { firestore } from "../../firebase/firebase.utils";
 import StoreGetStartedModel from "../../components/StoreGetStartedModel/StoreGetStartedModel";
 import SetupTvInfo from "../../components/SetupTvInfo/SetupTvInfo";
 import CustomPopUp from "../../components/CustomPopUp/CustomPopUp";
-import { setCurrentUserTvProfile } from "../../redux/user/actions";
+import { setCurrentUserXStore } from "../../redux/user/actions";
 import { styles } from "./styles";
 
 const wait = (timeout) => {
@@ -34,25 +34,21 @@ const wait = (timeout) => {
     setTimeout(resolve, timeout);
   });
 };
-{
-  /* stars.map(arr => {
-      const ratings = arr.map(v => v.value)
-      return ratings.length ? ratings.reduce((total, val) => total + val) / arr.length : 'not reviewed'
-    })
-  } */
-}
+
 const EditXStoreScreen = () => {
-  const user = useSelector((state) => state.user.currentUser);
+  const xStore = useSelector((state) => state.user.currentUserXStore);
   const dispatch = useDispatch();
   const navigation = useNavigation();
   const [modalVisible, setModalVisible] = useState(true);
   const [loading, setLoading] = useState(false);
   const [storeCreated, setStoreCreated] = useState(false);
-  const [image, setImage] = useState(null);
-  const [storeHandle, setStoreHandle] = useState(user.username || "");
-  const [location, setLocation] = useState(user.location || "");
-  const [website, setWebsite] = useState(user.website || "");
-  const [uploading, setUploading] = useState(false);
+  const [image, setImage] = useState(xStore.logo);
+  const [storeHandle, setStoreHandle] = useState(
+    xStore.storeHandle.substring(0, xStore.storeHandle.length - 6)
+  );
+  const [location, setLocation] = useState(xStore.location || "");
+  const [website, setWebsite] = useState(xStore.website || "");
+  const [uploading, setUploading] = useState("");
   const [uploadingPercentage, setUploadingPercentage] = useState(0);
   const [errorMessage, setErrorMessage] = useState("");
   const [index, setIndex] = useState(0);
@@ -69,7 +65,7 @@ const EditXStoreScreen = () => {
         }
       }
     })();
-    !user.location && getLocationAsync();
+    getLocationAsync();
   }, []);
   async function getLocationAsync() {
     let { status } = await Location.requestPermissionsAsync();
@@ -79,6 +75,7 @@ const EditXStoreScreen = () => {
     }
 
     let location = await Location.getCurrentPositionAsync({});
+
     const address = await Location.reverseGeocodeAsync(location.coords);
     const addressObj = address[0];
     setLocation(`${addressObj.city}, ${addressObj.country}`);
@@ -98,7 +95,7 @@ const EditXStoreScreen = () => {
     });
     if (!result.cancelled) {
       setImage(await result.uri);
-      // setImage(result.uri);
+      uploadLogoToStorage();
     }
   };
 
@@ -111,15 +108,15 @@ const EditXStoreScreen = () => {
     setIndex(index);
     flatListRef.scrollEnabled = false;
   };
-  const onStoreCreated = useCallback(() => {
+  const onStoreUpdated = useCallback(() => {
     setStoreCreated(true);
     wait(2000).then(async () => {
-      const userRef = firestore.doc(`stores/${user.id}`);
+      const userRef = firestore.doc(`xeamStores/${xStore.id}`);
       const snapShot = await userRef.get();
-      dispatch(setCurrentUserTvProfile({ ...snapShot.data() }));
+      dispatch(setCurrentUserXStore({ ...snapShot.data() }));
       const resetAction = navigation.reset({
         index: 0,
-        actions: [navigation.navigate("TvProfileScreen")],
+        actions: [navigation.navigate("XStoreScreen")],
       });
       navigation.dispatch(resetAction);
       setStoreCreated(false);
@@ -128,7 +125,9 @@ const EditXStoreScreen = () => {
   const uploadLogoToStorage = async () => {
     const response = await fetch(image);
     const blob = await response.blob();
-    const storageRef = firebase.storage().ref(`tv/${user.id}/tv_logo`);
+    const storageRef = firebase
+      .storage()
+      .ref(`xeamStores/${xStore.id}/store_logo`);
     const uploadTask = storageRef.put(blob);
     uploadTask.on(
       "state_changed",
@@ -150,32 +149,27 @@ const EditXStoreScreen = () => {
       },
       () => {
         uploadTask.snapshot.ref.getDownloadURL().then(async (downloadURL) => {
-          setImage(downloadURL);
-          setUploading(" Creating profile...");
-          const storeData = {
-            id: user.id,
-            storeHandle: `${storeHandle.toLowerCase()}.tv`,
-            location,
-            logo: downloadURL,
-            website: website.toLowerCase(),
-            tvOwnerName: user.name,
-            tvOwnerUsername: user.username,
-          };
-
-          firestore.collection("stores").doc(user.id).set(storeData);
-          const userRef = firestore.doc(`users/${user.id}`);
-          await userRef.update({ isBusinessAccount: true });
+          setImage(image);
+          setUploading("");
           setLoading(false);
-          onStoreCreated();
         });
       }
     );
   };
-  const onCreateTv = async () => {
-    setLoading(true);
-
+  const onUpdateteStore = async () => {
     try {
-      uploadLogoToStorage();
+      const storeData = {
+        storeHandle: `${storeHandle.toLowerCase()}.store`,
+        location,
+        logo: image,
+        website: website.toLowerCase(),
+        storeOwnerName: "Sarah Idris",
+        storeOwnerUsername: "sarah",
+      };
+
+      firestore.collection("xeamStores").doc(xStore.id).update(storeData);
+      setLoading(false);
+      onStoreUpdated();
     } catch (e) {
       console.error(e);
     }
@@ -191,17 +185,26 @@ const EditXStoreScreen = () => {
       setErrorMessage("Store Logo is required");
       return;
     }
+    setLoading(true);
     setErrorMessage("");
-    const tvsRef = await firestore
-      .collection("stores")
+    const storesRef = await firestore
+      .collection("xeamStores")
       .where("storeHandle", "==", `${storeHandle.toLowerCase()}`);
-    const snapshot = await tvsRef.get();
-    if (snapshot.docs.length > 0) {
-      setErrorMessage("Store name already existed");
-      setLoading(false);
+    const snapshot = await storesRef.get();
+
+    if (!snapshot.empty) {
+      const isExisted = snapshot.docs.filter((doc) => {
+        return doc.data().id === xStore.id && doc.data();
+      });
+      if (isExisted.length === 0) {
+        setErrorMessage("Store already existed");
+        setLoading(false);
+        return;
+      }
+      onUpdateteStore();
       return;
     }
-    onCreateTv();
+    onUpdateteStore();
   };
 
   const Procedure = [
@@ -278,7 +281,7 @@ const EditXStoreScreen = () => {
         style={{ marginBottom: 30 }}
       />
       <Text style={{ color: "#111111", fontSize: 18, marginBottom: 20 }}>
-        Getting Your Profile Ready!
+        Getting Your Store Ready!
       </Text>
       <Image
         style={{ width: 35, height: 35 }}
@@ -287,10 +290,6 @@ const EditXStoreScreen = () => {
     </View>
   ) : (
     <>
-      <StoreGetStartedModel
-        modalVisible={modalVisible}
-        setModalVisible={setModalVisible}
-      />
       <View style={styles.header}>
         <View style={{ flexDirection: "row", alignItems: "center" }}>
           <TouchableOpacity
@@ -310,7 +309,7 @@ const EditXStoreScreen = () => {
             <AntDesign name="close" size={20} color="#ffffff" />
           </TouchableOpacity>
         </View>
-        <Text style={{ ...styles.title, fontSize: 14 }}>Setup XStore</Text>
+        <Text style={{ ...styles.title, fontSize: 14 }}>Update XStore</Text>
       </View>
       <View
         style={{
@@ -334,6 +333,19 @@ const EditXStoreScreen = () => {
               type={"error"}
               customStyles={{
                 backgroundColor: "red",
+                borderRadius: 30,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+              customTextStyles={{ color: "#ffffff", textAlign: "center" }}
+            />
+          ) : null}
+          {uploading.trim() !== "" ? (
+            <CustomPopUp
+              message={`${uploadingPercentage}%`}
+              type={"warning"}
+              customStyles={{
+                backgroundColor: "yellow",
                 borderRadius: 30,
                 alignItems: "center",
                 justifyContent: "center",
@@ -427,7 +439,9 @@ const EditXStoreScreen = () => {
             } else if (index == 2) {
               scrollToIndex(3);
             } else {
-              checkStoreHandleAndCreateStore();
+              uploading
+                ? setErrorMessage(`Can't update while uploading logo`)
+                : checkStoreHandleAndCreateStore();
             }
           }}
         >
@@ -445,7 +459,7 @@ const EditXStoreScreen = () => {
                   : { ...styles.buttonText }
               }
             >
-              {index >= 3 ? "Create Store" : "Next"}
+              {index >= 3 ? "Update Store" : "Next"}
             </Text>
             {index < 3 && (
               <Ionicons name="ios-arrow-forward" size={20} color="black" />

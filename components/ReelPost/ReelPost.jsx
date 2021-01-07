@@ -49,6 +49,7 @@ const ReelPost = (props) => {
     wait(2000).then(() => setSaved(false));
   }, []);
   const onView = useCallback(() => {
+    const viewCount = getViewCount();
     wait(2000).then(() => {
       const isViewed = post.views[currentUser.id] === true;
       const currentUserId = currentUser.id;
@@ -62,7 +63,7 @@ const ReelPost = (props) => {
           .doc(post.user_id)
           .collection("userReels")
           .doc(post.id)
-          .update({ views });
+          .update({ viewCount, views });
       }
     });
   }, []);
@@ -74,6 +75,7 @@ const ReelPost = (props) => {
   };
 
   const onLikePress = () => {
+    const likeCount = getLikeCount();
     const isLiked = post.likes[currentUser.id] === true;
     const currentUserId = currentUser.id;
     // const Likes = { ...post.likes };
@@ -85,7 +87,7 @@ const ReelPost = (props) => {
         .doc(post.user_id)
         .collection("userReels")
         .doc(post.id)
-        .update({ likes });
+        .update({ likeCount: likeCount - 1, likes });
       removeLikeFromActivityFeed(
         currentUser,
         post.user_id,
@@ -101,7 +103,7 @@ const ReelPost = (props) => {
         .doc(post.user_id)
         .collection("userReels")
         .doc(post.id)
-        .update({ likes });
+        .update({ likeCount: likeCount + 1, likes });
       addLikeToActivityFeed(
         currentUser,
         post.user_id,
@@ -119,12 +121,12 @@ const ReelPost = (props) => {
     props.setToggleScroll(!props.toggleScroll);
     setShowMore(!showMore);
   };
-  const getLikeCount = () => {
+  function getLikeCount() {
     return Object.values(post.likes).filter((v) => v).length;
-  };
-  const getViewCount = () => {
+  }
+  function getViewCount() {
     return Object.values(post.views).filter((v) => v).length;
-  };
+  }
 
   const getVideoUri = async () => {
     if (post.videoUri.startsWith("http")) {

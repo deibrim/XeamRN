@@ -23,6 +23,7 @@ import PostReelScreen from "../screens/PostReelScreen/PostReelScreen";
 import ReportBugScreen from "../screens/ReportBugScreen/ReportBugScreen";
 import TvGetStartedScreen from "../screens/TvGetStartedScreen/TvGetStartedScreen";
 import TvProfileScreen from "../screens/TvProfileScreen/TvProfileScreen";
+import UserTvProfileScreen from "../screens/UserTvProfileScreen/UserTvProfileScreen";
 import TvInsightScreen from "../screens/TvInsightScreen/TvInsightScreen";
 import EditTvProfileScreen from "../screens/EditTvProfileScreen/EditTvProfileScreen";
 import StoreGetStartedScreen from "../screens/StoreGetStartedScreen/StoreGetStartedScreen";
@@ -30,6 +31,7 @@ import XStoreScreen from "../screens/XStoreScreen/XStoreScreen";
 import EditXStoreScreen from "../screens/EditXStoreScreen/EditXStoreScreen";
 import MyProductScreen from "../screens/MyProductScreen/MyProductScreen";
 import UserStoreScreen from "../screens/UserStoreScreen/UserStoreScreen";
+import XStoreProductsScreen from "../screens/XStoreProductsScreen/XStoreProductsScreen";
 import { useSelector } from "react-redux";
 
 const BottomTab = createBottomTabNavigator();
@@ -58,6 +60,9 @@ export default function BottomTabNavigator() {
         return false;
         break;
       case "ProfileScreen":
+        return false;
+        break;
+      case "UserProfileScreen":
         return false;
         break;
       case "ReelScreen":
@@ -90,6 +95,9 @@ export default function BottomTabNavigator() {
       case "TvProfileScreen":
         return false;
         break;
+      case "UserTvProfileScreen":
+        return false;
+        break;
       case "EditTvProfileScreen":
         return false;
         break;
@@ -106,6 +114,9 @@ export default function BottomTabNavigator() {
         return false;
         break;
       case "UserStoreScreen":
+        return false;
+        break;
+      case "XStoreProductsScreen":
         return false;
         break;
       default:
@@ -350,6 +361,20 @@ function ExploreScreenNavigator() {
       <FriendListScreenStack.Screen
         name="UserStoreScreen"
         component={UserStoreScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <FriendListScreenStack.Screen
+        name="XStoreProductsScreen"
+        component={XStoreProductsScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <FriendListScreenStack.Screen
+        name="UserTvProfileScreen"
+        component={UserTvProfileScreen}
         options={{
           headerShown: false,
         }}

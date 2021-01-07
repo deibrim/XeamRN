@@ -1,4 +1,4 @@
-import { StyleSheet } from "react-native";
+import { Dimensions, StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
   container: {
@@ -12,12 +12,12 @@ export const styles = StyleSheet.create({
     paddingTop: 40,
     paddingBottom: 10,
     paddingHorizontal: 20,
-    zIndex: 1,
+    zIndex: 0,
     minHeight: 80,
     backgroundColor: "#ecf2fa",
     justifyContent: "space-between",
-    elevation: 4,
   },
+
   title: {
     fontSize: 16,
     marginBottom: 4,
@@ -61,5 +61,36 @@ export const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 2,
     marginRight: 5,
+  },
+  moreModalContainer: {
+    position: "absolute",
+    zIndex: 99999999,
+    top: 0,
+    right: 0,
+    left: 0,
+    alignItems: "flex-end",
+    backgroundColor: "transparent",
+    paddingTop: 55,
+  },
+  modalContainer: {
+    alignItems: "center",
+    minHeight: 20,
+    minWidth: 150,
+    maxWidth: 150,
+    justifyContent: "center",
+    padding: 10,
+    borderRadius: 10,
+    backgroundColor: "pink",
+    elevation: 4,
+  },
+  modalTextButton: {
+    flexDirection: "row",
+    marginVertical: 3,
+    paddingVertical: 5,
+  },
+  modalText: {
+    color: "#111111",
+    fontWeight: "600",
+    fontSize: 14,
   },
 });

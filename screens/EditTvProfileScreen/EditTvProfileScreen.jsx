@@ -38,7 +38,7 @@ const EditTvProfileScreen = () => {
   const navigation = useNavigation();
   const [loading, setLoading] = useState(false);
   const [tvUpdated, setTvUpdated] = useState(false);
-  const [logo] = useState(tvProfile.logo);
+  // const [logo] = useState(tvProfile.logo);
   const [image, setImage] = useState(tvProfile.logo);
   const [tvHandle, setTvHandle] = useState(
     tvProfile.tvHandle.substring(0, tvProfile.tvHandle.length - 3)
@@ -122,7 +122,7 @@ const EditTvProfileScreen = () => {
       () => {
         uploadTask.snapshot.ref.getDownloadURL().then(async (downloadURL) => {
           setImage(downloadURL);
-          setUploading(" Finish uploading logo");
+          setUploading("");
           setLoading(false);
           onTvUpdated();
         });
@@ -144,6 +144,7 @@ const EditTvProfileScreen = () => {
       setLoading(false);
       onTvUpdated();
     } catch (e) {
+      setLoading(false);
       console.error(e);
     }
   };

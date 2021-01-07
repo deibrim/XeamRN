@@ -1,5 +1,5 @@
-import { AntDesign, Ionicons, MaterialIcons } from "@expo/vector-icons";
-import { useNavigation, useRoute } from "@react-navigation/native";
+import { AntDesign, Ionicons, Feather } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
 import React, { useEffect, useState } from "react";
 import {
   Dimensions,
@@ -12,21 +12,20 @@ import {
 } from "react-native";
 import { useSelector } from "react-redux";
 import AppButton from "../../components/AppButton/AppButton";
+import CustomInput from "../../components/CustomInput/CustomInput";
 import ProductPreview from "../../components/ProductPreview/ProductPreview";
 import TopsellingProductPreview from "../../components/TopsellingProductPreview/TopsellingProductPreview";
 import { firestore } from "../../firebase/firebase.utils";
 import { styles } from "./styles";
 
-const UserStoreScreen = () => {
+const XStoreProductsScreen = () => {
   const currentUser = useSelector((state) => state.user.currentUser);
   const navigation = useNavigation();
-  const route = useRoute();
-  const [xStore, setXStore] = useState({});
   const [active, setActive] = useState("home");
   const [loading, setLoading] = useState(false);
-  const [isFollowing, setIsFollowing] = useState(false);
-  const [followerCount, setFollowerCount] = useState(0);
-  const [followingCount, setFollowingCount] = useState(0);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searching, setSearching] = useState(false);
+  const [query, setQuery] = useState("");
   const [newProducts, setNewProducts] = useState([
     {
       name: 'Nike Adapt BB 2.0 "Tie-Dye" Basketball Shoe',
@@ -42,65 +41,54 @@ const UserStoreScreen = () => {
     },
   ]);
   useEffect(() => {
-    const storeId = route.params.storeId;
-    getStoreData(storeId);
-    getFollowers(storeId);
-    checkIfFollowing(storeId);
+    getStoreTimeline();
   }, []);
-  async function getStoreData(storeId) {
+  async function getStoreTimeline() {
     setLoading(true);
-    const userRef = firestore.doc(`xeamStores/${storeId}`);
+    const userRef = firestore.doc(`xeamStoreTimeline/${currentUser.id}`);
     const snapShot = await userRef.get();
-    setXStore(snapShot.data());
+    // setXStore(snapShot.data());
   }
-  async function getFollowers(storeId) {
-    const snapshot = await firestore
-      .collection("xStoreFollowers")
-      .doc(storeId)
-      .collection("storeFollowers")
-      .get();
-    setFollowerCount(snapshot.docs.length - 1);
-  }
-  async function checkIfFollowing(storeId) {
-    const doc = await firestore
-      .collection("xStoreFollowers")
-      .doc(storeId)
-      .collection("storeFollowers")
-      .doc(currentUser.id)
-      .get();
-    setIsFollowing(doc.exists);
-    setLoading(false);
-  }
-  const handleToggleFollow = () => {
-    /* handleFollow and unFollow */
-
-    if (isFollowing) {
-      setIsFollowing(false);
-      // handleUnfollowUser(storeId, currentUser.id);
-      setFollowerCount(followerCount - 1);
-    } else {
-      setIsFollowing(true);
-      // handleFollowUser(storeId, currentUser, user);
-      setFollowerCount(followerCount + 1);
-    }
-  };
   return (
     <>
-      <View style={styles.header}>
+      <View
+        style={searching ? styles.header : { ...styles.header, elevation: 4 }}
+      >
         <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <Ionicons
-                name="ios-arrow-back"
-                size={24}
-                color="black"
-                style={{ marginRight: 10 }}
-              />
-              <Text style={styles.title}>{xStore && xStore.storeHandle}</Text>
-            </View>
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={{ flexDirection: "row", alignItems: "center" }}
+          >
+            <Ionicons name="ios-arrow-back" size={24} color="black" />
+            <Text
+              style={{
+                color: "#42414C",
+                fontSize: 16,
+                marginLeft: 10,
+                marginBottom: 1,
+              }}
+            >
+              Back
+            </Text>
+          </TouchableOpacity>
+        </View>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+          }}
+        >
+          <TouchableOpacity onPress={() => setSearching(true)}>
+            <Feather
+              name="search"
+              size={18}
+              color="black"
+              style={{ marginRight: 10 }}
+            />
           </TouchableOpacity>
         </View>
       </View>
+
       <View style={{ height: 60, backgroundColor: "#ecf2fa" }}>
         {filterButtons(active, setActive)}
       </View>
@@ -146,26 +134,65 @@ const UserStoreScreen = () => {
           </ScrollView>
         </View>
       </ScrollView>
-      <View style={{ ...styles.buttonContainer }}>
-        <TouchableOpacity onPress={() => handleToggleFollow()}>
-          <View
-            style={{
-              ...styles.button,
-              backgroundColor: "white",
+      <View style={{ ...styles.buttonContainer }}></View>
+      {searching ? (
+        <View
+          style={{
+            ...styles.moreModalContainer,
+            alignItems: "flex-start",
+            backgroundColor: "transparent",
+            paddingTop: 35,
+            flexDirection: "row",
+            paddingRight: 30,
+          }}
+        >
+          <CustomInput
+            onChange={(e) => {
+              setQuery(e);
+              setSearchLoading(true);
             }}
-          >
-            {/* <Feather name="tv" size={20} color="white" /> */}
-            <Text style={{ color: "#006aff" }}>
-              {isFollowing ? "Unfollow Store" : "Follow Store"}
-            </Text>
+            value={query}
+            placeholder={"Search product"}
+            icon={
+              searchLoading ? (
+                <Image
+                  style={{ marginLeft: 5, width: 18, height: 18 }}
+                  source={require("../../assets/loader.gif")}
+                />
+              ) : (
+                <Feather name="search" size={18} color="black" />
+              )
+            }
+            iStyle={{ padding: 0, height: 40, paddingLeft: 10 }}
+            cStyle={{ paddingLeft: 10, height: 40, margin: 0, flex: 1 }}
+          />
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <TouchableOpacity
+              style={{
+                alignItems: "center",
+                justifyContent: "center",
+                width: 25,
+                height: 25,
+                borderRadius: 20,
+                elevation: 2,
+                marginTop: 10,
+                backgroundColor: "#ff4747",
+              }}
+              onPress={() => {
+                setQuery("");
+                setSearching(false);
+              }}
+            >
+              <AntDesign name="close" size={18} color="#ffffff" />
+            </TouchableOpacity>
           </View>
-        </TouchableOpacity>
-      </View>
+        </View>
+      ) : null}
     </>
   );
 };
 
-export default UserStoreScreen;
+export default XStoreProductsScreen;
 function filterButtons(active, setActive) {
   function FilterButton({ title, value }) {
     return (
@@ -195,9 +222,8 @@ function filterButtons(active, setActive) {
       style={{ height: 60 }}
     >
       <FilterButton title={"Home"} value={"home"} />
-      <FilterButton title={"All Products"} value={"all"} />
-      <FilterButton title={"About"} value={"about"} />
-      <FilterButton title={"Reviews"} value={"reviews"} />
+      <FilterButton title={"On Sale"} value={"all"} />
+      <FilterButton title={"Recomendation"} value={"about"} />
     </ScrollView>
   );
 }

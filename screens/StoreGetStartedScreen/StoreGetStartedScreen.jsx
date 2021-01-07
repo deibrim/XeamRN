@@ -26,7 +26,7 @@ import firebase, { firestore } from "../../firebase/firebase.utils";
 import StoreGetStartedModel from "../../components/StoreGetStartedModel/StoreGetStartedModel";
 import SetupTvInfo from "../../components/SetupTvInfo/SetupTvInfo";
 import CustomPopUp from "../../components/CustomPopUp/CustomPopUp";
-import { setCurrentUserTvProfile } from "../../redux/user/actions";
+import { setCurrentUserXStore } from "../../redux/user/actions";
 import { styles } from "./styles";
 
 const wait = (timeout) => {
@@ -121,7 +121,7 @@ const StoreGetStartedScreen = () => {
     wait(2000).then(async () => {
       const userRef = firestore.doc(`xeamStores/${user.id}`);
       const snapShot = await userRef.get();
-      dispatch(setCurrentUserTvProfile({ ...snapShot.data() }));
+      dispatch(setCurrentUserXStore({ ...snapShot.data() }));
       const resetAction = navigation.reset({
         index: 1,
         actions: [navigation.navigate("XStoreScreen")],
@@ -165,8 +165,8 @@ const StoreGetStartedScreen = () => {
             location,
             logo: downloadURL,
             website: website.toLowerCase(),
-            tvOwnerName: user.name,
-            tvOwnerUsername: user.username,
+            storeOwnerName: user.name,
+            storeOwnerUsername: user.username,
           };
 
           firestore.collection("xeamStores").doc(user.id).set(storeData);

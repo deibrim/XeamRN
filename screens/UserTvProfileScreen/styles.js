@@ -1,5 +1,4 @@
 import { StyleSheet } from "react-native";
-
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -16,7 +15,6 @@ export const styles = StyleSheet.create({
     minHeight: 80,
     backgroundColor: "transparent",
     justifyContent: "space-between",
-    elevation: 4,
   },
   userPreview: {
     flexDirection: "row",

@@ -1,4 +1,4 @@
-import { StyleSheet } from "react-native";
+import { Dimensions, StyleSheet } from "react-native";
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -31,8 +31,9 @@ export const styles = StyleSheet.create({
     borderRadius: 15,
   },
   userContainer: {
-    flexDirection: "row",
     width: "100%",
+    flexDirection: "row",
+
     justifyContent: "space-between",
     paddingHorizontal: 20,
     paddingVertical: 10,
@@ -43,6 +44,7 @@ export const styles = StyleSheet.create({
     width: "100%",
   },
   midContainer: {
+    width: Dimensions.get("screen").width - 140,
     justifyContent: "center",
   },
   avatar: {

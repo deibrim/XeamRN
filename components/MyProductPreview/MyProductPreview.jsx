@@ -7,7 +7,7 @@ import { useNavigation } from "@react-navigation/native";
 import { styles } from "./styles";
 
 export default function MyProductPreview(props) {
-  const { uri, name, price } = props.data;
+  const { images, name, price } = props.data;
   const [errorMessage, setErrorMessage] = useState("");
   const navigation = useNavigation();
   return (
@@ -16,7 +16,7 @@ export default function MyProductPreview(props) {
         <View style={styles.productCard}>
           <Image
             source={{
-              uri: uri,
+              uri: images[0],
             }}
             style={styles.productCardImage}
             resizeMode={"cover"}

@@ -73,7 +73,7 @@ const EditTvProfileScreen = () => {
     });
     if (!result.cancelled) {
       setImage(await result.uri);
-      uploadLogoToStorage();
+      uploadLogoToStorage(await result.uri);
     }
   };
 
@@ -96,8 +96,8 @@ const EditTvProfileScreen = () => {
       setTvUpdated(false);
     });
   }, []);
-  async function uploadLogoToStorage() {
-    const response = await fetch(image);
+  async function uploadLogoToStorage(img) {
+    const response = await fetch(img);
     const blob = await response.blob();
     const storageRef = firebase.storage().ref(`tv/${user.id}/tv_logo`);
     const uploadTask = storageRef.put(blob);
@@ -124,7 +124,6 @@ const EditTvProfileScreen = () => {
           setImage(downloadURL);
           setUploading("");
           setLoading(false);
-          onTvUpdated();
         });
       }
     );

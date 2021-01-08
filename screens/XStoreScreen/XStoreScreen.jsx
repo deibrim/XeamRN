@@ -9,11 +9,10 @@ import {
   ScrollView,
 } from "react-native";
 import { useSelector, useDispatch } from "react-redux";
-import { firestore, auth } from "../../firebase/firebase.utils";
+import { firestore } from "../../firebase/firebase.utils";
 import { useNavigation } from "@react-navigation/native";
 import { LineChart } from "react-native-chart-kit";
 import { setTvReels } from "../../redux/reel/actions";
-import ReelPreview from "../../components/ReelPreview/ReelPreview";
 import { styles } from "./styles";
 import AppButton from "../../components/AppButton/AppButton";
 import Graph from "../../components/Graph/Graph";
@@ -21,40 +20,116 @@ import Graph from "../../components/Graph/Graph";
 export default function XStoreScreen() {
   const user = useSelector((state) => state.user.currentUser);
   const xStore = useSelector((state) => state.user.currentUserXStore);
-  const reels = useSelector((state) => state.reel.tvReels);
   const [followerCount, setFollowerCount] = useState(0);
   const [focused, setFocused] = useState("reels");
   const [filter, setFilter] = useState("thisWeek");
   const [loading, setLoading] = useState(false);
-  const [loadingReels, setLoadingReels] = useState(false);
+  const [loadingTopSelling, setLoadingTopSelling] = useState(false);
+  const [productCount, setProductCount] = useState(0);
+  const [topSelling, setTopSelling] = useState([]);
+  const [orderCount, setOrderCount] = useState(0);
   const dispatch = useDispatch();
   const navigation = useNavigation();
   useEffect(() => {
-    // getFollowers(xStore.id);
-    // getTvReels(xStore.id);
-  }, []);
-  function getTvReels(xStoreId) {
-    setLoadingReels(true);
-    const reelRef = firestore
-      .collection("tvReels")
-      .doc(`${xStoreId}`)
-      .collection("reels");
-    reelRef.onSnapshot((snapshot) => {
-      if (snapshot.empty) {
-        setLoadingReels(false);
+    getFollowers(xStore.id);
+    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const date = new Date(Date.now());
+
+    switch (days[date.getDay()]) {
+      case "Sun":
+        let tFrom = timeFrom(1);
+        let tStr = tFrom[tFrom.length - 1];
+        console.log(tStr);
+        break;
+      case "Mon":
+        tFrom = timeFrom(2);
+        tStr = tFrom[tFrom.length - 1];
+        console.log(tStr);
+        break;
+      case "Tue":
+        tFrom = timeFrom(3);
+        tStr = tFrom[tFrom.length - 1];
+        console.log(tStr);
+        break;
+      case "Wed":
+        tFrom = timeFrom(4);
+        tStr = tFrom[tFrom.length - 1];
+        console.log(tStr);
+        break;
+      case "Thu":
+        tFrom = timeFrom(5);
+        tStr = tFrom[tFrom.length - 1];
+        console.log(tStr);
+        break;
+      case "Fri":
+        tFrom = timeFrom(6);
+        tStr = tFrom[tFrom.length - 1];
+        console.log(tStr);
+        break;
+      case "Sat":
+        tFrom = timeFrom(7);
+        tStr = tFrom[tFrom.length - 1];
+        console.log(tStr);
+        break;
+      default:
+        break;
+    }
+    function timeFrom(val) {
+      const dates = [];
+      for (let I = 0; I < Math.abs(val); I++) {
+        dates.push(
+          Date.parse(
+            new Date(
+              new Date().getTime() -
+                (val >= 0 ? I : I - I - I) * 24 * 60 * 60 * 1000
+            ).toLocaleString()
+          )
+        );
       }
-      const reelsArr = [];
-      snapshot.docs.forEach((doc) => {
-        reelsArr.push(doc.data());
-      });
-      dispatch(setTvReels(reelsArr));
-      setLoadingReels(false);
+      return dates;
+    }
+    console.log(timeFrom(3));
+    getProductCount();
+    getOrderCount();
+    getTopSelling();
+  }, []);
+  async function getProductCount() {
+    const snapshot = await firestore
+      .collection("products")
+      .doc(xStore.id)
+      .collection("my_products")
+      .get();
+    setProductCount(snapshot.size);
+  }
+  async function getOrderCount() {
+    const snapshot = await firestore
+      .collection("orders")
+      .doc(xStore.id)
+      .collection("my_orders")
+      .get();
+    setOrderCount(snapshot.size);
+  }
+  async function getTopSelling() {
+    setLoadingTopSelling(true);
+    const productRefs = await firestore
+      .collection("products")
+      .doc(xStore.id)
+      .collection("my_products")
+      .orderBy("orders")
+      .limitToLast(3);
+    const snapshot = await productRefs.get();
+    const productsArr = [];
+    snapshot.docs.forEach((doc) => {
+      console.log(doc.data());
+      productsArr.push(doc.data());
     });
+    setTopSelling(productsArr);
+    setLoadingTopSelling(false);
   }
   async function getFollowers(xStoreId) {
-    setLoading(true);
+    // setLoading(true);
     const snapshot = await firestore
-      .collection("tvFollowers")
+      .collection("xeamStoreFollowers")
       .doc(xStoreId)
       .collection("followers")
       .get();
@@ -62,15 +137,12 @@ export default function XStoreScreen() {
     !snapshot.empty
       ? setFollowerCount(snapshot.docs.length)
       : setFollowerCount(0);
-    setLoading(false);
+    // setLoading(false);
   }
   const onClick = () => {
     navigation.goBack();
   };
-  //   const handleSignout = () => {
-  //     auth.signOut();
-  //     dispatch(setCurrentUser(null));
-  //   };
+
   return (
     <>
       <View style={styles.header}>
@@ -85,7 +157,6 @@ export default function XStoreScreen() {
         <View
           style={{
             flexDirection: "row",
-            // width: 70,
             justifyContent: "space-between",
           }}
         >
@@ -118,7 +189,6 @@ export default function XStoreScreen() {
             <View
               style={{
                 width: "30%",
-                // backgroundColor: "#006aff",
                 padding: 10,
                 borderTopRightRadius: 100,
                 borderBottomRightRadius: 100,
@@ -170,14 +240,42 @@ export default function XStoreScreen() {
                     fontWeight: "bold",
                   }}
                 >
-                  10,010 orders
+                  {orderCount} orders
                 </Text>
                 <Text
                   style={{ fontSize: 12, color: "gray", fontWeight: "bold" }}
                 >
-                  1010 products
+                  {productCount} products
                 </Text>
               </View>
+            </View>
+            <View
+              style={{
+                marginLeft: "auto",
+                alignItems: "center",
+                paddingRight: 10,
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 14,
+                  color: "gray",
+                  marginRight: 10,
+                  fontWeight: "500",
+                }}
+              >
+                Followers
+              </Text>
+              <Text
+                style={{
+                  fontSize: 16,
+                  color: "gray",
+                  marginRight: 10,
+                  fontWeight: "bold",
+                }}
+              >
+                {followerCount}
+              </Text>
             </View>
           </View>
 
@@ -186,8 +284,8 @@ export default function XStoreScreen() {
               Dimensions={Dimensions}
               filter={filter}
               setFilter={setFilter}
+              title="Orders"
             />
-            {/* {graph(Dimensions, filter, setFilter)} */}
             <View style={styles.section}>
               <View
                 style={{
@@ -202,6 +300,11 @@ export default function XStoreScreen() {
                   flexDirection: "row",
                 })}
               </View>
+              <ScrollView>
+                {topSelling.map((item, index) => (
+                  <TopSellingPreview key={index} data={item} />
+                ))}
+              </ScrollView>
             </View>
           </ScrollView>
         </View>
@@ -245,7 +348,7 @@ export default function XStoreScreen() {
                 fontWeight: "bold",
               }}
             >
-              {"10"}
+              {productCount}
             </Text>
           </View>
           <View
@@ -263,96 +366,6 @@ export default function XStoreScreen() {
         </TouchableOpacity>
       </View>
     </>
-  );
-}
-
-function graph(Dimensions, filter, setFilter) {
-  return (
-    <View style={{ alignItems: "center", width: "100%" }}>
-      <View
-        style={{
-          backgroundColor: "#609FF3",
-          borderRadius: 16,
-        }}
-      >
-        <View
-          style={{
-            width: "100%",
-            backgroundColor: "#609FF3",
-            borderRadius: 16,
-            padding: 20,
-            paddingBottom: 0,
-          }}
-        >
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-            }}
-          >
-            <Text
-              style={{
-                color: "#ffffff",
-                fontSize: 18,
-                fontWeight: "600",
-              }}
-            >
-              Product Sold
-            </Text>
-            <View
-              style={{
-                backgroundColor: "green",
-                borderRadius: 10,
-                paddingHorizontal: 5,
-                paddingVertical: 2,
-                marginLeft: 5,
-              }}
-            >
-              <Text
-                style={{
-                  color: "#ffffff",
-                  fontSize: 10,
-                  fontWeight: "bold",
-                }}
-              >
-                {" + 20% "}
-              </Text>
-            </View>
-          </View>
-          {filterButtons(filter, setFilter, {
-            flexDirection: "row",
-            height: 65,
-            paddingVertical: 10,
-          })}
-        </View>
-        <LineChart
-          data={{
-            labels: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
-            datasets: [
-              {
-                data: [100, 0, 0, 0, 0, 0, 0],
-              },
-            ],
-          }}
-          width={Dimensions.get("screen").width - 20}
-          height={200}
-          chartConfig={{
-            backgroundColor: "#006eff",
-            backgroundGradientFrom: "#227FFB",
-            backgroundGradientTo: "#609FF3",
-            decimalPlaces: 0,
-            color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-            style: {
-              borderRadius: 16,
-            },
-          }}
-          bezier
-          style={{
-            borderRadius: 16,
-          }}
-        />
-      </View>
-    </View>
   );
 }
 
@@ -388,6 +401,43 @@ function filterButtons(filter, setFilter, styl) {
           setFilter("thisMonth");
         }}
       />
+    </View>
+  );
+}
+
+function TopSellingPreview({ data }) {
+  const { images, name, price, orders } = data;
+  return (
+    <View
+      style={{
+        flex: 1,
+        width: Dimensions.get("screen").width - 50,
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        marginTop: 10,
+      }}
+    >
+      <Image
+        source={{ uri: images[0] }}
+        style={{ height: 45, width: 45, borderRadius: 10 }}
+      />
+      <View
+        style={{
+          flex: 1,
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginLeft: 20,
+        }}
+      >
+        <View>
+          <Text>{name}</Text>
+          <Text>${price}</Text>
+        </View>
+        <Text>{orders}</Text>
+        <Text>${price * 5}</Text>
+      </View>
     </View>
   );
 }

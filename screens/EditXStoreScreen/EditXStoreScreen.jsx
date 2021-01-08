@@ -95,7 +95,7 @@ const EditXStoreScreen = () => {
     });
     if (!result.cancelled) {
       setImage(await result.uri);
-      uploadLogoToStorage();
+      uploadLogoToStorage(await result.uri);
     }
   };
 
@@ -122,8 +122,8 @@ const EditXStoreScreen = () => {
       setStoreCreated(false);
     });
   }, []);
-  const uploadLogoToStorage = async () => {
-    const response = await fetch(image);
+  const uploadLogoToStorage = async (img) => {
+    const response = await fetch(img);
     const blob = await response.blob();
     const storageRef = firebase
       .storage()
@@ -149,7 +149,7 @@ const EditXStoreScreen = () => {
       },
       () => {
         uploadTask.snapshot.ref.getDownloadURL().then(async (downloadURL) => {
-          setImage(image);
+          setImage(downloadURL);
           setUploading("");
           setLoading(false);
         });

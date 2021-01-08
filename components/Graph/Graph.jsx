@@ -3,7 +3,7 @@ import { Text, View } from "react-native";
 import { LineChart } from "react-native-chart-kit";
 import StatFilterButtons from "../StatFilterButtons/StatFilterButtons";
 
-const Graph = ({ Dimensions, filter, setFilter }) => {
+const Graph = ({ Dimensions, filter, setFilter, title }) => {
   return (
     <View style={{ alignItems: "center", width: "100%" }}>
       <View
@@ -32,7 +32,7 @@ const Graph = ({ Dimensions, filter, setFilter }) => {
                 fontWeight: "600",
               }}
             >
-              Product Sold
+              {title}
             </Text>
             <View
               style={{

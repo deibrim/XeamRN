@@ -23,75 +23,41 @@ export default function XStoreScreen() {
   const [followerCount, setFollowerCount] = useState(0);
   const [focused, setFocused] = useState("reels");
   const [filter, setFilter] = useState("thisWeek");
+  const [filterTopSelling, setfilterTopSelling] = useState("thisWeek");
   const [loading, setLoading] = useState(false);
   const [loadingTopSelling, setLoadingTopSelling] = useState(false);
   const [productCount, setProductCount] = useState(0);
   const [topSelling, setTopSelling] = useState([]);
   const [orderCount, setOrderCount] = useState(0);
+  const [monthOrderCount, setMonthOrderCount] = useState(0);
   const dispatch = useDispatch();
   const navigation = useNavigation();
+  const date = new Date(),
+    year = date.getFullYear(),
+    month = date.getMonth();
+
+  const firstDayOfTheMonth = Date.parse(
+    new Date(year, month, 1).toLocaleString()
+  );
+
+  const first = date.getDate() - date.getDay();
+  const last = first + 6;
+
+  const firstDayOfTheWeek = Date.parse(
+    new Date(date.setDate(first)).toLocaleString()
+  );
+
+  const lastDayOfTheWeek = Date.parse(
+    new Date(date.setDate(last)).toLocaleString()
+  );
   useEffect(() => {
     getFollowers(xStore.id);
-    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-    const date = new Date(Date.now());
+    // const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    // const date = new Date(Date.now());
 
-    switch (days[date.getDay()]) {
-      case "Sun":
-        let tFrom = timeFrom(1);
-        let tStr = tFrom[tFrom.length - 1];
-        console.log(tStr);
-        break;
-      case "Mon":
-        tFrom = timeFrom(2);
-        tStr = tFrom[tFrom.length - 1];
-        console.log(tStr);
-        break;
-      case "Tue":
-        tFrom = timeFrom(3);
-        tStr = tFrom[tFrom.length - 1];
-        console.log(tStr);
-        break;
-      case "Wed":
-        tFrom = timeFrom(4);
-        tStr = tFrom[tFrom.length - 1];
-        console.log(tStr);
-        break;
-      case "Thu":
-        tFrom = timeFrom(5);
-        tStr = tFrom[tFrom.length - 1];
-        console.log(tStr);
-        break;
-      case "Fri":
-        tFrom = timeFrom(6);
-        tStr = tFrom[tFrom.length - 1];
-        console.log(tStr);
-        break;
-      case "Sat":
-        tFrom = timeFrom(7);
-        tStr = tFrom[tFrom.length - 1];
-        console.log(tStr);
-        break;
-      default:
-        break;
-    }
-    function timeFrom(val) {
-      const dates = [];
-      for (let I = 0; I < Math.abs(val); I++) {
-        dates.push(
-          Date.parse(
-            new Date(
-              new Date().getTime() -
-                (val >= 0 ? I : I - I - I) * 24 * 60 * 60 * 1000
-            ).toLocaleString()
-          )
-        );
-      }
-      return dates;
-    }
-    console.log(timeFrom(3));
     getProductCount();
     getOrderCount();
-    getTopSelling();
+    getTopSelling(filter);
   }, []);
   async function getProductCount() {
     const snapshot = await firestore
@@ -102,25 +68,34 @@ export default function XStoreScreen() {
     setProductCount(snapshot.size);
   }
   async function getOrderCount() {
-    const snapshot = await firestore
+    const productRef = firestore
       .collection("orders")
       .doc(xStore.id)
-      .collection("my_orders")
+      .collection("my_orders");
+    const allOrderSnapshot = await productRef.get();
+    setOrderCount(allOrderSnapshot.size);
+    const monthOrderSnapshot = await productRef
+      .where("timestamp", ">", firstDayOfTheMonth)
       .get();
-    setOrderCount(snapshot.size);
+    setMonthOrderCount(monthOrderSnapshot.size);
   }
-  async function getTopSelling() {
+  async function getTopSelling(filter) {
     setLoadingTopSelling(true);
     const productRefs = await firestore
       .collection("products")
       .doc(xStore.id)
       .collection("my_products")
-      .orderBy("orders")
-      .limitToLast(3);
+      .orderBy("timestamp")
+      .where(
+        "timestamp",
+        ">",
+        filter === "thisWeek" ? firstDayOfTheWeek : firstDayOfTheMonth
+      )
+      // .orderBy("orders")
+      .limit(3);
     const snapshot = await productRefs.get();
     const productsArr = [];
     snapshot.docs.forEach((doc) => {
-      console.log(doc.data());
       productsArr.push(doc.data());
     });
     setTopSelling(productsArr);
@@ -222,7 +197,7 @@ export default function XStoreScreen() {
                   fontWeight: "bold",
                 }}
               >
-                $2,050
+                ${xStore.revenue}
               </Text>
               <View
                 style={{
@@ -285,6 +260,8 @@ export default function XStoreScreen() {
               filter={filter}
               setFilter={setFilter}
               title="Orders"
+              monthOrderCount={monthOrderCount}
+              getTopSelling={getTopSelling}
             />
             <View style={styles.section}>
               <View
@@ -296,7 +273,7 @@ export default function XStoreScreen() {
                 }}
               >
                 <Text style={styles.sectionTitle}>Top Selling</Text>
-                {filterButtons(filter, setFilter, {
+                {filterButtons(filterTopSelling, setfilterTopSelling, {
                   flexDirection: "row",
                 })}
               </View>
@@ -369,7 +346,7 @@ export default function XStoreScreen() {
   );
 }
 
-function filterButtons(filter, setFilter, styl) {
+function filterButtons(filter, setFilter, styl, getTopSelling) {
   return (
     <View style={styl}>
       <AppButton
@@ -387,6 +364,7 @@ function filterButtons(filter, setFilter, styl) {
         textStyle={{ fontSize: 12, color: "#006eff" }}
         onPress={() => {
           setFilter("thisWeek");
+          getTopSelling && getTopSelling("thisWeek");
         }}
       />
       <AppButton
@@ -399,6 +377,7 @@ function filterButtons(filter, setFilter, styl) {
         textStyle={{ fontSize: 12, color: "#006eff" }}
         onPress={() => {
           setFilter("thisMonth");
+          getTopSelling && getTopSelling("thisMonth");
         }}
       />
     </View>

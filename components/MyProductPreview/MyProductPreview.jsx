@@ -6,8 +6,9 @@ import { useSelector } from "react-redux";
 import { useNavigation } from "@react-navigation/native";
 import { styles } from "./styles";
 
-export default function MyProductPreview(props) {
-  const { images, name, price } = props.data;
+export default function MyProductPreview({ data }) {
+  const { images, name, price, orders } = data;
+  // console.log(images);
   const [errorMessage, setErrorMessage] = useState("");
   const navigation = useNavigation();
   return (

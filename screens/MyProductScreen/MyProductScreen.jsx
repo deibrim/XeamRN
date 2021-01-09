@@ -1,39 +1,42 @@
 import { Entypo, Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { useSelector } from "react-redux";
 import AddProductModal from "../../components/AddProductModal/AddProductModal";
 import MyProductPreview from "../../components/MyProductPreview/MyProductPreview";
+import { firestore } from "../../firebase/firebase.utils";
 import { styles } from "./styles";
 
+// {
+//   name: 'Nike Adapt BB 2.0 "Tie-Dye" Basketball Shoe',
+//   price: 350,
+//   images: [
+//     "https://static.nike.com/a/images/t_PDP_1280_v1/f_auto,q_auto:eco/i1-9cfea66d-b519-4b29-8e43-ce4164e8c558/adapt-bb-2-tie-dye-basketball-shoe-vdFwKS.jpg",
+//   ],
+// },
+// {
+//   name: "Nike Joyride",
+//   price: 400,
+//   images: [
+//     "https://static.nike.com/a/images/w_1536,c_limit/9de44154-c8c3-4f77-b47e-d992b7b96379/image.jpg",
+//   ],
+// },
+
 const MyProductScreen = () => {
-  const [modalVisible, setModalVisible] = useState(false);
   const xStore = useSelector((state) => state.user.currentUserXStore);
   const navigation = useNavigation();
-  const [loadingProducts, setLoadingProducts] = true;
-  const [products, setProducts] = useState([
-    // {
-    //   name: 'Nike Adapt BB 2.0 "Tie-Dye" Basketball Shoe',
-    //   price: 350,
-    //   images: [
-    //     "https://static.nike.com/a/images/t_PDP_1280_v1/f_auto,q_auto:eco/i1-9cfea66d-b519-4b29-8e43-ce4164e8c558/adapt-bb-2-tie-dye-basketball-shoe-vdFwKS.jpg",
-    //   ],
-    // },
-    // {
-    //   name: "Nike Joyride",
-    //   price: 400,
-    //   images: [
-    //     "https://static.nike.com/a/images/w_1536,c_limit/9de44154-c8c3-4f77-b47e-d992b7b96379/image.jpg",
-    //   ],
-    // },
-  ]);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [loadingProducts, setLoadingProducts] = useState(true);
+  const [products, setProducts] = useState([]);
+
   useEffect(() => {
     getProducts();
   }, []);
+
   async function getProducts() {
     // setLoadingProducts(true);
-    const productRefs = await firestore
+    const productRefs = firestore
       .collection("products")
       .doc(xStore.id)
       .collection("my_products")

@@ -25,6 +25,7 @@ export default function ExploreScreen() {
   const [foundUsers, setFoundUsers] = useState([]);
   const [active, setActive] = useState("all");
   const user = useSelector((state) => state.user.currentUser);
+  const [searching, setSearching] = useState(false);
   const navigation = useNavigation();
   const [refreshing, setRefreshing] = useState(false);
   const onRefresh = useCallback(() => {
@@ -33,6 +34,10 @@ export default function ExploreScreen() {
   }, []);
   const findUser = async (e) => {
     query.trim() === "" ? setFoundUsers([]) : null;
+    if (query.trim() === "") {
+      return;
+    }
+    setSearching(true);
     // const usersRef = firestore
     //   .collection("users")
     //   .where("username", ">=", `${query.toLowerCase()}`)
@@ -43,12 +48,15 @@ export default function ExploreScreen() {
     const usersRef = firestore
       .collection("users")
       .where("username", ">=", `${query.toLowerCase()}`)
-      .orderBy("username", "desc");
+      .orderBy("username", "asc");
     // .startAt(query.toLowerCase())
     // .endAt(query.toLowerCase() + "\uf8ff");
     const usersArr = [];
     (await usersRef.get()).docs.forEach((doc) => {
-      usersArr.push(doc.data());
+      setSearching(false);
+      if (doc.data().username.toLowerCase().includes(query)) {
+        usersArr.push(doc.data());
+      }
       setFoundUsers(usersArr);
     });
   };
@@ -67,12 +75,34 @@ export default function ExploreScreen() {
         </TouchableOpacity>
         <CustomInput
           onChange={(e) => {
-            setQuery(e);
+            setSearching(false);
             findUser(e);
+            setQuery(e);
           }}
           value={query}
           placeholder={"Search users"}
           icon={<Feather name="search" size={20} color="black" />}
+          otherIcon={
+            searching ? (
+              <Image
+                style={{ marginRight: 10, width: 18, height: 18 }}
+                source={require("../../assets/loader.gif")}
+              />
+            ) : query ? (
+              <TouchableOpacity
+                onPress={() => {
+                  findUser(query);
+                }}
+              >
+                <Feather
+                  name="arrow-right"
+                  size={20}
+                  color="black"
+                  style={{ marginRight: 10 }}
+                />
+              </TouchableOpacity>
+            ) : null
+          }
           iStyle={{ padding: 0, height: 40, paddingLeft: 10 }}
           cStyle={{ paddingLeft: 10, margin: 0, flex: 1 }}
         />
@@ -165,7 +195,7 @@ function foundUserPreview(item, user, navigation) {
             {item.isBusinessAccount && (
               <TouchableOpacity
                 onPress={() =>
-                  navigation.navigate("UserStoreScreen", { storeId: user.id })
+                  navigation.navigate("UserStoreScreen", { storeId: item.id })
                 }
               >
                 <View style={{ ...styles.button, backgroundColor: "#ffffff" }}>

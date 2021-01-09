@@ -24,24 +24,36 @@ const XStoreProductsScreen = () => {
   const [active, setActive] = useState("home");
   const [loading, setLoading] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
+  const [loadingTopSelling, setLoadingTopSelling] = useState(true);
+  const [loadingNewProduct, setLoadingNewProduct] = useState(true);
+  const [loadingSales, setLoadingSales] = useState(true);
+  const [sales, setSales] = useState([]);
+  const [topSelling, setTopSelling] = useState([]);
   const [searching, setSearching] = useState(false);
   const [query, setQuery] = useState("");
   const [newProducts, setNewProducts] = useState([
     {
       name: 'Nike Adapt BB 2.0 "Tie-Dye" Basketball Shoe',
       price: 350,
-      uri:
+      images: [
         "https://static.nike.com/a/images/t_PDP_1280_v1/f_auto,q_auto:eco/i1-9cfea66d-b519-4b29-8e43-ce4164e8c558/adapt-bb-2-tie-dye-basketball-shoe-vdFwKS.jpg",
+      ],
     },
     {
       name: "Nike Joyride",
       price: 400,
-      uri:
+      images: [
         "https://static.nike.com/a/images/w_1536,c_limit/9de44154-c8c3-4f77-b47e-d992b7b96379/image.jpg",
+      ],
     },
   ]);
+  const productRefs = firestore
+    .collection("xeamStoreTimeline")
+    .doc(currentUser.id)
+    .collection("timelineProducts");
   useEffect(() => {
     getStoreTimeline();
+    getTopSelling(filter);
   }, []);
   async function getStoreTimeline() {
     setLoading(true);
@@ -49,10 +61,41 @@ const XStoreProductsScreen = () => {
     const snapShot = await userRef.get();
     // setXStore(snapShot.data());
   }
+  async function getTopSelling() {
+    productRefs.orderBy("orders", "desc").limit(3);
+    const snapshot = await productRefs.get();
+    const productsArr = [];
+    snapshot.docs.forEach((doc) => {
+      productsArr.push(doc.data());
+    });
+    setTopSelling(productsArr);
+    setLoadingTopSelling(false);
+  }
+  async function getNewProducts() {
+    productRefs.orderBy("timestamp", "desc").limit(3);
+    const snapshot = await productRefs.get();
+    const productsArr = [];
+    snapshot.docs.forEach((doc) => {
+      productsArr.push(doc.data());
+    });
+    setNewProducts(productsArr);
+    setLoadingNewProduct(false);
+  }
+  async function getSales() {
+    productRefs.orderBy("oPrice", "desc").limit(3);
+    const snapshot = await productRefs.get();
+    const productsArr = [];
+    snapshot.docs.forEach((doc) => {
+      productsArr.push(doc.data());
+    });
+    setSales(productsArr);
+    setLoadingSales(false);
+  }
   return (
     <>
       <View
-        style={searching ? styles.header : { ...styles.header, elevation: 4 }}
+        // style={searching ? styles.header : { ...styles.header, elevation: 4 }}
+        style={styles.header}
       >
         <View style={{ flexDirection: "row", alignItems: "center" }}>
           <TouchableOpacity
@@ -89,7 +132,7 @@ const XStoreProductsScreen = () => {
         </View>
       </View>
 
-      <View style={{ height: 60, backgroundColor: "#ecf2fa" }}>
+      <View style={{ height: 60, backgroundColor: "#ecf2fa", paddingLeft: 10 }}>
         {filterButtons(active, setActive)}
       </View>
       <ScrollView style={styles.container}>
@@ -108,7 +151,9 @@ const XStoreProductsScreen = () => {
           renderItem={(item) => <TopsellingProductPreview data={item.item} />}
         />
         <View style={styles.newProductSection}>
-          <Text style={styles.sectionTitle}>New Products</Text>
+          <Text style={[styles.sectionTitle, { fontSize: 14 }]}>
+            NEW PRODUCTS
+          </Text>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -121,7 +166,7 @@ const XStoreProductsScreen = () => {
           </ScrollView>
         </View>
         <View style={styles.newProductSection}>
-          <Text style={styles.sectionTitle}>Sales</Text>
+          <Text style={[styles.sectionTitle, { fontSize: 14 }]}>SALES</Text>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}

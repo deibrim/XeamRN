@@ -1,16 +1,23 @@
 import { Fontisto } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
 import React from "react";
 import { View, Image, Text, TouchableWithoutFeedback } from "react-native";
 import { styles } from "./styles";
 const TopsellingProductPreview = (props) => {
-  const { uri, name, price } = props.data;
-
+  const { images, name, price } = props.data;
+  const navigation = useNavigation();
   return (
-    <TouchableWithoutFeedback onPress={() => {}}>
+    <TouchableWithoutFeedback
+      onPress={() => {
+        navigation.navigate("ProductDetailScreen", {
+          productData: props.data,
+        });
+      }}
+    >
       <View style={styles.productCard}>
         <Image
           source={{
-            uri: uri,
+            uri: images[0],
           }}
           style={styles.productCardImage}
           resizeMode={"cover"}

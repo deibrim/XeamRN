@@ -1,9 +1,9 @@
 import React from "react";
-import { Text, View } from "react-native";
+import { Dimensions, Text, View } from "react-native";
 import { LineChart } from "react-native-chart-kit";
 import StatFilterButtons from "../StatFilterButtons/StatFilterButtons";
 
-const Graph = ({ Dimensions, filter, setFilter, title }) => {
+const Graph = ({ Dimensions, filter, setFilter, title, monthOrderCount }) => {
   return (
     <View style={{ alignItems: "center", width: "100%" }}>
       <View
@@ -64,32 +64,54 @@ const Graph = ({ Dimensions, filter, setFilter, title }) => {
             }}
           />
         </View>
-        <LineChart
-          data={{
-            labels: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
-            datasets: [
-              {
-                data: [100, 0, 0, 0, 0, 0, 0],
+        {filter === "thisWeek" ? (
+          <LineChart
+            data={{
+              labels: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+              datasets: [
+                {
+                  data: [100, 0, 0, 0, 0, 0, 0],
+                },
+              ],
+            }}
+            width={Dimensions.get("screen").width - 20}
+            height={200}
+            chartConfig={{
+              backgroundColor: "#006eff",
+              backgroundGradientFrom: "#227FFB",
+              backgroundGradientTo: "#609FF3",
+              decimalPlaces: 0,
+              color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+              style: {
+                borderRadius: 16,
               },
-            ],
-          }}
-          width={Dimensions.get("screen").width - 20}
-          height={200}
-          chartConfig={{
-            backgroundColor: "#006eff",
-            backgroundGradientFrom: "#227FFB",
-            backgroundGradientTo: "#609FF3",
-            decimalPlaces: 0,
-            color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-            style: {
+            }}
+            bezier
+            style={{
               borderRadius: 16,
-            },
-          }}
-          bezier
-          style={{
-            borderRadius: 16,
-          }}
-        />
+            }}
+          />
+        ) : (
+          <View
+            style={{
+              height: 200,
+              width: Dimensions.get("screen").width - 20,
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <Text
+              style={{
+                color: "#ffffff",
+                fontSize: 50,
+                fontWeight: "bold",
+                marginBottom: 20,
+              }}
+            >
+              {monthOrderCount}
+            </Text>
+          </View>
+        )}
       </View>
     </View>
   );

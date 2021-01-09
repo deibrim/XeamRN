@@ -32,6 +32,7 @@ import EditXStoreScreen from "../screens/EditXStoreScreen/EditXStoreScreen";
 import MyProductScreen from "../screens/MyProductScreen/MyProductScreen";
 import UserStoreScreen from "../screens/UserStoreScreen/UserStoreScreen";
 import XStoreProductsScreen from "../screens/XStoreProductsScreen/XStoreProductsScreen";
+import ProductDetailScreen from "../screens/ProductDetailScreen/ProductDetailScreen";
 import { useSelector } from "react-redux";
 
 const BottomTab = createBottomTabNavigator();
@@ -117,6 +118,9 @@ export default function BottomTabNavigator() {
         return false;
         break;
       case "XStoreProductsScreen":
+        return false;
+        break;
+      case "ProductDetailScreen":
         return false;
         break;
       default:
@@ -257,6 +261,13 @@ function HomeScreenNavigator() {
         }}
       />
       <ScreenStack.Screen
+        name="ProductDetailScreen"
+        component={ProductDetailScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <ScreenStack.Screen
         name="TvInsightScreen"
         component={TvInsightScreen}
         options={{
@@ -373,6 +384,13 @@ function ExploreScreenNavigator() {
         }}
       />
       <FriendListScreenStack.Screen
+        name="ProductDetailScreen"
+        component={ProductDetailScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <FriendListScreenStack.Screen
         name="UserTvProfileScreen"
         component={UserTvProfileScreen}
         options={{
@@ -397,6 +415,13 @@ function ActivitiesScreenNavigator() {
       <ScreenStack.Screen
         name="UserProfileScreen"
         component={UserProfileScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <ScreenStack.Screen
+        name="ProductDetailScreen"
+        component={ProductDetailScreen}
         options={{
           headerShown: false,
         }}
@@ -459,6 +484,13 @@ function SettingsScreenNavigator() {
       <ScreenStack.Screen
         name="MyProductScreen"
         component={MyProductScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <ScreenStack.Screen
+        name="ProductDetailScreen"
+        component={ProductDetailScreen}
         options={{
           headerShown: false,
         }}

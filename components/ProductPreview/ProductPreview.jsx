@@ -7,16 +7,22 @@ import { useNavigation } from "@react-navigation/native";
 import { styles } from "./styles";
 
 export default function ProductPreview(props) {
-  const { uri, name, price } = props.data;
+  const { images, name, price } = props.data;
   const [errorMessage, setErrorMessage] = useState("");
   const navigation = useNavigation();
   return (
     <>
-      <TouchableWithoutFeedback onPress={() => {}}>
+      <TouchableWithoutFeedback
+        onPress={() => {
+          navigation.navigate("ProductDetailScreen", {
+            productData: props.data,
+          });
+        }}
+      >
         <View style={styles.productCard}>
           <Image
             source={{
-              uri: uri,
+              uri: images[0],
             }}
             style={styles.productCardImage}
             resizeMode={"cover"}

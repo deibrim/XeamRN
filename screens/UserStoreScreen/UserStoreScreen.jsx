@@ -31,14 +31,16 @@ const UserStoreScreen = () => {
     {
       name: 'Nike Adapt BB 2.0 "Tie-Dye" Basketball Shoe',
       price: 350,
-      uri:
+      images: [
         "https://static.nike.com/a/images/t_PDP_1280_v1/f_auto,q_auto:eco/i1-9cfea66d-b519-4b29-8e43-ce4164e8c558/adapt-bb-2-tie-dye-basketball-shoe-vdFwKS.jpg",
+      ],
     },
     {
       name: "Nike Joyride",
       price: 400,
-      uri:
+      images: [
         "https://static.nike.com/a/images/w_1536,c_limit/9de44154-c8c3-4f77-b47e-d992b7b96379/image.jpg",
+      ],
     },
   ]);
   useEffect(() => {
@@ -100,8 +102,16 @@ const UserStoreScreen = () => {
             </View>
           </TouchableOpacity>
         </View>
+        <View style={[styles.imageContainer, { marginLeft: "auto" }]}>
+          <Image
+            style={styles.profilePic}
+            source={{
+              uri: xStore.logo,
+            }}
+          />
+        </View>
       </View>
-      <View style={{ height: 60, backgroundColor: "#ecf2fa" }}>
+      <View style={{ height: 60, backgroundColor: "#ecf2fa", paddingLeft: 10 }}>
         {filterButtons(active, setActive)}
       </View>
       <ScrollView style={styles.container}>
@@ -120,7 +130,9 @@ const UserStoreScreen = () => {
           renderItem={(item) => <TopsellingProductPreview data={item.item} />}
         />
         <View style={styles.newProductSection}>
-          <Text style={styles.sectionTitle}>New Products</Text>
+          <Text style={[styles.sectionTitle, { fontSize: 14 }]}>
+            NEW PRODUCTS
+          </Text>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -133,7 +145,7 @@ const UserStoreScreen = () => {
           </ScrollView>
         </View>
         <View style={styles.newProductSection}>
-          <Text style={styles.sectionTitle}>Sales</Text>
+          <Text style={[styles.sectionTitle, { fontSize: 14 }]}>SALES</Text>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}

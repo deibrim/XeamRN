@@ -167,6 +167,8 @@ const StoreGetStartedScreen = () => {
             website: website.toLowerCase(),
             storeOwnerName: user.name,
             storeOwnerUsername: user.username,
+            pendingRevenue: 0,
+            revenue: 0,
           };
 
           firestore.collection("xeamStores").doc(user.id).set(storeData);

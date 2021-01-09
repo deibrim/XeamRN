@@ -2,7 +2,7 @@ import React from "react";
 import { View } from "react-native";
 import AppButton from "../../components/AppButton/AppButton";
 import { styles } from "./styles";
-const StatFilterButtons = ({ filter, setFilter, styl }) => {
+const StatFilterButtons = ({ filter, setFilter, styl, getTopSelling }) => {
   return (
     <View style={styl}>
       <AppButton
@@ -20,6 +20,7 @@ const StatFilterButtons = ({ filter, setFilter, styl }) => {
         textStyle={{ fontSize: 12, color: "#006eff" }}
         onPress={() => {
           setFilter("thisWeek");
+          getTopSelling && getTopSelling("thisWeek");
         }}
       />
       <AppButton
@@ -32,6 +33,7 @@ const StatFilterButtons = ({ filter, setFilter, styl }) => {
         textStyle={{ fontSize: 12, color: "#006eff" }}
         onPress={() => {
           setFilter("thisMonth");
+          getTopSelling && getTopSelling("thisMonth");
         }}
       />
     </View>

@@ -10,6 +10,7 @@ const CustomInput = ({
   placeholder,
   value,
   onChange,
+  otherIcon,
 }) => {
   return (
     <View style={{ ...styles.inputGroup, ...cStyle }}>
@@ -24,6 +25,7 @@ const CustomInput = ({
         onChangeText={onChange}
         value={value}
       />
+      {otherIcon}
     </View>
   );
 };

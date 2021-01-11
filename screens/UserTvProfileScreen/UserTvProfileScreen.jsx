@@ -1,9 +1,4 @@
-import {
-  AntDesign,
-  Ionicons,
-  Fontisto,
-  MaterialIcons,
-} from "@expo/vector-icons";
+import { Ionicons, Fontisto } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
 import {
   Text,
@@ -14,9 +9,12 @@ import {
   ScrollView,
 } from "react-native";
 import { useSelector, useDispatch } from "react-redux";
-import { firestore, auth } from "../../firebase/firebase.utils";
+import {
+  firestore,
+  handleFollowTv,
+  handleUnfollowTv,
+} from "../../firebase/firebase.utils";
 import { useNavigation, useRoute } from "@react-navigation/native";
-// import { setCurrentUser } from "../../redux/user/actions";
 import { setTvReels } from "../../redux/reel/actions";
 import ReelPreview from "../../components/ReelPreview/ReelPreview";
 import { styles } from "./styles";
@@ -25,25 +23,30 @@ export default function UserTvProfileScreen() {
   const navigation = useNavigation();
   const user = useSelector((state) => state.user.currentUser);
   const [userTvId] = useState(route.params.userTvId);
-  // const tvProfile = useSelector((state) => state.user.currentUserTvProfile);
   const [tvProfile, setTvProfile] = useState({});
   const [followerCount, setFollowerCount] = useState(0);
   const [isFollowing, setIsFollowing] = useState(false);
   const [focused, setFocused] = useState("reels");
+  const [token, setToken] = useState("");
   const [loading, setLoading] = useState(false);
   const [loadingReels, setLoadingReels] = useState(false);
   const dispatch = useDispatch();
 
   useEffect(() => {
-    // getFollowers(tvProfile.id);
     getUserTvData();
     // getTvReels(tvProfile.id);
   }, []);
   async function getUserTvData() {
     setLoading(true);
-    const userRef = firestore.doc(`xeamTvs/${userTvId}`);
+    const tvRef = firestore.doc(`xeamTvs/${userTvId}`);
+    const userRef = firestore.doc(`users/${userTvId}`);
+    const tvSnapShot = await tvRef.get();
     const snapShot = await userRef.get();
-    setTvProfile(snapShot.data());
+    setTvProfile(tvSnapShot.data());
+    setToken(snapShot.data().push_token.data);
+
+    getFollowers(tvSnapShot.data().id);
+    checkIfFollowing(tvSnapShot.data().id);
   }
 
   function getTvReels(tvProfileId) {
@@ -51,7 +54,7 @@ export default function UserTvProfileScreen() {
     const reelRef = firestore
       .collection("tvReels")
       .doc(`${tvProfileId}`)
-      .collection("myReels");
+      .collection("reels");
     reelRef.onSnapshot((snapshot) => {
       if (snapshot.empty) {
         setLoadingReels(false);
@@ -64,6 +67,16 @@ export default function UserTvProfileScreen() {
       setLoadingReels(false);
     });
   }
+  async function checkIfFollowing(tvId) {
+    const doc = await firestore
+      .collection("tvFollowers")
+      .doc(tvId)
+      .collection("followers")
+      .doc(user.id)
+      .get();
+    setIsFollowing(doc.exists);
+    setLoading(false);
+  }
   async function getFollowers(tvProfileId) {
     setLoading(true);
     const snapshot = await firestore
@@ -73,7 +86,7 @@ export default function UserTvProfileScreen() {
       .get();
 
     !snapshot.empty
-      ? setFollowerCount(snapshot.docs.length)
+      ? setFollowerCount(snapshot.docs.length - 1)
       : setFollowerCount(0);
     setLoading(false);
   }
@@ -82,10 +95,11 @@ export default function UserTvProfileScreen() {
 
     if (isFollowing) {
       setIsFollowing(false);
-      // handleUnfollowTv(userId, currentUser.id);
+      handleUnfollowTv(tvProfile.id, user.id);
       setFollowerCount(followerCount - 1);
     } else {
       setIsFollowing(true);
+      handleFollowTv(tvProfile.id, user, token);
       // handleFollowTv(userId, currentUser, user);
       setFollowerCount(followerCount + 1);
     }
@@ -225,18 +239,27 @@ export default function UserTvProfileScreen() {
                       backgroundColor: isFollowing ? "transparent" : "#006aff",
                     }}
                   >
-                    <MaterialIcons
-                      name={isFollowing ? "tv-off" : "tv"}
-                      size={18}
-                      color={isFollowing ? "#006aff" : "white"}
-                      style={{ marginRight: 10 }}
-                    />
+                    {/* {isFollowing ? (
+                      <Ionicons
+                        name={"tv"}
+                        size={18}
+                        color={isFollowing ? "#006aff" : "white"}
+                        style={{ marginRight: 10 }}
+                      />
+                    ) : (
+                      <Ionicons
+                        name={"tv-outline"}
+                        size={18}
+                        color={isFollowing ? "#006aff" : "white"}
+                        style={{ marginRight: 10 }}
+                      />
+                    )} */}
                     <Text
                       style={
                         isFollowing ? { color: "#006aff" } : { color: "white" }
                       }
                     >
-                      {isFollowing ? "Unfollow" : "Follow"}
+                      {isFollowing ? "Unfollow Tv" : "Follow Tv"}
                     </Text>
                   </View>
                 </TouchableOpacity>
@@ -258,7 +281,7 @@ export default function UserTvProfileScreen() {
             <Text style={{}}>Posts</Text>
           </View>
           <View style={{ alignItems: "center", width: 100 }}>
-            <Text style={{}}>Polls</Text>
+            <Text style={{}}>Giveaways</Text>
           </View>
           <View style={{ alignItems: "center", width: 100 }}>
             <Text style={{}}>About</Text>

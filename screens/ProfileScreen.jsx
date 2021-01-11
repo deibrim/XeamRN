@@ -13,7 +13,11 @@ import { Text, View } from "../components/Themed";
 import { firestore } from "../firebase/firebase.utils";
 import { useNavigation } from "@react-navigation/native";
 import { auth } from "../firebase/firebase.utils";
-import { setCurrentUser, setCurrentUserTvProfile } from "../redux/user/actions";
+import {
+  setCurrentUser,
+  setCurrentUserTvProfile,
+  setCurrentUserXStore,
+} from "../redux/user/actions";
 import { setMyReels } from "../redux/reel/actions";
 import ReelPreview from "../components/ReelPreview/ReelPreview";
 
@@ -76,6 +80,7 @@ export default function ProfileScreen() {
     auth.signOut();
     dispatch(setCurrentUser(null));
     dispatch(setCurrentUserTvProfile(null));
+    dispatch(setCurrentUserXStore(null));
   };
   return (
     <>

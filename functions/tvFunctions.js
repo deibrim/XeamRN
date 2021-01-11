@@ -1,83 +1,112 @@
+const admin = require("firebase-admin");
+
+exports.createTvProfile = async (snapshot, context) => {
+  const tvId = context.params.tvId;
+  await admin
+    .firestore()
+    .collection("tvFollowers")
+    .doc(tvId)
+    .collection("followers")
+    .doc(tvId)
+    .set({});
+};
+
 exports.createTvFollower = async (snapshot, context) => {
-    const userId = context.params.userId;
-    const followerId = context.params.followerId;
-    // 1) Create followed users reels ref
-    const followedUserReelsRef = admin
-      .firestore()
-      .collection("reels")
-      .doc(userId)
-      .collection("userReels");
-    const followedUserRef = admin.firestore().collection("users").doc(userId);
-    const followerUserRef = admin.firestore().collection("users").doc(followerId);
-  
-    const followedSnapShot = await followedUserRef.get();
-    const followerSnapShot = await followerUserRef.get();
-  
-    // 2) Create following user's timeline ref
-    const timelineReelsRef = admin
-      .firestore()
-      .collection("timeline")
-      .doc(followerId)
-      .collection("timelineReels");
-  
-    // 3) Get followed users reels
-    const querySnapshot = await followedUserReelsRef.get();
-  
-    // 4) Add each user post to following user's timeline
-    querySnapshot.forEach((doc) => {
-      if (doc.exists) {
-        const postId = doc.id;
-        const postData = doc.data();
-        timelineReelsRef.doc(postId).set(postData);
-      }
-    });
-  };
-  
-  exports.deleteTvFollower = async (snapshot, context) => {
-    const userId = context.params.userId;
-    const followerId = context.params.followerId;
-  
-    const timelinePostsRef = admin
+  const tvId = context.params.tvId;
+  const followerId = context.params.followerId;
+  // 1) Create followed tv reels ref
+  const followedTvReelsRef = admin
+    .firestore()
+    .collection("tvReels")
+    .doc(tvId)
+    .collection("reels");
+
+  // 2) Create following tv's timeline ref
+  const timelineReelsRef = admin
+    .firestore()
+    .collection("timeline")
+    .doc(followerId)
+    .collection("timelineReels");
+
+  // 3) Get followed tv reels
+  const querySnapshot = await followedTvReelsRef.get();
+
+  // 4) Add each tv post to following user's timeline
+  querySnapshot.forEach((doc) => {
+    if (doc.exists) {
+      const postId = doc.id;
+      const postData = doc.data();
+      timelineReelsRef.doc(postId).set(postData);
+    }
+  });
+};
+
+exports.deleteTvFollower = async (snapshot, context) => {
+  const tvId = context.params.tvId;
+  const followerId = context.params.followerId;
+
+  const timelinePostsRef = admin
+    .firestore()
+    .collection("timeline")
+    .doc(followerId)
+    .collection("timelineReels")
+    .where("tvId", "==", tvId);
+
+  const querySnapshot = await timelinePostsRef.get();
+  querySnapshot.forEach((doc) => {
+    if (doc.exists) {
+      doc.ref.delete();
+    }
+  });
+};
+
+exports.createTvReel = async (snapshot, context) => {
+  const postCreated = snapshot.data();
+  const tvId = context.params.tvId;
+  const postId = context.params.postId;
+
+  // 1) Get all the followers of the tv who made the post
+  const tvFollowersRef = admin
+    .firestore()
+    .collection("tvFollowers")
+    .doc(tvId)
+    .collection("followers");
+
+  const querySnapshot = await tvFollowersRef.get();
+
+  // 2) Add new post to each follower's timeline
+  querySnapshot.forEach((doc) => {
+    const followerId = doc.id;
+
+    admin
       .firestore()
       .collection("timeline")
       .doc(followerId)
       .collection("timelineReels")
-      .where("user_id", "==", userId);
-  
-    const querySnapshot = await timelinePostsRef.get();
-    querySnapshot.forEach((doc) => {
-      if (doc.exists) {
-        doc.ref.delete();
-      }
-    });
-  };
-  
-  exports.createTvReel = async (snapshot, context) => {
-    const postCreated = snapshot.data();
-    const userId = context.params.userId;
-    const postId = context.params.postId;
-  
-    // 1) Get all the followers of the user who made the post
-    const userFollowersRef = admin
-      .firestore()
-      .collection("followers")
-      .doc(userId)
-      .collection("userFollowers");
-  
-    const querySnapshot = await userFollowersRef.get();
-    // 2) Add new post to each follower's timeline
-    querySnapshot.forEach((doc) => {
-      const followerId = doc.id;
-  
-      admin
+      .doc(postId)
+      .set(postCreated);
+  });
+
+  const tags = postCreated.tags;
+
+  if (tags.length > 0) {
+    tags.forEach(async (item) => {
+      const tagRefGetdoc = await admin
         .firestore()
-        .collection("timeline")
-        .doc(followerId)
-        .collection("timelineReels")
-        .doc(postId)
-        .set(postCreated);
-    });
-    postCreated.tags.forEach((item) => {
+        .collection("tags")
+        .doc(item)
+        .get();
+      if (tagRefGetdoc.exists) {
+        tagRefGetdoc.ref.update({
+          postCount: tagRefGetdoc.data().postCount + 1,
+        });
+      } else {
+        admin
+          .firestore()
+          .collection("tags")
+          .doc(item)
+          .set({ id: item, postCount: 1 });
+      }
       admin
         .firestore()
         .collection("tags")
@@ -86,87 +115,114 @@ exports.createTvFollower = async (snapshot, context) => {
         .doc(postId)
         .set(postCreated);
     });
-  };
-  exports.updateTvReel = async (change, context) => {
-      const postUpdated = change.after.data();
-      const userId = context.params.userId;
-      const postId = context.params.postId;
-  
-      // 1) Get all the followers of the user who made the post
-      const userFollowersRef = admin
-        .firestore()
-        .collection("followers")
-        .doc(userId)
-        .collection("userFollowers");
-  
-      const querySnapshot = await userFollowersRef.get();
-      // 2) Update each post in each follower's timeline
-      querySnapshot.forEach(async (doc) => {
-        const followerId = doc.id;
-        const timelineRefGet = await admin
-          .firestore()
-          .collection("timeline")
-          .doc(followerId)
-          .collection("timelineReels")
-          .doc(postId)
-          .get();
-        if (timelineRefGet.exists) {
-          timelineRefGet.ref.update(postUpdated);
-        }
-      });
-      postUpdated.tags.forEach(item =>{
-        const tagRefGet = await admin
-          .firestore()
-          .collection("tags")
-          .doc(item)
-          .collection("tagReels")
-          .doc(postId)
-          .get();
-        if (tagRefGet.exists) {
-          tagRefGet.ref.update(postUpdated);
-        }
-      })
+  }
+};
+
+exports.updateTvReel = async (change, context) => {
+  const postUpdated = change.after.data();
+  const tvId = context.params.tvId;
+  const postId = context.params.postId;
+
+  // 1) Get all the followers of the tv who made the post
+  const tvFollowersRef = admin
+    .firestore()
+    .collection("tvFollowers")
+    .doc(tvId)
+    .collection("followers");
+
+  const querySnapshot = await tvFollowersRef.get();
+
+  // 2) Update each post in each follower's timeline
+  querySnapshot.forEach(async (doc) => {
+    const followerId = doc.id;
+    const timelineRefGet = await admin
+      .firestore()
+      .collection("timeline")
+      .doc(followerId)
+      .collection("timelineReels")
+      .doc(postId)
+      .get();
+    if (timelineRefGet.exists) {
+      timelineRefGet.ref.update(postUpdated);
     }
-  
-  exports.deleteTvReel = async (snapshot, context) => {
-      const userId = context.params.userId;
-      const postId = context.params.postId;
-      
-      // 1) Get all the followers of the user who made the post
-      const userFollowersRef = admin
+  });
+
+  const tags = postUpdated.tags;
+
+  if (tags.lenght > 0) {
+    tags.forEach(async (item) => {
+      const tagRefGet = await admin
         .firestore()
-        .collection("followers")
-        .doc(userId)
-        .collection("userFollowers");
-  
-      const querySnapshot = await userFollowersRef.get();
-      // 2) Delete each post in each follower's timeline
-      querySnapshot.forEach(async (doc) => {
-        const followerId = doc.id;
-        const timelineRefGet = await admin
-          .firestore()
-          .collection("timeline")
-          .doc(followerId)
-          .collection("timelineReels")
-          .doc(postId)
-          .get();
-        if (timelineRefGet.exists) {
-          timelineRefGet.ref.delete();
-        }
-      });
-      snapshot.before.data().tags.forEach(item =>{
-        const tagRefGet = await admin
-          .firestore()
-          .collection("tags")
-          .doc(item)
-          .collection("tagReels")
-          .doc(postId)
-          .get();
-        if (tagRefGet.exists) {
-          tagRefGet.ref.delete();
-        }
-      })
+        .collection("tags")
+        .doc(item)
+        .collection("tagReels")
+        .doc(postId)
+        .get();
+      if (tagRefGet.exists) {
+        tagRefGet.ref.update(postUpdated);
+      }
+    });
+  }
+};
+
+exports.deleteTvReel = async (snapshot, context) => {
+  const tvId = context.params.tvId;
+  const postId = context.params.postId;
+
+  // 1) Get all the followers of the tv who made the post
+  const tvFollowersRef = admin
+    .firestore()
+    .collection("tvFollowers")
+    .doc(tvId)
+    .collection("followers");
+
+  const querySnapshot = await tvFollowersRef.get();
+
+  // 2) Delete each post in each follower's timeline
+  querySnapshot.forEach(async (doc) => {
+    const followerId = doc.id;
+    const timelineRefGet = await admin
+      .firestore()
+      .collection("timeline")
+      .doc(followerId)
+      .collection("timelineReels")
+      .doc(postId)
+      .get();
+
+    if (timelineRefGet.exists) {
+      timelineRefGet.ref.delete();
     }
-    
-    
-  
+  });
+
+  const tags = snapshot.data().tags;
+
+  if (tags.length > 0) {
+    tags.forEach(async (item) => {
+      const tagRefGet = await admin
+        .firestore()
+        .collection("tags")
+        .doc(item)
+        .collection("tagReels")
+        .doc(postId)
+        .get();
+
+      if (tagRefGet.exists) {
+        tagRefGet.ref.delete();
+      }
+      const tagRefGetdoc = await admin
+        .firestore()
+        .collection("tags")
+        .doc(item)
+        .get();
+      if (tagRefGetdoc.exists) {
+        if (tagRefGetdoc.data().postCount === 1) {
+          tagRefGetdoc.ref.delete();
+        } else {
+          tagRefGetdoc.ref.update({
+            postCount: tagRefGetdoc.data().postCount - 1,
+          });
+        }
+      }
+    });
+  }
+};

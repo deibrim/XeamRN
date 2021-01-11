@@ -58,11 +58,13 @@ const EditAndPostScreen = () => {
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  onPress={() =>
+                  onPress={() => {
+                    setPaused(!paused);
                     navigation.navigate("PostReelScreen", {
                       videoUri: route.params.videoUri,
-                    })
-                  }
+                      type: route.params.type,
+                    });
+                  }}
                 >
                   <View style={styles.button}>
                     <Text style={styles.buttonText}>Next</Text>

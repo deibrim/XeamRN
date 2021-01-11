@@ -116,15 +116,15 @@ exports.onCreateReel = functions.firestore
         .doc(postId)
         .set(postCreated);
     });
-    postCreated.tags.forEach(item =>{
-      
-        admin.firestore()
+    postCreated.tags.forEach((item) => {
+      admin
+        .firestore()
         .collection("tags")
         .doc(item)
         .collection("tagReels")
         .doc(postId)
         .set(postCreated);
-    })
+    });
   });
 
 exports.onUpdateReel = functions.firestore
@@ -156,7 +156,7 @@ exports.onUpdateReel = functions.firestore
         timelineRefGet.ref.update(postUpdated);
       }
     });
-    postUpdated.tags.forEach(item =>{
+    postUpdated.tags.forEach(async (item) => {
       const tagRefGet = await admin
         .firestore()
         .collection("tags")
@@ -167,7 +167,7 @@ exports.onUpdateReel = functions.firestore
       if (tagRefGet.exists) {
         tagRefGet.ref.update(postUpdated);
       }
-    })
+    });
   });
 
 exports.onDeleteReel = functions.firestore
@@ -175,7 +175,7 @@ exports.onDeleteReel = functions.firestore
   .onDelete(async (snapshot, context) => {
     const userId = context.params.userId;
     const postId = context.params.postId;
-    
+
     // 1) Get all the followers of the user who made the post
     const userFollowersRef = admin
       .firestore()
@@ -198,7 +198,7 @@ exports.onDeleteReel = functions.firestore
         timelineRefGet.ref.delete();
       }
     });
-    snapshot.before.data().tags.forEach(item =>{
+    snapshot.before.data().tags.forEach(async (item) => {
       const tagRefGet = await admin
         .firestore()
         .collection("tags")
@@ -209,5 +209,5 @@ exports.onDeleteReel = functions.firestore
       if (tagRefGet.exists) {
         tagRefGet.ref.delete();
       }
-    })
+    });
   });

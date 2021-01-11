@@ -234,7 +234,7 @@ export default function UserProfileScreen() {
           </View>
         </TouchableWithoutFeedback>
       ) : null}
-      {loading ? (
+      {/* {loading ? (
         <View
           style={{
             flex: 1,
@@ -250,64 +250,68 @@ export default function UserProfileScreen() {
             source={require("../../assets/loader.gif")}
           />
         </View>
-      ) : (
-        <View style={styles.container}>
-          <View style={styles.userPreview}>
-            <View
+      ) : ( */}
+      <View style={styles.container}>
+        <View style={styles.userPreview}>
+          <View
+            style={{
+              width: "40%",
+              backgroundColor: "#006aff",
+              padding: 10,
+              borderTopRightRadius: 100,
+              borderBottomRightRadius: 100,
+              flexDirection: "row",
+              justifyContent: "flex-end",
+              marginVertical: 40,
+            }}
+          >
+            <Image
               style={{
-                width: "40%",
-                backgroundColor: "#006aff",
-                padding: 10,
-                borderTopRightRadius: 100,
-                borderBottomRightRadius: 100,
-                flexDirection: "row",
-                justifyContent: "flex-end",
-                marginVertical: 40,
+                width: 80,
+                height: 80,
+                resizeMode: "cover",
+                borderRadius: 50,
+                borderWidth: 2,
+                borderColor: "#fff",
+              }}
+              source={{ uri: `${user.profile_pic}` }}
+            />
+          </View>
+          <View style={{ marginLeft: 20 }}>
+            <Text
+              style={{
+                color: "#42414C",
+                fontSize: 22,
+                fontWeight: "600",
+                marginBottom: 5,
+                marginLeft: -2,
               }}
             >
-              <Image
-                style={{
-                  width: 80,
-                  height: 80,
-                  resizeMode: "cover",
-                  borderRadius: 50,
-                  borderWidth: 2,
-                  borderColor: "#fff",
-                }}
-                source={{ uri: `${user.profile_pic}` }}
+              @ {user.username || ""}
+            </Text>
+            <Text style={{ color: "#42414C", fontSize: 14, fontWeight: "500" }}>
+              {user.headline || ""}
+            </Text>
+            <View
+              style={{
+                flexDirection: "row",
+                marginVertical: 5,
+                alignItems: "center",
+              }}
+            >
+              <Entypo
+                name="location-pin"
+                size={18}
+                color="gray"
+                style={{ marginLeft: -4, marginRight: 3 }}
               />
-            </View>
-            <View style={styles.userInfo}>
-              <Text
-                style={{ color: "#42414C", fontSize: 22, fontWeight: "bold" }}
-              >
-                {user.username || "John Doe"}
+              <Text style={{ fontSize: 14, color: "gray" }}>
+                {user.location || "Washington DC"}
               </Text>
-              <Text
-                style={{ color: "#42414C", fontSize: 16, fontWeight: "500" }}
-              >
-                {user.headline || "Software Engineer"}
-              </Text>
-              <View
-                style={{
-                  flexDirection: "row",
-                  marginVertical: 5,
-                  alignItems: "center",
-                }}
-              >
-                <Entypo
-                  name="location-pin"
-                  size={18}
-                  color="gray"
-                  style={{ marginRight: 5 }}
-                />
-                <Text style={{ fontSize: 14, color: "gray" }}>
-                  {user.location || "Washington DC"}
-                </Text>
-              </View>
             </View>
           </View>
-          {/* <View style={{ paddingHorizontal: "10%" }}>
+        </View>
+        {/* <View style={{ paddingHorizontal: "10%" }}>
             <TouchableOpacity
               onPress={changeChannel}
               style={{ marginTop: -20 }}
@@ -335,28 +339,28 @@ export default function UserProfileScreen() {
               </View>
             </TouchableOpacity>
           </View> */}
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-evenly",
-              alignItems: "center",
-              paddingHorizontal: 20,
-              marginTop: 10,
-            }}
-          >
-            <View style={{ alignItems: "center", width: 100 }}>
-              <Text style={{}}>FOLLOWERS</Text>
-              <Text style={{}}>{followerCount}</Text>
-            </View>
-            <View
-              style={{ height: 50, width: 2, backgroundColor: "#006eff" }}
-            ></View>
-            <View style={{ alignItems: "center", width: 100 }}>
-              <Text style={{}}>FOLLOWING</Text>
-              <Text style={{}}>{followingCount}</Text>
-            </View>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-evenly",
+            alignItems: "center",
+            paddingHorizontal: 20,
+            marginTop: 10,
+          }}
+        >
+          <View style={{ alignItems: "center", width: 100 }}>
+            <Text style={{}}>FOLLOWERS</Text>
+            <Text style={{}}>{followerCount}</Text>
           </View>
-          {/* <View
+          <View
+            style={{ height: 50, width: 2, backgroundColor: "#006eff" }}
+          ></View>
+          <View style={{ alignItems: "center", width: 100 }}>
+            <Text style={{}}>FOLLOWING</Text>
+            <Text style={{}}>{followingCount}</Text>
+          </View>
+        </View>
+        {/* <View
           style={{
             alignItems: "center",
             width: "100%",
@@ -367,76 +371,102 @@ export default function UserProfileScreen() {
           <Text style={{}}>REELS</Text>
           <Text style={{}}>{reels.length}</Text>
         </View> */}
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-around",
-              alignItems: "center",
-              paddingHorizontal: 20,
-              marginTop: 20,
-              elevation: 2,
-              paddingVertical: 15,
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-around",
+            alignItems: "center",
+            paddingHorizontal: 20,
+            marginTop: 20,
+            elevation: 2,
+            paddingVertical: 15,
+          }}
+        >
+          <View style={{ alignItems: "center", width: 100 }}>
+            <TouchableOpacity onPress={() => setFocused("reels")}>
+              {focused === "reels" ? (
+                <AntDesign name="appstore1" size={25} color="#006eff" />
+              ) : (
+                <AntDesign name="appstore-o" size={25} color="#b3b4b6" />
+              )}
+            </TouchableOpacity>
+          </View>
+          <View style={{ alignItems: "center", width: 100 }}>
+            <TouchableOpacity onPress={() => setFocused("saves")}>
+              {focused === "saves" ? (
+                <MaterialCommunityIcons
+                  name="bookmark-multiple"
+                  size={25}
+                  color="#006eff"
+                />
+              ) : (
+                <MaterialCommunityIcons
+                  name="bookmark-multiple-outline"
+                  size={25}
+                  color="#b3b4b6"
+                />
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
+        <ScrollView>
+          {focused === "reels" && (
+            <View style={styles.listReels}>
+              {loadingReels && (
+                <View
+                  style={{
+                    flex: 1,
+                    minHeight: 150,
+                    width: "100%",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    backgroundColor: "transparent",
+                  }}
+                >
+                  <Image
+                    style={{ marginLeft: 5, width: 30, height: 30 }}
+                    source={require("../../assets/loader.gif")}
+                  />
+                </View>
+              )}
+              {reels.map((item, index) => (
+                <ReelPreview
+                  key={index}
+                  data={{ ...item, index }}
+                  reels={reels}
+                />
+              ))}
+            </View>
+          )}
+        </ScrollView>
+      </View>
+      <View style={{ ...styles.buttonContainer }}>
+        {user.isTvActivated && (
+          <TouchableOpacity
+            onPress={() => {
+              navigation.navigate("UserTvProfileScreen", {
+                userTvId: user.id,
+              });
             }}
           >
-            <View style={{ alignItems: "center", width: 100 }}>
-              <TouchableOpacity onPress={() => setFocused("reels")}>
-                {focused === "reels" ? (
-                  <AntDesign name="appstore1" size={25} color="#006eff" />
-                ) : (
-                  <AntDesign name="appstore-o" size={25} color="#b3b4b6" />
-                )}
-              </TouchableOpacity>
+            <View style={styles.button}>
+              <Feather name="tv" size={20} color="white" />
             </View>
-            <View style={{ alignItems: "center", width: 100 }}>
-              <TouchableOpacity onPress={() => setFocused("saves")}>
-                {focused === "saves" ? (
-                  <MaterialCommunityIcons
-                    name="bookmark-multiple"
-                    size={25}
-                    color="#006eff"
-                  />
-                ) : (
-                  <MaterialCommunityIcons
-                    name="bookmark-multiple-outline"
-                    size={25}
-                    color="#b3b4b6"
-                  />
-                )}
-              </TouchableOpacity>
+          </TouchableOpacity>
+        )}
+        <View style={{ marginVertical: 5 }}></View>
+        {user.isBusinessAccount && (
+          <TouchableOpacity
+            onPress={() =>
+              navigation.navigate("UserStoreScreen", { storeId: user.id })
+            }
+          >
+            <View style={styles.button}>
+              <AntDesign name="isv" size={20} color="white" />
             </View>
-          </View>
-          <ScrollView>
-            {focused === "reels" && (
-              <View style={styles.listReels}>
-                {loadingReels && (
-                  <View
-                    style={{
-                      flex: 1,
-                      minHeight: 150,
-                      width: "100%",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      backgroundColor: "transparent",
-                    }}
-                  >
-                    <Image
-                      style={{ marginLeft: 5, width: 30, height: 30 }}
-                      source={require("../../assets/loader.gif")}
-                    />
-                  </View>
-                )}
-                {reels.map((item, index) => (
-                  <ReelPreview
-                    key={index}
-                    data={{ ...item, index }}
-                    reels={reels}
-                  />
-                ))}
-              </View>
-            )}
-          </ScrollView>
-        </View>
-      )}
+          </TouchableOpacity>
+        )}
+      </View>
     </>
   );
 }

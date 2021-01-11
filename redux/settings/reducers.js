@@ -4,10 +4,16 @@ const INITIAL_STATE = {
   chatFont: "",
   chatFontSize: 15,
   chatBackground: 2,
+  isShowBottomNavbar: true,
 };
 
 const settingsReducer = (state = INITIAL_STATE, action) => {
   switch (action.type) {
+    case ActionTypes.SET_TOGGLE_SHOW_BOTTOM_NAVBAR:
+      return {
+        ...state,
+        isShowBottomNavbar: action.payload,
+      };
     case ActionTypes.SET_CHAT_FONT:
       return {
         ...state,

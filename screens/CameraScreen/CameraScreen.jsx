@@ -1,5 +1,5 @@
 import { Ionicons, AntDesign } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import { Camera } from "expo-camera";
 import * as Permissions from "expo-permissions";
 import React, { useEffect, useRef, useState } from "react";
@@ -26,6 +26,7 @@ export default function CameraScreen() {
   const [isRecording, setIsRecording] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [deviceCameraRatio, setDeviceCameraRatio] = useState(["16:9"]);
+  const route = useRoute();
   let camera;
   useEffect(() => {
     getPermissionAsync();
@@ -54,7 +55,7 @@ export default function CameraScreen() {
   const onRecord = async () => {
     if (isRecording) {
       setIsRecording(false);
-      camera.current.stopRecording();
+      camera.stopRecording();
     } else {
       setIsRecording(true);
       const data = await camera.recordAsync({
@@ -62,7 +63,11 @@ export default function CameraScreen() {
         maxFileSize: 5000000,
         quality: Camera.Constants.VideoQuality["480p"],
       });
-      navigation.navigate("EditAndPostScreen", { videoUri: data.uri });
+      setIsRecording(false);
+      navigation.navigate("EditAndPostScreen", {
+        videoUri: data.uri,
+        type: route.params.type,
+      });
     }
   };
 
@@ -85,6 +90,23 @@ export default function CameraScreen() {
   };
   return (
     <>
+      <View style={{ position: "absolute", top: 30, left: 20, zIndex: 1 }}>
+        <TouchableOpacity
+          style={{
+            alignItems: "center",
+            justifyContent: "center",
+            width: 35,
+            height: 35,
+            borderRadius: 20,
+            elevation: 2,
+            backgroundColor: "#ffffff",
+          }}
+          onPress={() => navigation.goBack()}
+        >
+          <Ionicons name="md-arrow-back" size={24} color="black" />
+          {/* <AntDesign name="close" size={20} color="#111111" /> */}
+        </TouchableOpacity>
+      </View>
       <View
         style={{
           flex: 1,

@@ -128,6 +128,10 @@ export default function ActivitiesScreen() {
                     <Text style={{ fontWeight: "400", fontSize: 14 }}>
                       {item.type === "follow"
                         ? "started following you"
+                        : item.type === "tvFollow"
+                        ? "started following your tv"
+                        : item.type === "storeFollow"
+                        ? "started following your store"
                         : item.type === "like"
                         ? "like your reel"
                         : "commented on your reel"}

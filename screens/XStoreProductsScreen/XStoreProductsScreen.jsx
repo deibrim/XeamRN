@@ -53,7 +53,7 @@ const XStoreProductsScreen = () => {
     .collection("timelineProducts");
   useEffect(() => {
     getStoreTimeline();
-    getTopSelling(filter);
+    getTopSelling();
   }, []);
   async function getStoreTimeline() {
     setLoading(true);

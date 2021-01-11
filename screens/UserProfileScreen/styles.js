@@ -21,7 +21,7 @@ export const styles = StyleSheet.create({
   userPreview: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
+    // justifyContent: "space-between",
     paddingRight: 50,
   },
   title: {
@@ -61,5 +61,21 @@ export const styles = StyleSheet.create({
     alignItems: "flex-end",
     backgroundColor: "transparent",
     paddingTop: 85,
+  },
+  buttonContainer: {
+    position: "absolute",
+    bottom: 20,
+    right: 20,
+    backgroundColor: "transparent",
+  },
+  button: {
+    flexDirection: "row",
+    backgroundColor: "#006eff",
+    elevation: 2,
+    alignItems: "center",
+    justifyContent: "center",
+    height: 50,
+    width: 50,
+    borderRadius: 25,
   },
 });

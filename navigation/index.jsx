@@ -13,7 +13,7 @@ import NotFoundScreen from "../screens/NotFoundScreen";
 import BottomTabNavigator from "./BottomTabNavigator";
 import RegisterScreen from "../screens/RegisterScreen";
 import LoginScreen from "../screens/LoginScreen";
-import {
+import firebase, {
   auth,
   createUserProfileDocument,
   firestore,
@@ -35,7 +35,14 @@ function Navigation({ colorScheme }) {
       if (User) {
         const userRef = await createUserProfileDocument(User);
         userRef.onSnapshot(async (snapShot) => {
-          dispatch(setCurrentUser({ id: snapShot.id, ...snapShot.data() }));
+          dispatch(
+            setCurrentUser({
+              id: snapShot.id,
+              ...snapShot.data(),
+              followers: currentUser.followers ? currentUser.followers : 0,
+              following: currentUser.following ? currentUser.following : 0,
+            })
+          );
           if (snapShot.data().isTvActivated) {
             const userRef = firestore.doc(`xeamTvs/${snapShot.id}`);
             const snapshot = await userRef.get();
@@ -46,31 +53,50 @@ function Navigation({ colorScheme }) {
             const snapshot = await xStoreRef.get();
             dispatch(setCurrentUserXStore({ ...snapshot.data() }));
           }
+          const folowersSnapshot = await firestore
+            .collection("followers")
+            .doc(snapShot.id)
+            .collection("userFollowers")
+            .get();
+          dispatch(
+            setCurrentUser({
+              id: snapShot.id,
+              ...snapShot.data(),
+              followers: !folowersSnapshot.empty
+                ? folowersSnapshot.docs.length - 1
+                : 0,
+            })
+          );
+          const followingSnapshot = await firestore
+            .collection("following")
+            .doc(snapShot.id)
+            .collection("userFollowing")
+            .get();
+          dispatch(
+            setCurrentUser({
+              id: snapShot.id,
+              ...snapShot.data(),
+              following: followingSnapshot.docs.length,
+            })
+          );
+          firebase
+            .database()
+            .ref(".info/connected")
+            .on("value", (snap) => {
+              if (snap.val() === true) {
+                const ref = firebase
+                  .database()
+                  .ref("presence")
+                  .child(snapShot.id);
+                ref.set({ status: true });
+                ref.onDisconnect().remove((err) => {
+                  if (err !== null) {
+                    console.log(err);
+                  }
+                });
+              }
+            });
         });
-        const folowersSnapshot = await firestore
-          .collection("followers")
-          .doc(currentUser.id)
-          .collection("userFollowers")
-          .get();
-        dispatch(
-          setCurrentUser({
-            ...currentUser,
-            followers: !folowersSnapshot.empty
-              ? folowersSnapshot.docs.length - 1
-              : 0,
-          })
-        );
-        const followingSnapshot = await firestore
-          .collection("following")
-          .doc(currentUser.id)
-          .collection("userFollowing")
-          .get();
-        dispatch(
-          setCurrentUser({
-            ...currentUser,
-            following: followingSnapshot.docs.length,
-          })
-        );
       }
     });
   }, []);

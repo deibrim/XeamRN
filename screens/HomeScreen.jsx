@@ -1,6 +1,5 @@
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-// import {  Notifications } from "expo";
 import Constants from "expo-constants";
 import * as Permissions from "expo-permissions";
 import * as Notifications from "expo-notifications";
@@ -15,12 +14,16 @@ import {
   TouchableOpacity,
 } from "react-native";
 import SkeletonContent from "react-native-skeleton-content";
+import { SwipeablePanel } from "rn-swipeable-panel";
 import { firestore } from "../firebase/firebase.utils";
 import { useSelector, useDispatch } from "react-redux";
 import TrendingReelPreview from "../components/TrendingReelPreview/TrendingReelPreview";
 import ReelPreview from "../components/ReelPreview/ReelPreview";
 import { setReels } from "../redux/reel/actions";
 import { setCurrentChannel, setPrivateChannel } from "../redux/chat/actions";
+import SwipeablePanelContent from "../components/SwipeablePanelContent/SwipeablePanelContent";
+import { toggleShowBottomNavbar } from "../redux/settings/actions";
+import AddProductModal from "../components/AddProductModal/AddProductModal";
 const wait = (timeout) => {
   return new Promise((resolve) => {
     setTimeout(resolve, timeout);
@@ -29,6 +32,8 @@ const wait = (timeout) => {
 export default React.memo(function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [isPanelActive, setIsPanelActive] = useState(false);
   const user = useSelector((state) => state.user.currentUser);
   const reels = useSelector((state) => state.reel.loadedReels);
   const dispatch = useDispatch();
@@ -44,7 +49,7 @@ export default React.memo(function HomeScreen() {
     // getTimeline();
     listenForPushNotifications();
     listenForPushNotificationActions();
-
+    navigation.navigate("HomeScreen");
     return () => {
       Notifications.removeNotificationSubscription(responseListener);
     };
@@ -144,10 +149,22 @@ export default React.memo(function HomeScreen() {
       setLoading(false);
     });
   }
+  const togglePanel = () => {
+    dispatch(toggleShowBottomNavbar(true));
+    setIsPanelActive(true);
+  };
   return (
     <>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.navigate("CameraScreen")}>
+        <TouchableOpacity
+          onPress={() =>
+            user.isBusinessAccount
+              ? togglePanel()
+              : user.isTvActivated
+              ? togglePanel()
+              : navigation.navigate("CameraScreen")
+          }
+        >
           <Feather name="video" size={26} color="#444444" />
         </TouchableOpacity>
         <Text style={styles.title}>
@@ -244,6 +261,30 @@ export default React.memo(function HomeScreen() {
           </View>
         </View>
       </ScrollView>
+      <SwipeablePanel
+        fullWidth={true}
+        onlySmall={true}
+        onClose={() => {
+          dispatch(toggleShowBottomNavbar(false));
+          setIsPanelActive(false);
+        }}
+        onPressCloseButton={() => {
+          dispatch(toggleShowBottomNavbar(false));
+          setIsPanelActive(false);
+        }}
+        isActive={isPanelActive}
+        style={{ backgroundColor: "#ecf2fa" }}
+        closeOnTouchOutside={true}
+      >
+        <SwipeablePanelContent
+          setModalVisible={setModalVisible}
+          setIsPanelActive={setIsPanelActive}
+        />
+      </SwipeablePanel>
+      <AddProductModal
+        modalVisible={modalVisible}
+        setModalVisible={setModalVisible}
+      />
     </>
   );
 });

@@ -14,6 +14,8 @@ import CustomInput from "../../components/CustomInput/CustomInput";
 import { styles } from "./styles";
 import { firestore } from "../../firebase/firebase.utils";
 import AppButton from "../../components/AppButton/AppButton";
+import FoundUserPreview from "../../components/FoundUserPreview/FoundUserPreview";
+import FoundTagPreview from "../../components/FoundTagPreview/FoundTagPreview";
 
 const wait = (timeout) => {
   return new Promise((resolve) => {
@@ -23,6 +25,7 @@ const wait = (timeout) => {
 export default function ExploreScreen() {
   const [query, setQuery] = useState("");
   const [foundUsers, setFoundUsers] = useState([]);
+  const [foundTags, setFoundTags] = useState([]);
   const [active, setActive] = useState("all");
   const user = useSelector((state) => state.user.currentUser);
   const [searching, setSearching] = useState(false);
@@ -38,19 +41,10 @@ export default function ExploreScreen() {
       return;
     }
     setSearching(true);
-    // const usersRef = firestore
-    //   .collection("users")
-    //   .where("username", ">=", `${query.toLowerCase()}`)
-    //   .orderBy("username", "desc");
-    // .startAt(query.toLowerCase());
-    // .endAt(query.toLowerCase() + "\uf8ff");
-    // .orderBy("username", "desc");
     const usersRef = firestore
       .collection("users")
       .where("username", ">=", `${query.toLowerCase()}`)
       .orderBy("username", "asc");
-    // .startAt(query.toLowerCase())
-    // .endAt(query.toLowerCase() + "\uf8ff");
     const usersArr = [];
     (await usersRef.get()).docs.forEach((doc) => {
       setSearching(false);
@@ -58,6 +52,25 @@ export default function ExploreScreen() {
         usersArr.push(doc.data());
       }
       setFoundUsers(usersArr);
+    });
+  };
+  const findTag = async (e) => {
+    query.trim() === "" ? setFoundTags([]) : null;
+    if (query.trim() === "") {
+      return;
+    }
+    setSearching(true);
+    const tagsRef = firestore
+      .collection("tags")
+      .where("id", ">=", `#${query.toLowerCase()}`)
+      .orderBy("id", "asc");
+    const tagsArr = [];
+    (await tagsRef.get()).docs.forEach((doc) => {
+      setSearching(false);
+      if (doc.data().id.toLowerCase().includes(query)) {
+        tagsArr.push(doc.data());
+      }
+      setFoundTags(tagsArr);
     });
   };
   return (
@@ -76,11 +89,15 @@ export default function ExploreScreen() {
         <CustomInput
           onChange={(e) => {
             setSearching(false);
-            findUser(e);
+            if (active === "all") {
+              findUser(e);
+            } else if (active === "tags") {
+              findTag(e);
+            }
             setQuery(e);
           }}
           value={query}
-          placeholder={"Search users"}
+          placeholder={"What's on your mind?"}
           icon={<Feather name="search" size={20} color="black" />}
           otherIcon={
             searching ? (
@@ -91,7 +108,11 @@ export default function ExploreScreen() {
             ) : query ? (
               <TouchableOpacity
                 onPress={() => {
-                  findUser(query);
+                  if (active === "all") {
+                    findUser(e);
+                  } else if (active === "tags") {
+                    findTag(e);
+                  }
                 }}
               >
                 <Feather
@@ -137,76 +158,21 @@ export default function ExploreScreen() {
           {filterButtons(active, setActive)}
         </View>
 
-        <FlatList
-          data={foundUsers}
-          renderItem={({ item }) => foundUserPreview(item, user, navigation)}
-          keyExtractor={(item, index) => index.toString()}
-        />
+        {active === "all" ? (
+          <FlatList
+            data={foundUsers}
+            renderItem={({ item }) => <FoundUserPreview item={item} />}
+            keyExtractor={(item, index) => index.toString()}
+          />
+        ) : (
+          <FlatList
+            data={foundTags}
+            renderItem={({ item }) => <FoundTagPreview item={item} />}
+            keyExtractor={(item, index) => index.toString()}
+          />
+        )}
       </View>
     </>
-  );
-}
-
-function foundUserPreview(item, user, navigation) {
-  return (
-    <TouchableOpacity
-      onPress={() => {
-        item.id === user.id
-          ? navigation.navigate("ProfileScreen")
-          : navigation.navigate("UserProfileScreen", {
-              userId: item.id,
-            });
-      }}
-    >
-      <View style={styles.userContainer}>
-        <View style={styles.lefContainer}>
-          <View style={{ position: "relative" }}>
-            <Image source={{ uri: item.profile_pic }} style={styles.avatar} />
-          </View>
-          <View style={styles.midContainer}>
-            <Text style={styles.username}>
-              {item.username.split("")[0].toUpperCase() +
-                item.username.substring(1)}
-            </Text>
-            <Text
-              numberOfLines={1}
-              ellipsizeMode={"tail"}
-              style={styles.highlight}
-            >
-              {item.name} {item.headline && "|"} {item.headline}
-            </Text>
-          </View>
-          <View style={{ marginLeft: "auto" }}>
-            {item.isTvActivated && (
-              <TouchableOpacity
-                onPress={() => {
-                  item.id === user.id
-                    ? navigation.navigate("TvProfileScreen")
-                    : navigation.navigate("UserTvProfileScreen", {
-                        userTvId: item.id,
-                      });
-                }}
-              >
-                <View style={styles.button}>
-                  <Feather name="tv" size={14} color="white" />
-                </View>
-              </TouchableOpacity>
-            )}
-            {item.isBusinessAccount && (
-              <TouchableOpacity
-                onPress={() =>
-                  navigation.navigate("UserStoreScreen", { storeId: item.id })
-                }
-              >
-                <View style={{ ...styles.button, backgroundColor: "#ffffff" }}>
-                  <AntDesign name="isv" size={14} color="#006eff" />
-                </View>
-              </TouchableOpacity>
-            )}
-          </View>
-        </View>
-      </View>
-    </TouchableOpacity>
   );
 }
 

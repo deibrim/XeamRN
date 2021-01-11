@@ -38,25 +38,18 @@ import { useSelector } from "react-redux";
 const BottomTab = createBottomTabNavigator();
 
 export default function BottomTabNavigator() {
-  const currentUser = useSelector((state) => state.user.currentUser);
+  // const currentUser = useSelector((state) => state.user.currentUser);
+  const isShowBottomNavbar = useSelector(
+    (state) => state.setting.isShowBottomNavbar
+  );
   const colorScheme = useColorScheme();
-  firebase
-    .database()
-    .ref(".info/connected")
-    .on("value", (snap) => {
-      if (snap.val() === true) {
-        const ref = firebase.database().ref("presence").child(currentUser.id);
-        ref.set({ status: true });
-        ref.onDisconnect().remove((err) => {
-          if (err !== null) {
-            console.log(err);
-          }
-        });
-      }
-    });
+
   function getTabBarVisible(route) {
     const routeName = getFocusedRouteNameFromRoute(route);
     switch (routeName) {
+      case "HomeScreen":
+        return isShowBottomNavbar ? false : true;
+        break;
       case "ChatRoom":
         return false;
         break;
@@ -136,7 +129,7 @@ export default function BottomTabNavigator() {
         inactiveTintColor: "#b3b4b6",
         showLabel: false,
         style: {
-          elevation: 0,
+          // elevation: 0,
           height: 50,
         },
       }}
@@ -178,7 +171,7 @@ export default function BottomTabNavigator() {
           tabBarVisible: getTabBarVisible(route),
           tabBarIcon: ({ color, focused }) =>
             focused ? (
-              <MaterialIcons name="explore" size={40} color={color} />
+              <MaterialIcons name="explore" size={35} color={color} />
             ) : (
               <AntDesign name="find" size={24} color={color} />
             ),

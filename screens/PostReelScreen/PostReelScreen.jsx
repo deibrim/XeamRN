@@ -15,10 +15,14 @@ import firebase from "../../firebase/firebase.utils";
 
 import styles from "./styles";
 import { postReel } from "../../firebase/firebase.utils";
+import { postTvReel } from "../../firebase/tvFunctions";
+import { postStoreReel } from "../../firebase/storeFunctions";
 // import { Base64 } from "../../utils/DeEncoder";
 
 const PostReelScreen = () => {
   const user = useSelector((state) => state.user.currentUser);
+  const tvProfile = useSelector((state) => state.user.currentUserTvProfile);
+  const xStore = useSelector((state) => state.user.currentUserXStore);
   const [description, setDescription] = useState("");
   const [videoUri, setVideoUri] = useState("");
   const [uploading, setUploading] = useState(false);
@@ -96,27 +100,57 @@ const PostReelScreen = () => {
   const handlePublish = async () => {
     setLoading(true);
     const id = uuidv4().split("-").join("");
-    // uploadToCloud(route.params.videoUri);
+    // uploadToCloud(route.params.videoUri);\
     uploadToStorage(route.params.videoUri, id);
   };
   const onPublish = async (uri, id) => {
+    let hashtags = description.split(" ").filter(function (n) {
+      if (/#/.test(n)) return n;
+    });
+    let usertags = description.split(" ").filter(function (n) {
+      if (/@/.test(n)) return n;
+    });
     try {
       const newPost = {
         id,
         videoUri: uri,
         description,
-        user_id: user.id,
         likes: {},
         views: {},
         comments: 0,
-        music: `${user.username} - Original Audio`,
         posted_at: Date.now(),
-        user: {
+      };
+
+      newPost["tags"] = hashtags;
+      newPost["descriptionUserTags"] = usertags;
+
+      if (route.params.type === "feedReel") {
+        newPost["user_id"] = user.id;
+        newPost["user"] = {
           username: user.username,
           profile_pic: user.profile_pic,
-        },
-      };
-      postReel(newPost);
+        };
+        (newPost["music"] = `${user.username} - Original Audio`),
+          postReel(newPost);
+      }
+      if (route.params.type === "tvReel") {
+        newPost["tvId"] = user.id;
+        newPost["user"] = {
+          username: tvProfile.tvHandle,
+          profile_pic: tvProfile.logo,
+        };
+        (newPost["music"] = `${tvProfile.tvHandle} - Original Audio`),
+          postTvReel(newPost);
+      }
+      if (route.params.type === "review") {
+        newPost["storeId"] = user.id;
+        newPost["user"] = {
+          username: xStore.storeHandle,
+          profile_pic: xStore.logo,
+        };
+        (newPost["music"] = `${xStore.storeHandle} - Original Audio`),
+          postStoreReel(newPost);
+      }
       setLoading(false);
       navigation.navigate("HomeScreen");
     } catch (e) {

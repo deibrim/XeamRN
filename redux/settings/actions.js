@@ -9,6 +9,12 @@ export const setColors = (primaryColor, secondaryColor) => {
     },
   };
 };
+export const toggleShowBottomNavbar = (payload) => {
+  return {
+    type: ActionTypes.SET_TOGGLE_SHOW_BOTTOM_NAVBAR,
+    payload,
+  };
+};
 export const setChatFont = (font) => {
   return {
     type: ActionTypes.SET_CHAT_FONT,

@@ -1,4 +1,11 @@
-import { Ionicons, Fontisto } from "@expo/vector-icons";
+import {
+  AntDesign,
+  Ionicons,
+  Feather,
+  Entypo,
+  MaterialCommunityIcons,
+  SimpleLineIcons,
+} from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
 import {
   Text,
@@ -9,6 +16,7 @@ import {
   ScrollView,
 } from "react-native";
 import { useSelector, useDispatch } from "react-redux";
+import Dialog, { DialogContent } from "react-native-popup-dialog";
 import {
   firestore,
   handleFollowTv,
@@ -18,16 +26,21 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import { setTvReels } from "../../redux/reel/actions";
 import ReelPreview from "../../components/ReelPreview/ReelPreview";
 import { styles } from "./styles";
+import UserProfileMoreModal from "../../components/UserProfileMoreModal/UserProfileMoreModal";
+import AfterReporting from "../../components/AfterReporting/AfterReporting";
 export default function UserTvProfileScreen() {
   const route = useRoute();
   const navigation = useNavigation();
   const user = useSelector((state) => state.user.currentUser);
   const [userTvId] = useState(route.params.userTvId);
   const [tvProfile, setTvProfile] = useState({});
+  const [dialogVisible, setDialogVisible] = useState(false);
   const [followerCount, setFollowerCount] = useState(0);
   const [isFollowing, setIsFollowing] = useState(false);
   const [focused, setFocused] = useState("reels");
   const [token, setToken] = useState("");
+  const [reported, setReported] = useState(false);
+  const [showMore, setShowMore] = useState(false);
   const [loading, setLoading] = useState(false);
   const [loadingReels, setLoadingReels] = useState(false);
   const dispatch = useDispatch();
@@ -45,7 +58,7 @@ export default function UserTvProfileScreen() {
     setTvProfile(tvSnapShot.data());
     setToken(snapShot.data().push_token.data);
 
-    getFollowers(tvSnapShot.data().id);
+    getFollowers(userTvId);
     checkIfFollowing(tvSnapShot.data().id);
   }
 
@@ -84,7 +97,6 @@ export default function UserTvProfileScreen() {
       .doc(tvProfileId)
       .collection("followers")
       .get();
-
     !snapshot.empty
       ? setFollowerCount(snapshot.docs.length - 1)
       : setFollowerCount(0);
@@ -110,12 +122,124 @@ export default function UserTvProfileScreen() {
 
   return (
     <>
+      {reported ? (
+        <View
+          style={{
+            ...styles.centerContainer,
+            backgroundColor: "#ffffff",
+            zIndex: 15,
+            paddingHorizontal: "20%",
+          }}
+        >
+          <AfterReporting setReported={setReported} customText={"profile"} />
+        </View>
+      ) : null}
+      <Dialog
+        visible={showMore}
+        onTouchOutside={() => {
+          setShowMore(false);
+        }}
+        width={0.8}
+      >
+        <View style={{ paddingVertical: 5, paddingHorizontal: 10 }}>
+          <View style={{}}>
+            <View style={styles.customDialogTitle}>
+              <Text
+                style={[
+                  styles.username,
+                  {
+                    textAlign: "center",
+                    fontSize: 16,
+                    fontWeight: "bold",
+                  },
+                ]}
+              >
+                More
+              </Text>
+            </View>
+            <UserProfileMoreModal
+              userId={tvProfile.id}
+              tvData={tvProfile}
+              setShowMore={setShowMore}
+              reported={reported}
+              setReported={setReported}
+              currentUser={user}
+            />
+          </View>
+        </View>
+      </Dialog>
       <View style={{ backgroundColor: "#ecf2fa", flex: 1 }}>
         <ImageBackground
           style={{ flex: 0.7, minHeight: 150 }}
           source={{ uri: `${tvProfile && tvProfile.logo}` }}
           resizeMode={"cover"}
         >
+          <Dialog
+            visible={dialogVisible}
+            onTouchOutside={() => {
+              setDialogVisible(false);
+            }}
+            width={0.8}
+          >
+            <View style={{ paddingVertical: 5, paddingHorizontal: 10 }}>
+              <View style={{ minHeight: 100 }}>
+                <View style={styles.customDialogTitle}>
+                  <Text
+                    style={[
+                      styles.tvHandle,
+                      // { textAlign: "center", fontSize: 16, fontWeight: "bold" },
+                    ]}
+                  >
+                    {tvProfile.tvHandle}
+                  </Text>
+                </View>
+
+                <TouchableOpacity
+                  style={styles.modalTextButton}
+                  onPress={() => {
+                    // onBlacklistUser();
+                  }}
+                >
+                  <MaterialCommunityIcons
+                    name="block-helper"
+                    size={20}
+                    color="black"
+                    style={{ marginRight: 20 }}
+                  />
+                  <Text style={styles.modalText}>Block User</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.modalTextButton}
+                  onPress={() => {}}
+                >
+                  <Feather
+                    name="bell"
+                    size={20}
+                    color="black"
+                    style={{ marginRight: 20 }}
+                  />
+                  <Text style={styles.modalText}>
+                    Turn on post notification
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.modalTextButton]}
+                  onPress={handleToggleFollow}
+                >
+                  <SimpleLineIcons
+                    name="user-unfollow"
+                    size={20}
+                    color="red"
+                    style={{ marginRight: 20 }}
+                  />
+                  <Text style={[styles.modalText, { color: "red" }]}>
+                    Unfollow
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Dialog>
+
           <View
             style={{
               flex: 1,
@@ -143,6 +267,21 @@ export default function UserTvProfileScreen() {
                   </View>
                 </TouchableOpacity>
               </View>
+              <TouchableOpacity
+                style={{
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: 30,
+                  height: 30,
+                  borderRadius: 20,
+                  marginLeft: 5,
+                  elevation: 2,
+                  backgroundColor: "#ffffff",
+                }}
+                onPress={() => setShowMore(!showMore)}
+              >
+                <Feather name="more-vertical" size={24} color="black" />
+              </TouchableOpacity>
             </View>
             <View style={styles.userPreview}>
               <View
@@ -170,16 +309,7 @@ export default function UserTvProfileScreen() {
                 />
               </View>
               <View style={styles.userInfo}>
-                <Text
-                  style={{
-                    color: "#ffffff",
-                    fontSize: 20,
-                    fontWeight: "500",
-                    fontWeight: "bold",
-                  }}
-                >
-                  {tvProfile.tvHandle}
-                </Text>
+                <Text style={styles.tvHandle}>{tvProfile.tvHandle}</Text>
                 <View
                   style={{
                     flexDirection: "row",
@@ -201,31 +331,13 @@ export default function UserTvProfileScreen() {
                 </View>
               </View>
               <View style={{ marginLeft: "auto", marginRight: 10 }}>
-                <View
-                  style={{
-                    flexDirection: "row",
-                    justifyContent: "flex-end",
-                    marginBottom: 10,
-                    marginRight: 5,
-                  }}
+                <TouchableOpacity
+                  onPress={() =>
+                    isFollowing
+                      ? setDialogVisible(!dialogVisible)
+                      : handleToggleFollow()
+                  }
                 >
-                  <TouchableOpacity onPress={() => {}}>
-                    <Fontisto name="star" size={15} color="#006eff" />
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={() => {}}>
-                    <Fontisto name="star" size={15} color="#006eff" />
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={() => {}}>
-                    <Fontisto name="star" size={15} color="#006eff" />
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={() => {}}>
-                    <Fontisto name="star" size={15} color="#999999" />
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={() => {}}>
-                    <Fontisto name="star" size={15} color="#999999" />
-                  </TouchableOpacity>
-                </View>
-                <TouchableOpacity onPress={handleToggleFollow}>
                   <View
                     style={{
                       flexDirection: "row",
@@ -259,7 +371,7 @@ export default function UserTvProfileScreen() {
                         isFollowing ? { color: "#006aff" } : { color: "white" }
                       }
                     >
-                      {isFollowing ? "Unfollow Tv" : "Follow Tv"}
+                      {isFollowing ? "Following Tv" : "Follow Tv"}
                     </Text>
                   </View>
                 </TouchableOpacity>

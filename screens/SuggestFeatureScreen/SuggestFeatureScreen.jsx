@@ -23,9 +23,9 @@ const wait = (timeout) => {
     setTimeout(resolve, timeout);
   });
 };
-const ReportBugScreen = () => {
+const SuggestFeatureScreen = () => {
   const currentUser = useSelector((state) => state.user.currentUser);
-  const [bugReport, setBugReport] = useState("");
+  const [suggestion, setSuggestion] = useState("");
   const [loading, setLoading] = useState(false);
   const [hasVoted, setHasVoted] = useState(false);
   const [reported, setReported] = useState(false);
@@ -37,38 +37,37 @@ const ReportBugScreen = () => {
     wait(2000).then(() => setReported(false));
   }, []);
   useEffect(() => {
-    fetchIssues();
+    fetchSuggestions();
   }, []);
-  async function fetchIssues(params) {
-    const snapshot = await firestore.collection("bug_reports").get();
-    const issueArr = [];
+  async function fetchSuggestions() {
+    const snapshot = await firestore.collection("featureSuggestions").get();
+    const suggestionArr = [];
     snapshot.docs.forEach((item) => {
-      issueArr.push(item.data());
-      if (issueArr.length === snapshot.docs.length) {
-        console.log(issueArr.length, snapshot.docs.length);
-        setIssues(issueArr);
+      suggestionArr.push(item.data());
+      if (suggestionArr.length === snapshot.docs.length) {
+        console.log(suggestionArr.length, snapshot.docs.length);
+        setIssues(suggestionArr);
       }
     });
   }
-  const onBugReport = async () => {
+  const onPostSuggestion = async () => {
     setLoading(true);
     const id = uuidv4().split("-").join("");
-    if (bugReport.trim() === "") {
-      console.log("Tell us about the issue");
+    if (suggestion.trim() === "") {
       return;
     }
     try {
-      const newBugReport = {
+      const newSuggestion = {
         id,
-        issue: bugReport,
+        feature: suggestion,
         userID: currentUser.id,
         username: currentUser.username,
         votes: {},
         count: 0,
       };
-      firestore.collection("bug_reports").doc(id).set(newBugReport);
+      firestore.collection("featureSuggestions").doc(id).set(newSuggestion);
       setLoading(false);
-      setBugReport("");
+      setSuggestion("");
       onReport();
     } catch (e) {
       console.error(e);
@@ -91,15 +90,15 @@ const ReportBugScreen = () => {
             </View>
           </TouchableOpacity>
         </View>
-        <Text style={{ ...styles.title, fontSize: 14 }}>Bug Report</Text>
+        <Text style={{ ...styles.title, fontSize: 14 }}>Suggest Feature</Text>
       </View>
 
       <View style={styles.container}>
         <TextInput
-          value={bugReport}
-          onChangeText={setBugReport}
+          value={suggestion}
+          onChangeText={setSuggestion}
           numberOfLines={5}
-          placeholder={"What went wrong?"}
+          placeholder={"Write your suggestion"}
           style={styles.textInput}
         />
         {reported ? (
@@ -117,12 +116,12 @@ const ReportBugScreen = () => {
                 { textTransform: "none", fontSize: 15, fontWeight: "500" },
               ]}
             >
-              Upvote an existing issue if it matches with the one you're
-              reporting
+              Upvote an existing suggestion if it matches with the one you're
+              suggesting
             </Text>
           </View>
           <View style={styles.trendingIssuesHead}>
-            <Text style={styles.trendingIssuesHeadText}>Trending Issues</Text>
+            <Text style={styles.trendingIssuesHeadText}>Trending Features</Text>
           </View>
           <View style={styles.issues}>
             <FlatList
@@ -135,13 +134,13 @@ const ReportBugScreen = () => {
               initialScrollIndex={0}
               initialNumToRender={3}
               keyExtractor={(item, index) => index.toString()}
-              renderItem={(item) => <IssuePreview issue={item.item} />}
+              renderItem={(item) => <FeaturePreview feature={item.item} />}
             />
           </View>
         </View>
-        <TouchableOpacity onPress={onBugReport}>
+        <TouchableOpacity onPress={onPostSuggestion}>
           <View style={styles.button}>
-            <Text style={styles.buttonText}>Report</Text>
+            <Text style={styles.buttonText}>Post Suggestion</Text>
             {loading && (
               <Image
                 style={{ marginTop: 2, marginLeft: 5, width: 18, height: 18 }}
@@ -155,46 +154,46 @@ const ReportBugScreen = () => {
   );
 };
 
-export default ReportBugScreen;
+export default SuggestFeatureScreen;
 
-function IssuePreview({ issue }) {
+function FeaturePreview({ feature }) {
   const currentUser = useSelector((state) => state.user.currentUser);
   const [hasVoted, setHasVoted] = useState(
-    issue.votes[currentUser.id] === true
+    feature.votes[currentUser.id] === true
   );
   const [voteCount, setvoteCount] = useState(0);
   useEffect(() => {
     getVotesCount();
   }, [voteCount]);
   function getVotesCount() {
-    const count = Object.values(issue.votes).filter((v) => v).length;
+    const count = Object.values(feature.votes).filter((v) => v).length;
     setvoteCount(count);
   }
   const onUpVote = () => {
     const currentUserId = currentUser.id;
-    const hasVoted = issue.votes[currentUser.id] === true;
+    const hasVoted = feature.votes[currentUser.id] === true;
     if (hasVoted) {
-      issue.votes[currentUserId] = false;
-      let votes = issue.votes;
+      feature.votes[currentUserId] = false;
+      let votes = feature.votes;
       setvoteCount(voteCount - 1);
       firestore
         .collection("bug_reports")
-        .doc(issue.id)
+        .doc(feature.id)
         .update({ count: voteCount - 1, votes });
       setHasVoted(!hasVoted);
     } else if (!hasVoted) {
-      issue.votes[currentUserId] = true;
-      let votes = issue.votes;
+      feature.votes[currentUserId] = true;
+      let votes = feature.votes;
       setvoteCount(voteCount + 1);
       firestore
         .collection("bug_reports")
-        .doc(issue.id)
+        .doc(feature.id)
         .update({ count: voteCount + 1, votes });
       setHasVoted(!hasVoted);
     }
   };
   return (
-    <View style={styles.issuePreview}>
+    <View style={styles.FeaturePreview}>
       <View>
         <View
           style={{
@@ -222,7 +221,7 @@ function IssuePreview({ issue }) {
           </TouchableOpacity>
         </View>
       </View>
-      <Text style={{ fontSize: 14, color: "#222222" }}>{issue.issue}</Text>
+      <Text style={{ fontSize: 14, color: "#222222" }}>{feature.feature}</Text>
     </View>
   );
 }

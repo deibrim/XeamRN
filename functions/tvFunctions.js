@@ -87,6 +87,8 @@ exports.createTvReel = async (snapshot, context) => {
       .set(postCreated);
   });
 
+  admin.firestore().collection("allReels").doc(postId).set(postCreated);
+
   const tags = postCreated.tags;
 
   if (tags.length > 0) {
@@ -147,6 +149,15 @@ exports.updateTvReel = async (change, context) => {
     }
   });
 
+  const allReelsRefGet = await admin
+    .firestore()
+    .collection("allReels")
+    .doc(postId)
+    .get();
+  if (allReelsRefGet.exists) {
+    allReelsRefGet.ref.update(postUpdated);
+  }
+
   const tags = postUpdated.tags;
 
   if (tags.lenght > 0) {
@@ -193,6 +204,16 @@ exports.deleteTvReel = async (snapshot, context) => {
       timelineRefGet.ref.delete();
     }
   });
+
+  // 3) Delete post from allreels collection
+  const allReelsRefGet = await admin
+    .firestore()
+    .collection("allReels")
+    .doc(postId)
+    .get();
+  if (allReelsRefGet.exists) {
+    allReelsRefGet.ref.delete();
+  }
 
   const tags = snapshot.data().tags;
 

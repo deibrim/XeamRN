@@ -160,27 +160,21 @@ export default function SettingsScreen() {
             title={"About xeam"}
             description={"Get to know xeam"}
             icon={<AntDesign name="infocirlceo" size={20} color="#006eff" />}
-            onPress={onShare}
+            onPress={() => navigation.navigate("AboutScreen")}
             backgroundColor={"#ffffff"}
           />
 
-          <SettingsItemWrapper
+          {/* <SettingsItemWrapper
             title={"Help and feedback"}
             description={"How-to's and support"}
             icon={<AntDesign name="questioncircleo" size={20} color="white" />}
             onPress={onShare}
-          />
+          /> */}
           <SettingsItemWrapper
             title={"Suggest features"}
             description={"We're always working on new features"}
             icon={<Octicons name="light-bulb" size={20} color="white" />}
-            onPress={onShare}
-          />
-          <SettingsItemWrapper
-            title={"Join the beta community"}
-            description={"Try new features before offical release"}
-            icon={<AntDesign name="addusergroup" size={20} color="white" />}
-            onPress={onShare}
+            onPress={() => navigation.navigate("SuggestFeatureScreen")}
           />
           <SettingsItemWrapper
             title={"Share the app"}
@@ -189,18 +183,7 @@ export default function SettingsScreen() {
             onPress={onShare}
           />
         </View>
-        <View style={{ height: 100 }}></View>
-        <View style={styles.copyright}>
-          <Text style={{ color: "gray", fontSize: 16, marginBottom: 10 }}>
-            Xeam-Beta v1.0
-          </Text>
-          <Text style={{ color: "gray", fontSize: 16, marginBottom: 5 }}>
-            From
-          </Text>
-          <Text style={{ color: "#006eff", fontSize: 16, fontWeight: "bold" }}>
-            Xeam
-          </Text>
-        </View>
+        <View style={{ height: 20 }}></View>
       </ScrollView>
     </>
   );
@@ -247,14 +230,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "gray",
   },
-  copyright: {
-    position: "absolute",
-    width: "100%",
-    height: 60,
-    alignItems: "center",
-    justifyContent: "center",
-    bottom: 30,
-  },
+
   button: {
     // borderRadius: 30,
     backgroundColor: "#006eff",

@@ -22,6 +22,7 @@ import {
   handleFollowUser,
   handleUnfollowUser,
 } from "../../firebase/firebase.utils";
+import Dialog, { DialogContent } from "react-native-popup-dialog";
 import { setCurrentChannel, setPrivateChannel } from "../../redux/chat/actions";
 import { setUserReels } from "../../redux/reel/actions";
 import ReelPreview from "../../components/ReelPreview/ReelPreview";
@@ -36,6 +37,7 @@ export default function UserProfileScreen() {
   const [userId] = useState(route.params.userId);
   const [focused, setFocused] = useState("reels");
   const [isFollowing, setIsFollowing] = useState(false);
+  const [dialogVisible, setDialogVisible] = useState(false);
   const [followerCount, setFollowerCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -101,14 +103,14 @@ export default function UserProfileScreen() {
   }
   const handleToggleFollow = () => {
     /* handleFollow and unFollow */
-
     if (isFollowing) {
       setIsFollowing(false);
       handleUnfollowUser(userId, currentUser.id);
       setFollowerCount(followerCount - 1);
+      setDialogVisible(false);
     } else {
       setIsFollowing(true);
-      handleFollowUser(userId, currentUser, user);
+      handleFollowUser(userId, currentUser, user.push_token.data);
       setFollowerCount(followerCount + 1);
     }
   };
@@ -158,7 +160,13 @@ export default function UserProfileScreen() {
           }}
         >
           {!loading && (
-            <TouchableOpacity onPress={handleToggleFollow}>
+            <TouchableOpacity
+              onPress={() =>
+                isFollowing
+                  ? setDialogVisible(!dialogVisible)
+                  : handleToggleFollow()
+              }
+            >
               <View
                 style={{
                   flexDirection: "row",
@@ -172,18 +180,12 @@ export default function UserProfileScreen() {
                   backgroundColor: isFollowing ? "transparent" : "#006aff",
                 }}
               >
-                <SimpleLineIcons
-                  name={isFollowing ? "user-unfollow" : "user-follow"}
-                  size={18}
-                  color={isFollowing ? "#006aff" : "white"}
-                  style={{ marginRight: 10 }}
-                />
                 <Text
                   style={
                     isFollowing ? { color: "#006aff" } : { color: "white" }
                   }
                 >
-                  {isFollowing ? "Unfollow" : "Follow"}
+                  {isFollowing ? "following" : "Follow"}
                 </Text>
               </View>
             </TouchableOpacity>
@@ -217,23 +219,6 @@ export default function UserProfileScreen() {
           <AfterReporting setReported={setReported} customText={"profile"} />
         </View>
       ) : null}
-      {showMore ? (
-        <TouchableWithoutFeedback
-          onPress={() => {
-            setShowMore(false);
-          }}
-        >
-          <View style={styles.moreModalContainer}>
-            <UserProfileMoreModal
-              userId={user.id}
-              userData={user}
-              setShowMore={setShowMore}
-              reported={reported}
-              setReported={setReported}
-            />
-          </View>
-        </TouchableWithoutFeedback>
-      ) : null}
       {/* {loading ? (
         <View
           style={{
@@ -252,6 +237,103 @@ export default function UserProfileScreen() {
         </View>
       ) : ( */}
       <View style={styles.container}>
+        <Dialog
+          visible={showMore}
+          onTouchOutside={() => {
+            setShowMore(false);
+          }}
+          width={0.8}
+        >
+          <View style={{ paddingVertical: 5, paddingHorizontal: 10 }}>
+            <View
+              style={{
+                minHeight: 100,
+              }}
+            >
+              <View style={styles.customDialogTitle}>
+                <Text
+                  style={[
+                    styles.username,
+                    { textAlign: "center", fontSize: 16, fontWeight: "bold" },
+                  ]}
+                >
+                  More
+                </Text>
+              </View>
+              <UserProfileMoreModal
+                userId={user.id}
+                userData={user}
+                setShowMore={setShowMore}
+                reported={reported}
+                setReported={setReported}
+                currentUser={currentUser}
+              />
+            </View>
+          </View>
+        </Dialog>
+        <Dialog
+          visible={dialogVisible}
+          onTouchOutside={() => {
+            setDialogVisible(false);
+          }}
+          width={0.8}
+        >
+          <View style={{ paddingVertical: 5, paddingHorizontal: 10 }}>
+            <View style={{ minHeight: 100 }}>
+              <View style={styles.customDialogTitle}>
+                <Text
+                  style={[
+                    styles.username,
+                    { textAlign: "center", fontSize: 16, fontWeight: "bold" },
+                  ]}
+                >
+                  {user.username}
+                </Text>
+              </View>
+
+              <TouchableOpacity
+                style={styles.modalTextButton}
+                onPress={() => {
+                  // onBlacklistUser();
+                }}
+              >
+                <MaterialCommunityIcons
+                  name="block-helper"
+                  size={20}
+                  color="black"
+                  style={{ marginRight: 20 }}
+                />
+                <Text style={styles.modalText}>Block User</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.modalTextButton}
+                onPress={() => {}}
+              >
+                <Feather
+                  name="bell"
+                  size={20}
+                  color="black"
+                  style={{ marginRight: 20 }}
+                />
+                <Text style={styles.modalText}>Turn on post notification</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalTextButton]}
+                onPress={handleToggleFollow}
+              >
+                <SimpleLineIcons
+                  name="user-unfollow"
+                  size={20}
+                  color="red"
+                  style={{ marginRight: 20 }}
+                />
+                <Text style={[styles.modalText, { color: "red" }]}>
+                  Unfollow
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Dialog>
         <View style={styles.userPreview}>
           <View
             style={{
@@ -278,17 +360,7 @@ export default function UserProfileScreen() {
             />
           </View>
           <View style={{ marginLeft: 20 }}>
-            <Text
-              style={{
-                color: "#42414C",
-                fontSize: 22,
-                fontWeight: "600",
-                marginBottom: 5,
-                marginLeft: -2,
-              }}
-            >
-              @ {user.username || ""}
-            </Text>
+            <Text style={styles.username}>@ {user.username || ""}</Text>
             <Text style={{ color: "#42414C", fontSize: 14, fontWeight: "500" }}>
               {user.headline || ""}
             </Text>

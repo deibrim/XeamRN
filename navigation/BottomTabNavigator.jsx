@@ -21,6 +21,8 @@ import ExploreScreen from "../screens/ExploreScreen/ExploreScreen";
 import UserProfileScreen from "../screens/UserProfileScreen/UserProfileScreen";
 import PostReelScreen from "../screens/PostReelScreen/PostReelScreen";
 import ReportBugScreen from "../screens/ReportBugScreen/ReportBugScreen";
+import AboutScreen from "../screens/AboutScreen/AboutScreen";
+import SuggestFeatureScreen from "../screens/SuggestFeatureScreen/SuggestFeatureScreen";
 import TvGetStartedScreen from "../screens/TvGetStartedScreen/TvGetStartedScreen";
 import TvProfileScreen from "../screens/TvProfileScreen/TvProfileScreen";
 import UserTvProfileScreen from "../screens/UserTvProfileScreen/UserTvProfileScreen";
@@ -34,6 +36,7 @@ import UserStoreScreen from "../screens/UserStoreScreen/UserStoreScreen";
 import XStoreProductsScreen from "../screens/XStoreProductsScreen/XStoreProductsScreen";
 import ProductDetailScreen from "../screens/ProductDetailScreen/ProductDetailScreen";
 import { useSelector } from "react-redux";
+import { View } from "react-native";
 
 const BottomTab = createBottomTabNavigator();
 
@@ -48,6 +51,9 @@ export default function BottomTabNavigator() {
     const routeName = getFocusedRouteNameFromRoute(route);
     switch (routeName) {
       case "HomeScreen":
+        return isShowBottomNavbar ? false : true;
+        break;
+      case "ExploreScreen":
         return isShowBottomNavbar ? false : true;
         break;
       case "ChatRoom":
@@ -78,6 +84,12 @@ export default function BottomTabNavigator() {
         return false;
         break;
       case "ReportBugScreen":
+        return false;
+        break;
+      case "AboutScreen":
+        return false;
+        break;
+      case "SuggestFeatureScreen":
         return false;
         break;
       case "TvGetStartedScreen":
@@ -132,6 +144,7 @@ export default function BottomTabNavigator() {
           // elevation: 0,
           height: 50,
         },
+        keyboardHidesTabBar: true,
       }}
     >
       <BottomTab.Screen
@@ -184,9 +197,37 @@ export default function BottomTabNavigator() {
           tabBarVisible: getTabBarVisible(route),
           tabBarIcon: ({ color, focused }) =>
             focused ? (
-              <AntDesign name="heart" size={26} color={color} />
+              <View style={{ position: "relative" }}>
+                <View
+                  style={{
+                    width: 11,
+                    height: 11,
+                    borderRadius: 10,
+                    backgroundColor: "red",
+                    position: "absolute",
+                    zIndex: 2,
+                    top: -4,
+                    left: -4,
+                  }}
+                ></View>
+                <AntDesign name="heart" size={26} color={color} />
+              </View>
             ) : (
-              <AntDesign name="hearto" size={22} color={color} />
+              <View style={{ position: "relative" }}>
+                <View
+                  style={{
+                    width: 11,
+                    height: 11,
+                    borderRadius: 10,
+                    backgroundColor: "red",
+                    position: "absolute",
+                    zIndex: 2,
+                    top: -4,
+                    left: -4,
+                  }}
+                ></View>
+                <AntDesign name="hearto" size={22} color={color} />
+              </View>
             ),
         })}
       />
@@ -442,6 +483,20 @@ function SettingsScreenNavigator() {
       <ScreenStack.Screen
         name="ReportBugScreen"
         component={ReportBugScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <ScreenStack.Screen
+        name="AboutScreen"
+        component={AboutScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <ScreenStack.Screen
+        name="SuggestFeatureScreen"
+        component={SuggestFeatureScreen}
         options={{
           headerShown: false,
         }}

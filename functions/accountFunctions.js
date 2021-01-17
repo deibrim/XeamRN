@@ -14,7 +14,13 @@ exports.createUser = async (snapshot, context) => {
 exports.createFollower = async (snapshot, context) => {
   const userId = context.params.userId;
   const followerId = context.params.followerId;
-
+  admin
+    .firestore()
+    .collection("following")
+    .doc(followerId)
+    .collection("userFollowing")
+    .doc(userId)
+    .set({});
   // 1) Create followed users reels ref
   const followedUserReelsRef = admin
     .firestore()
@@ -45,6 +51,23 @@ exports.createFollower = async (snapshot, context) => {
 exports.deleteFollower = async (snapshot, context) => {
   const userId = context.params.userId;
   const followerId = context.params.followerId;
+
+  const fgRef = admin
+    .firestore()
+    .collection("following")
+    .doc(followerId)
+    .collection("userFollowing")
+    .doc(userId);
+  const fgSnapshot = fgRef.get();
+
+  fgSnapshot
+    .then((doc) => {
+      if (doc.exists) {
+        fgRef.delete();
+      }
+      return;
+    })
+    .catch((err) => console.log(err));
 
   const timelinePostsRef = admin
     .firestore()
@@ -86,35 +109,37 @@ exports.createReel = async (snapshot, context) => {
       .doc(postId)
       .set(postCreated);
   });
-
+  admin.firestore().collection("allReels").doc(postId).set(postCreated);
   const tags = postCreated.tags;
-
-  tags.forEach(async (item) => {
-    const tagRefGetdoc = await admin
-      .firestore()
-      .collection("tags")
-      .doc(item)
-      .get();
-    if (tagRefGetdoc.exists) {
-      tagRefGetdoc.ref.update({
-        postCount: tagRefGetdoc.data().postCount + 1,
-      });
-    } else {
+  if (tags.length > 0) {
+    tags.forEach(async (item) => {
+      const tagRefGetdoc = await admin
+        .firestore()
+        .collection("tags")
+        .doc(item)
+        .get();
+      if (tagRefGetdoc.exists) {
+        tagRefGetdoc.ref.update({
+          postCount: tagRefGetdoc.data().postCount + 1,
+        });
+      } else {
+        admin
+          .firestore()
+          .collection("tags")
+          .doc(item)
+          .set({ id: item, postCount: 1 });
+      }
       admin
         .firestore()
         .collection("tags")
         .doc(item)
-        .set({ id: item, postCount: 1 });
-    }
-    admin
-      .firestore()
-      .collection("tags")
-      .doc(item)
-      .collection("tagReels")
-      .doc(postId)
-      .set(postCreated);
-  });
+        .collection("tagReels")
+        .doc(postId)
+        .set(postCreated);
+    });
+  }
 };
+
 exports.updateReel = async (change, context) => {
   const postUpdated = change.after.data();
   const userId = context.params.userId;
@@ -142,18 +167,32 @@ exports.updateReel = async (change, context) => {
       timelineRefGet.ref.update(postUpdated);
     }
   });
-  postUpdated.tags.forEach(async (item) => {
-    const tagRefGet = await admin
-      .firestore()
-      .collection("tags")
-      .doc(item)
-      .collection("tagReels")
-      .doc(postId)
-      .get();
-    if (tagRefGet.exists) {
-      tagRefGet.ref.update(postUpdated);
-    }
-  });
+
+  const allReelsRefGet = await admin
+    .firestore()
+    .collection("allReels")
+    .doc(postId)
+    .get();
+  if (allReelsRefGet.exists) {
+    allReelsRefGet.ref.update(postUpdated);
+  }
+
+  const tags = postUpdated.tags;
+
+  if (tags.length > 0) {
+    tags.forEach(async (item) => {
+      const tagRefGet = await admin
+        .firestore()
+        .collection("tags")
+        .doc(item)
+        .collection("tagReels")
+        .doc(postId)
+        .get();
+      if (tagRefGet.exists) {
+        tagRefGet.ref.update(postUpdated);
+      }
+    });
+  }
 };
 
 exports.deleteReel = async (snapshot, context) => {
@@ -183,32 +222,79 @@ exports.deleteReel = async (snapshot, context) => {
     }
   });
 
+  // 3) Delete post from allreels collection
+  const allReelsRefGet = await admin
+    .firestore()
+    .collection("allReels")
+    .doc(postId)
+    .get();
+  if (allReelsRefGet.exists) {
+    allReelsRefGet.ref.delete();
+  }
+
   const tags = snapshot.data().tags;
 
-  tags.forEach(async (item) => {
-    const tagRefGet = await admin
-      .firestore()
-      .collection("tags")
-      .doc(item)
-      .collection("tagReels")
-      .doc(postId)
-      .get();
-    if (tagRefGet.exists) {
-      tagRefGet.ref.delete();
+  if (tags.length > 0) {
+    tags.forEach(async (item) => {
+      const tagRefGet = await admin
+        .firestore()
+        .collection("tags")
+        .doc(item)
+        .collection("tagReels")
+        .doc(postId)
+        .get();
+      if (tagRefGet.exists) {
+        tagRefGet.ref.delete();
+      }
+
+      const tagRefGetdoc = await admin
+        .firestore()
+        .collection("tags")
+        .doc(item)
+        .get();
+      if (tagRefGetdoc.exists) {
+        if (tagRefGetdoc.data().postCount === 1) {
+          tagRefGetdoc.ref.delete();
+        } else {
+          tagRefGetdoc.ref.update({
+            postCount: tagRefGetdoc.data().postCount - 1,
+          });
+        }
+      }
+    });
+  }
+  // delete uploaded video for the database storage
+  admin
+    .storage()
+    .bucket("chattie-3eb7b.appspot.com/")
+    .file(`reels/${postId}`)
+    .delete();
+
+  // then delete all activity feed notifications
+  const afRef = await admin
+    .firestore()
+    .collection("activity_feed")
+    .doc(userId)
+    .collection("feedItems")
+    .where("postId", "==", `${postId}`);
+  const activityFeedSnapshot = await afRef.get();
+
+  activityFeedSnapshot.docs.forEach((doc) => {
+    if (doc.exists) {
+      doc.ref.delete();
     }
   });
-  const tagRefGetdoc = await admin
+
+  // Delete all comments
+  const csRef = admin
     .firestore()
-    .collection("tags")
-    .doc(item)
-    .get();
-  if (tagRefGetdoc.exists) {
-    if (tagRefGetdoc.data().postCount === 1) {
-      tagRefGetdoc.ref.delete();
-    } else {
-      tagRefGetdoc.ref.update({
-        postCount: tagRefGetdoc.data().postCount - 1,
-      });
+    .collection("comments")
+    .doc(postId)
+    .collection("comments");
+  const commentsSnapshot = await csRef.get();
+  commentsSnapshot.docs.forEach((doc) => {
+    if (doc.exists) {
+      doc.ref.delete();
     }
-  }
+  });
 };

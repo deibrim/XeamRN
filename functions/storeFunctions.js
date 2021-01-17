@@ -40,7 +40,7 @@ exports.createStoreFollower = async (snapshot, context) => {
     .doc(followerId)
     .collection("products");
 
-  // 3) Get followed dtore reels and products
+  // 3) Get followed store reels and products
   const querySnapshot = await followedStoreReelsRef.get();
   const productQuerySnapshot = await productTimelineRef.get();
 
@@ -121,6 +121,8 @@ exports.createStoreReel = async (snapshot, context) => {
       .set(postCreated);
   });
 
+  admin.firestore().collection("allReels").doc(postId).set(postCreated);
+
   const tags = postCreated.tags;
 
   if (tags.length > 0) {
@@ -181,6 +183,15 @@ exports.updateStoreReel = async (change, context) => {
     }
   });
 
+  const allReelsRefGet = await admin
+    .firestore()
+    .collection("allReels")
+    .doc(postId)
+    .get();
+  if (allReelsRefGet.exists) {
+    allReelsRefGet.ref.update(postUpdated);
+  }
+
   const tags = postUpdated.tags;
 
   if (tags.length > 0) {
@@ -227,6 +238,17 @@ exports.deleteStoreReel = async (snapshot, context) => {
       timelineRefGet.ref.delete();
     }
   });
+
+  // 3) Delete post from allreels collection
+  const allReelsRefGet = await admin
+    .firestore()
+    .collection("allReels")
+    .doc(postId)
+    .get();
+  if (allReelsRefGet.exists) {
+    allReelsRefGet.ref.delete();
+  }
+
   const tags = snapshot.data().tags;
 
   if (tags.length > 0) {
@@ -285,10 +307,33 @@ exports.createStoreProduct = async (snapshot, context) => {
       .doc(productId)
       .set(productCreated);
   });
+
+  admin
+    .firestore()
+    .collection("allProducts")
+    .doc(productId)
+    .set(productCreated);
+
   const tags = productCreated.tags;
 
   if (tags.length > 0) {
-    tags.forEach((item) => {
+    tags.forEach(async (item) => {
+      const tagRefGetdoc = await admin
+        .firestore()
+        .collection("productTags")
+        .doc(item)
+        .get();
+      if (tagRefGetdoc.exists) {
+        tagRefGetdoc.ref.update({
+          productCount: tagRefGetdoc.data().productCount + 1,
+        });
+      } else {
+        admin
+          .firestore()
+          .collection("productTags")
+          .doc(item)
+          .set({ id: item, productCount: 1 });
+      }
       admin
         .firestore()
         .collection("productTags")
@@ -328,15 +373,25 @@ exports.updateStoreProduct = async (change, context) => {
       timelineRefGet.ref.update(productUpdated);
     }
   });
+
+  const allProductRefGet = await admin
+    .firestore()
+    .collection("allProducts")
+    .doc(productId)
+    .get();
+  if (allProductRefGet.exists) {
+    allProductRefGet.ref.update(productUpdated);
+  }
+
   const tags = productUpdated.tags;
 
-  if (tags.length > 0) {
+  if (tags.lenght > 0) {
     tags.forEach(async (item) => {
       const tagRefGet = await admin
         .firestore()
-        .collection("tags")
+        .collection("productTags")
         .doc(item)
-        .collection("tagReels")
+        .collection("products")
         .doc(productId)
         .get();
       if (tagRefGet.exists) {
@@ -374,19 +429,45 @@ exports.deleteStoreProduct = async (snapshot, context) => {
       timelineRefGet.ref.delete();
     }
   });
-  const tags = snapshot.before.data().tags;
+
+  // 3) Delete post from allreels collection
+  const allProductRefGet = await admin
+    .firestore()
+    .collection("allProducts")
+    .doc(productId)
+    .get();
+  if (allProductRefGet.exists) {
+    allProductRefGet.ref.delete();
+  }
+
+  const tags = snapshot.data().tags;
+
   if (tags.length > 0) {
     tags.forEach(async (item) => {
       const tagRefGet = await admin
         .firestore()
-        .collection("tags")
+        .collection("productTags")
         .doc(item)
-        .collection("tagReels")
+        .collection("products")
         .doc(productId)
         .get();
 
       if (tagRefGet.exists) {
         tagRefGet.ref.delete();
+      }
+      const tagRefGetdoc = await admin
+        .firestore()
+        .collection("productTags")
+        .doc(item)
+        .get();
+      if (tagRefGetdoc.exists) {
+        if (tagRefGetdoc.data().productCount === 1) {
+          tagRefGetdoc.ref.delete();
+        } else {
+          tagRefGetdoc.ref.update({
+            productCount: tagRefGetdoc.data().productCount - 1,
+          });
+        }
       }
     });
   }

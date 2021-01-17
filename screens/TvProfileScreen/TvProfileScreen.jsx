@@ -198,32 +198,7 @@ export default function TvProfileScreen() {
                     </Text>
                   </View>
                 </View>
-                <View style={{ marginLeft: "auto", marginRight: 10 }}>
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      justifyContent: "center",
-                      marginBottom: 10,
-                      marginRight: 5,
-                    }}
-                  >
-                    <TouchableOpacity onPress={() => {}}>
-                      <Fontisto name="star" size={15} color="#006eff" />
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => {}}>
-                      <Fontisto name="star" size={15} color="#006eff" />
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => {}}>
-                      <Fontisto name="star" size={15} color="#006eff" />
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => {}}>
-                      <Fontisto name="star" size={15} color="#999999" />
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => {}}>
-                      <Fontisto name="star" size={15} color="#999999" />
-                    </TouchableOpacity>
-                  </View>
-                </View>
+                <View style={{ marginLeft: "auto", marginRight: 10 }}></View>
               </View>
             </View>
           </ImageBackground>
@@ -241,7 +216,7 @@ export default function TvProfileScreen() {
               <Text style={{}}>Posts</Text>
             </View>
             <View style={{ alignItems: "center", width: 100 }}>
-              <Text style={{}}>Polls</Text>
+              <Text style={{}}>Givaways</Text>
             </View>
             <View style={{ alignItems: "center", width: 100 }}>
               <Text style={{}}>About</Text>

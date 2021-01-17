@@ -32,6 +32,7 @@ const AddProductModal = ({ modalVisible, setModalVisible }) => {
   const [current, setCurrent] = useState("");
   const [sizeText, setSizeText] = useState("Size");
   const [colorText, setColorText] = useState("Color");
+  const [detailsText, setDetailsText] = useState("");
   const [uploading, setUploading] = useState("");
   const [uploadingCount, setUploadingCount] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
@@ -42,6 +43,7 @@ const AddProductModal = ({ modalVisible, setModalVisible }) => {
   );
   const [colors, setColors] = useState([]);
   const [sizes, setSizes] = useState([]);
+  const [details, setDetails] = useState([]);
   let flatListRef;
 
   const pickImage = async () => {
@@ -65,6 +67,7 @@ const AddProductModal = ({ modalVisible, setModalVisible }) => {
       stock: quantity * 1,
       orders: 0,
       storeId: user.id,
+      details,
       timestamp,
       images: newImage,
     };
@@ -110,6 +113,9 @@ const AddProductModal = ({ modalVisible, setModalVisible }) => {
       return;
     } else if (images.length - 1 === 0) {
       setErrorMessage("Minimum of an image is required!");
+      return;
+    } else if (details.length === 0) {
+      setErrorMessage(" Add product details");
       return;
     }
     setLoading(true);
@@ -231,16 +237,20 @@ const AddProductModal = ({ modalVisible, setModalVisible }) => {
               quantity,
               colors,
               sizes,
+              details,
               sizeText,
               colorText,
+              detailsText,
               setName,
               setPrice,
               setOPrice,
               setQuantity,
               setColors,
               setSizes,
+              setDetails,
               setSizeText,
               setColorText,
+              setDetailsText,
               textInputContainerVisible,
               setTextInputContainerVisible,
               setErrorMessage
@@ -319,14 +329,16 @@ const AddProductModal = ({ modalVisible, setModalVisible }) => {
                     );
                   }}
                 />
-                <View
+                <ScrollView
                   style={{
-                    minHeight: 250,
+                    minHeight: 260,
+                    maxHeight: 300,
                     width: "100%",
                     backgroundColor: "#ecf2fa",
                     borderRadius: 20,
                     marginTop: -20,
                     padding: 20,
+                    marginBottom: 20,
                   }}
                 >
                   <View>
@@ -340,7 +352,7 @@ const AddProductModal = ({ modalVisible, setModalVisible }) => {
                         fontSize: 15,
                         letterSpacing: 2,
                       },
-                      { marginBottom: 0 }
+                      { marginBottom: 0, marginTop: 10 }
                     )}
                     <Text
                       style={{
@@ -577,10 +589,92 @@ const AddProductModal = ({ modalVisible, setModalVisible }) => {
                       </View>
                     </View>
                   </View>
-                </View>
+                  <View
+                    style={{
+                      flex: 1,
+                      alignSelf: "flex-start",
+                      marginTop: 20,
+                    }}
+                  >
+                    {productInfo(
+                      "Product Details",
+                      () => {
+                        setTextInputContainerVisible(true);
+                        setCurrent("detail");
+                      },
+                      {
+                        fontSize: 16,
+                        letterSpacing: 2,
+                      },
+                      { marginBottom: 0 }
+                    )}
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        width: "100%",
+                        flexWrap: "wrap",
+                        marginVertical: 5,
+                        marginBottom: 0,
+                      }}
+                    >
+                      {details.map((item, index) => (
+                        <View
+                          key={index}
+                          style={{
+                            elevation: 2,
+                            flexDirection: "row",
+                            alignItems: "flex-start",
+                            paddingRight: 10,
+                            position: "relative",
+                            width: "100%",
+                            marginVertical: 5,
+                          }}
+                        >
+                          <Entypo
+                            name="dot-single"
+                            size={30}
+                            color="black"
+                            style={{ marginTop: -5 }}
+                          />
+                          <Text style={{ fontSize: 16, width: "95%" }}>
+                            {item}
+                          </Text>
+                          <TouchableOpacity
+                            style={{
+                              position: "absolute",
+                              top: -10,
+                              right: 0,
+                            }}
+                            onPress={() => {
+                              const filter = details.filter(
+                                (item, ind) => ind !== index
+                              );
+                              setDetails(filter);
+                            }}
+                          >
+                            <AntDesign name="close" size={20} color="#ff4747" />
+                          </TouchableOpacity>
+                        </View>
+                      ))}
+                    </View>
+                  </View>
+                  <View style={{ height: 20 }}></View>
+                </ScrollView>
               </View>
 
-              <View style={{ position: "absolute", top: 10, left: 10 }}>
+              <View
+                style={{
+                  position: "absolute",
+                  top: 10,
+                  left: 10,
+                  paddingRight: 10,
+                  width: "100%",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
                 <TouchableOpacity
                   style={{
                     alignItems: "center",
@@ -590,6 +684,7 @@ const AddProductModal = ({ modalVisible, setModalVisible }) => {
                     borderRadius: 20,
                     elevation: 2,
                     backgroundColor: "#ff4747",
+                    marginBottom: 5,
                   }}
                   onPress={() => {
                     setModalVisible(!modalVisible);
@@ -597,17 +692,17 @@ const AddProductModal = ({ modalVisible, setModalVisible }) => {
                 >
                   <AntDesign name="close" size={20} color="#ffffff" />
                 </TouchableOpacity>
+                <View style={{ width: "50%", alignItems: "center" }}>
+                  <AppButton
+                    onPress={() => {
+                      uploadData();
+                    }}
+                    title={"Add Product"}
+                    customStyle={{ width: "90%", margin: 10, marginTop: 5 }}
+                    textStyle={{ fontSize: 13 }}
+                  />
+                </View>
               </View>
-            </View>
-            <View style={{ width: "100%", alignItems: "center" }}>
-              <AppButton
-                onPress={() => {
-                  uploadData();
-                }}
-                title={"Add Product"}
-                customStyle={{ width: "90%", margin: 10 }}
-                textStyle={{ fontSize: 13 }}
-              />
             </View>
           </View>
         </Modal>
@@ -696,16 +791,20 @@ function textInputContainer(
   quantity,
   colors,
   sizes,
+  details,
   sizeText,
   colorText,
+  detailsText,
   setName,
   setPrice,
   setOPrice,
   setQuantity,
   setColors,
   setSizes,
+  setDetails,
   setSizeText,
   setColorText,
+  setDetailsText,
   textInputContainerVisible,
   setTextInputContainerVisible,
   setErrorMessage
@@ -751,7 +850,7 @@ function textInputContainer(
               : "default"
           }
           autoFocus={true}
-          autoCapitalize="none"
+          autoCapitalize={current === "detail" ? true : "none"}
           onChangeText={(e) => {
             setErrorMessage("");
             current === "name"
@@ -764,7 +863,9 @@ function textInputContainer(
               ? setQuantity(e)
               : current === "size"
               ? setSizeText(e.toUpperCase())
-              : setColorText(e.toLowerCase());
+              : current === "color"
+              ? setColorText(e.toLowerCase())
+              : setDetailsText(e);
           }}
           value={
             current === "name"
@@ -777,7 +878,9 @@ function textInputContainer(
               ? quantity
               : current === "size"
               ? sizeText
-              : colorText
+              : current === "color"
+              ? colorText
+              : detailsText
           }
         />
         <View
@@ -819,6 +922,8 @@ function textInputContainer(
                 ? setSizes([...sizes, sizeText])
                 : current === "color"
                 ? setColors([...colors, colorText])
+                : current === "detail"
+                ? setDetails([...details, detailsText])
                 : "";
               setTextInputContainerVisible(!textInputContainerVisible);
             }}

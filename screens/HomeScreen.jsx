@@ -34,6 +34,7 @@ export default React.memo(function HomeScreen() {
   const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [isPanelActive, setIsPanelActive] = useState(false);
+  const [hasTimeline, setHasTimeline] = useState(true);
   const user = useSelector((state) => state.user.currentUser);
   const reels = useSelector((state) => state.reel.loadedReels);
   const dispatch = useDispatch();
@@ -45,6 +46,7 @@ export default React.memo(function HomeScreen() {
     wait(2000).then(() => setRefreshing(false));
   }, []);
   useEffect(() => {
+    getFollowing(user.id);
     enablePushNotifications();
     // getTimeline();
     listenForPushNotifications();
@@ -54,6 +56,14 @@ export default React.memo(function HomeScreen() {
       Notifications.removeNotificationSubscription(responseListener);
     };
   }, []);
+  async function getFollowing(userId) {
+    const snapshot = await firestore
+      .collection("following")
+      .doc(userId)
+      .collection("userFollowing")
+      .get();
+    !snapshot.docs.length && setHasTimeline(false);
+  }
   async function askPermissions() {
     const { status: existingStatus } = await Permissions.getAsync(
       Permissions.NOTIFICATIONS
@@ -201,7 +211,7 @@ export default React.memo(function HomeScreen() {
         }
         style={styles.container}
       >
-        {!user.following && (
+        {!hasTimeline && (
           <View style={styles.trendSection}>
             <View style={{ flexDirection: "row", alignItems: "center" }}>
               <Feather

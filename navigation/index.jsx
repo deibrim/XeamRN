@@ -35,14 +35,7 @@ function Navigation({ colorScheme }) {
       if (User) {
         const userRef = await createUserProfileDocument(User);
         userRef.onSnapshot(async (snapShot) => {
-          dispatch(
-            setCurrentUser({
-              id: snapShot.id,
-              ...snapShot.data(),
-              followers: currentUser.followers ? currentUser.followers : 0,
-              following: currentUser.following ? currentUser.following : 0,
-            })
-          );
+          dispatch(setCurrentUser({ id: snapShot.id, ...snapShot.data() }));
           if (snapShot.data().isTvActivated) {
             const userRef = firestore.doc(`xeamTvs/${snapShot.id}`);
             const snapshot = await userRef.get();

@@ -3,10 +3,10 @@ import React from "react";
 import { View, Image, Text } from "react-native";
 import { styles } from "./styles";
 
-export default function TrendingReelPreview() {
+export default function TrendingReelPreview({ customStyles }) {
   return (
     <>
-      <View style={styles.reelCard}>
+      <View style={[styles.reelCard, { ...customStyles }]}>
         <Image
           style={styles.reelCardImage}
           source={require("../../assets/cwall/9.jpg")}

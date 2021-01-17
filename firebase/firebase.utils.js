@@ -16,6 +16,8 @@ const firebaseConfig = {
   measurementId: "G-CYEEQR3P3H",
 };
 
+// Your App ID: 1e9e2d9d-29e3-40ca-8c53-2ff016d3f04b
+
 // firebase.initializeApp(firebaseConfig);
 if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
@@ -61,7 +63,7 @@ export const createUserProfileDocument = async (userAuth, additionalData) => {
         profile_pic,
         ...additionalData,
       });
-      await followersRef.doc(uid).collection("userFollowers").doc(uid).set({});
+      // await followersRef.doc(uid).collection("userFollowers").doc(uid).set({});
       await usersRef.child(uid).set({
         id: uid,
         profile_pic,
@@ -127,17 +129,17 @@ export const handleUnfollowUser = (profileId, currentUserId) => {
     }
   });
   // remove following
-  const fgRef = followingRef
-    .doc(currentUserId)
-    .collection("userFollowing")
-    .doc(profileId);
-  const fgSnapshot = fgRef.get();
+  // const fgRef = followingRef
+  //   .doc(currentUserId)
+  //   .collection("userFollowing")
+  //   .doc(profileId);
+  // const fgSnapshot = fgRef.get();
 
-  fgSnapshot.then((doc) => {
-    if (doc.exists) {
-      fgRef.delete();
-    }
-  });
+  // fgSnapshot.then((doc) => {
+  //   if (doc.exists) {
+  //     fgRef.delete();
+  //   }
+  // });
   // delete activity feed item for them
   const ayRef = activityFeedRef
     .doc(profileId)
@@ -177,7 +179,7 @@ export const handleUnfollowTv = (tvId, currentUserId) => {
   });
 };
 
-export const handleFollowUser = (profileId, currentUser, user) => {
+export const handleFollowUser = (profileId, currentUser, token) => {
   // Make auth user follower of THAT user (update THEIR followers collection)
   followersRef
     .doc(profileId)
@@ -185,11 +187,11 @@ export const handleFollowUser = (profileId, currentUser, user) => {
     .doc(currentUser.id)
     .set({});
   // Put THAT user on YOUR following collection (update your following collection)
-  followingRef
-    .doc(currentUser.id)
-    .collection("userFollowing")
-    .doc(profileId)
-    .set({});
+  // followingRef
+  //   .doc(currentUser.id)
+  //   .collection("userFollowing")
+  //   .doc(profileId)
+  //   .set({});
   // add activity feed item for that user to notify about new follower (us)
   activityFeedRef
     .doc(profileId)
@@ -211,7 +213,7 @@ export const handleFollowUser = (profileId, currentUser, user) => {
     },
     body: JSON.stringify({
       channelId: "ActivitiesScreen",
-      to: user.push_token.data,
+      to: token,
       sound: "default",
       title: "Xeam",
       body: `${currentUser.username} started following you`,
@@ -317,31 +319,31 @@ export const deleteReel = async (ownerId, postId) => {
       rsRef.delete();
     }
   });
-  // delete uploaded video for the database storage
-  firebase.storage().ref(`reels/${postId}`).delete();
-  // then delete all activity feed notifications
-  const afRef = await activityFeedRef
-    .doc(ownerId)
-    .collection("feedItems")
-    .where("postId", "==", `${postId}`);
-  const activityFeedSnapshot = await afRef.get();
+  // // delete uploaded video for the database storage
+  // firebase.storage().ref(`reels/${postId}`).delete();
+  // // then delete all activity feed notifications
+  // const afRef = await activityFeedRef
+  //   .doc(ownerId)
+  //   .collection("feedItems")
+  //   .where("postId", "==", `${postId}`);
+  // const activityFeedSnapshot = await afRef.get();
 
-  activityFeedSnapshot.docs.forEach((doc) => {
-    if (doc.exists) {
-      doc.ref.delete();
-    }
-  });
-  // then delete all comments
-  const csRef = await firestore
-    .collection("comments")
-    .doc(postId)
-    .collection("comments");
-  const commentsSnapshot = await csRef.get();
-  commentsSnapshot.docs.forEach((doc) => {
-    if (doc.exists) {
-      doc.ref.delete();
-    }
-  });
+  // activityFeedSnapshot.docs.forEach((doc) => {
+  //   if (doc.exists) {
+  //     doc.ref.delete();
+  //   }
+  // });
+  // // then delete all comments
+  // const csRef = await firestore
+  //   .collection("comments")
+  //   .doc(postId)
+  //   .collection("comments");
+  // const commentsSnapshot = await csRef.get();
+  // commentsSnapshot.docs.forEach((doc) => {
+  //   if (doc.exists) {
+  //     doc.ref.delete();
+  //   }
+  // });
 };
 
 export const addLikeToActivityFeed = async (
@@ -363,6 +365,7 @@ export const addLikeToActivityFeed = async (
       postId: postId,
       videoUri,
       timestamp: Date.now(),
+      viewed: false,
     });
     fetch("https://exp.host/--/api/v2/push/send", {
       method: "POST",
@@ -424,6 +427,7 @@ async function addToActivityFeed(
         userProfileImg: currentUser.profile_pic,
         postId,
         timestamp: Date.now(),
+        viewed: false,
       });
     fetch("https://exp.host/--/api/v2/push/send", {
       method: "POST",

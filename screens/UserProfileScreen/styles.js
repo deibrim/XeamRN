@@ -24,6 +24,14 @@ export const styles = StyleSheet.create({
     // justifyContent: "space-between",
     paddingRight: 50,
   },
+  username: {
+    color: "#42414C",
+    fontSize: 22,
+    fontWeight: "600",
+    marginBottom: 5,
+    marginLeft: -2,
+    letterSpacing: 1,
+  },
   title: {
     color: "#42414C",
     fontSize: 20,
@@ -39,9 +47,30 @@ export const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    // backgroundColor: "#000000",
-    // opacity: 0.5,
     zIndex: 1,
+  },
+  customDialogTitle: {
+    paddingVertical: 5,
+    borderBottomColor: "#44444444",
+    borderBottomWidth: 1,
+    width: "100%",
+    marginBottom: 10,
+  },
+  customDialogBody: {
+    // alignSelf: "center",
+    flex: 1,
+    // justifyContent: "center",
+  },
+  modalTextButton: {
+    marginVertical: 3,
+    paddingVertical: 10,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  modalText: {
+    color: "#111111",
+    fontWeight: "600",
+    fontSize: 15,
   },
   listReels: {
     flexDirection: "row",

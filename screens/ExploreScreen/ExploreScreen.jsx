@@ -1,5 +1,5 @@
-import { AntDesign, Feather } from "@expo/vector-icons";
-import React, { useState, useCallback } from "react";
+import { AntDesign, Feather, MaterialCommunityIcons } from "@expo/vector-icons";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   View,
   Image,
@@ -8,14 +8,20 @@ import {
   TouchableOpacity,
   FlatList,
 } from "react-native";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigation } from "@react-navigation/native";
 import CustomInput from "../../components/CustomInput/CustomInput";
-import { styles } from "./styles";
 import { firestore } from "../../firebase/firebase.utils";
 import AppButton from "../../components/AppButton/AppButton";
 import FoundUserPreview from "../../components/FoundUserPreview/FoundUserPreview";
 import FoundTagPreview from "../../components/FoundTagPreview/FoundTagPreview";
+import ExploreFeed from "../../components/ExploreFeed/ExploreFeed";
+import { toggleShowBottomNavbar } from "../../redux/settings/actions";
+import { SwipeablePanel } from "rn-swipeable-panel";
+import { styles } from "./styles";
+import ExploreScreenSwipeablePanelContent from "../../components/ExploreScreenSwipeablePanelContent/ExploreScreenSwipeablePanelContent";
+import QrCodeModal from "../../components/QrCodeModal/QrCodeModal";
+import QrCodeScannerModal from "../../components/QrCodeScannerModal/QrCodeScannerModal";
 
 const wait = (timeout) => {
   return new Promise((resolve) => {
@@ -27,15 +33,29 @@ export default function ExploreScreen() {
   const [foundUsers, setFoundUsers] = useState([]);
   const [foundTags, setFoundTags] = useState([]);
   const [active, setActive] = useState("all");
+  const [activeQrCode, setActiveQrCode] = useState("");
+  const [modalVisible, setModalVisible] = useState(false);
+  const [qrCodeScannerModalVisible, setQrCodeScannerModalVisible] = useState(
+    false
+  );
   const user = useSelector((state) => state.user.currentUser);
   const [searching, setSearching] = useState(false);
   const navigation = useNavigation();
   const [refreshing, setRefreshing] = useState(false);
+  const [isPanelActive, setIsPanelActive] = useState(false);
+  const dispatch = useDispatch();
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     wait(2000).then(() => setRefreshing(false));
   }, []);
+  useEffect(() => {
+    navigation.navigate("ExploreScreen");
+    query.trim() === "" ? setFoundUsers([]) : findUser(query);
+  }, [query]);
   const findUser = async (e) => {
+    if (active === "all") {
+      setActive("people");
+    }
     query.trim() === "" ? setFoundUsers([]) : null;
     if (query.trim() === "") {
       return;
@@ -89,7 +109,7 @@ export default function ExploreScreen() {
         <CustomInput
           onChange={(e) => {
             setSearching(false);
-            if (active === "all") {
+            if (active === "people") {
               findUser(e);
             } else if (active === "tags") {
               findTag(e);
@@ -108,7 +128,7 @@ export default function ExploreScreen() {
             ) : query ? (
               <TouchableOpacity
                 onPress={() => {
-                  if (active === "all") {
+                  if (active === "people") {
                     findUser(e);
                   } else if (active === "tags") {
                     findTag(e);
@@ -134,6 +154,14 @@ export default function ExploreScreen() {
           }}
         >
           <TouchableOpacity
+            onPress={() => {
+              dispatch(toggleShowBottomNavbar(true));
+              setIsPanelActive(true);
+            }}
+          >
+            <MaterialCommunityIcons name="qrcode-scan" size={24} color="gray" />
+          </TouchableOpacity>
+          {/* <TouchableOpacity
             onPress={() => navigation.navigate("ProfileScreen")}
           >
             <View style={styles.imageContainer}>
@@ -144,7 +172,7 @@ export default function ExploreScreen() {
                 }}
               />
             </View>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
       </View>
       <View style={styles.container}>
@@ -159,6 +187,8 @@ export default function ExploreScreen() {
         </View>
 
         {active === "all" ? (
+          <ExploreFeed />
+        ) : active === "people" ? (
           <FlatList
             data={foundUsers}
             renderItem={({ item }) => <FoundUserPreview item={item} />}
@@ -172,6 +202,38 @@ export default function ExploreScreen() {
           />
         )}
       </View>
+      <SwipeablePanel
+        fullWidth={true}
+        onlySmall={false}
+        onClose={() => {
+          dispatch(toggleShowBottomNavbar(false));
+          setIsPanelActive(false);
+        }}
+        onPressCloseButton={() => {
+          dispatch(toggleShowBottomNavbar(false));
+          setIsPanelActive(false);
+        }}
+        isActive={isPanelActive}
+        style={{ backgroundColor: "#ecf2fa", height: 420 }}
+        closeOnTouchOutside={true}
+      >
+        <ExploreScreenSwipeablePanelContent
+          setModalVisible={setModalVisible}
+          setQrCodeScannerModalVisible={setQrCodeScannerModalVisible}
+          setIsPanelActive={setIsPanelActive}
+          activeQrCode={activeQrCode}
+          setActiveQrCode={setActiveQrCode}
+        />
+      </SwipeablePanel>
+      <QrCodeModal
+        modalVisible={modalVisible}
+        setModalVisible={setModalVisible}
+        activeQrCode={activeQrCode}
+      />
+      <QrCodeScannerModal
+        qrCodeScannerModalVisible={qrCodeScannerModalVisible}
+        setQrCodeScannerModalVisible={setQrCodeScannerModalVisible}
+      />
     </>
   );
 }
@@ -203,7 +265,7 @@ function filterButtons(active, setActive) {
       showsHorizontalScrollIndicator={false}
       style={{ paddingHorizontal: 5, height: 65, paddingVertical: 10 }}
     >
-      <FilterButton title={"All"} value={"all"} />
+      <FilterButton title={"Explore"} value={"all"} />
       <FilterButton title={"People"} value={"people"} />
       <FilterButton title={"Giveaways"} value={"giveaways"} />
       <FilterButton title={"Tags"} value={"tags"} />

@@ -128,29 +128,18 @@ export const handleUnfollowUser = (profileId, currentUserId) => {
       fsRef.delete();
     }
   });
-  // remove following
-  // const fgRef = followingRef
-  //   .doc(currentUserId)
-  //   .collection("userFollowing")
-  //   .doc(profileId);
-  // const fgSnapshot = fgRef.get();
 
-  // fgSnapshot.then((doc) => {
+  // delete activity feed item for them
+  // const ayRef = activityFeedRef
+  //   .doc(profileId)
+  //   .collection("feedItems")
+  //   .doc(currentUserId);
+  // const aySnapshot = ayRef.get();
+  // aySnapshot.then((doc) => {
   //   if (doc.exists) {
-  //     fgRef.delete();
+  //     ayRef.delete();
   //   }
   // });
-  // delete activity feed item for them
-  const ayRef = activityFeedRef
-    .doc(profileId)
-    .collection("feedItems")
-    .doc(currentUserId);
-  const aySnapshot = ayRef.get();
-  aySnapshot.then((doc) => {
-    if (doc.exists) {
-      ayRef.delete();
-    }
-  });
 };
 export const handleUnfollowTv = (tvId, currentUserId) => {
   // remove follower

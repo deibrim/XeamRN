@@ -42,6 +42,7 @@ const BottomTab = createBottomTabNavigator();
 
 export default function BottomTabNavigator() {
   // const currentUser = useSelector((state) => state.user.currentUser);
+  const hasNoty = useSelector((state) => state.user.hasNoty);
   const isShowBottomNavbar = useSelector(
     (state) => state.setting.isShowBottomNavbar
   );
@@ -141,7 +142,6 @@ export default function BottomTabNavigator() {
         inactiveTintColor: "#b3b4b6",
         showLabel: false,
         style: {
-          // elevation: 0,
           height: 50,
         },
         keyboardHidesTabBar: true,
@@ -195,37 +195,42 @@ export default function BottomTabNavigator() {
         component={ActivitiesScreenNavigator}
         options={({ route }) => ({
           tabBarVisible: getTabBarVisible(route),
+          unmountOnBlur: true,
           tabBarIcon: ({ color, focused }) =>
             focused ? (
               <View style={{ position: "relative" }}>
-                <View
-                  style={{
-                    width: 11,
-                    height: 11,
-                    borderRadius: 10,
-                    backgroundColor: "red",
-                    position: "absolute",
-                    zIndex: 2,
-                    top: -4,
-                    left: -4,
-                  }}
-                ></View>
+                {hasNoty && (
+                  <View
+                    style={{
+                      width: 11,
+                      height: 11,
+                      borderRadius: 10,
+                      backgroundColor: "red",
+                      position: "absolute",
+                      zIndex: 2,
+                      top: -4,
+                      left: -4,
+                    }}
+                  ></View>
+                )}
                 <AntDesign name="heart" size={26} color={color} />
               </View>
             ) : (
               <View style={{ position: "relative" }}>
-                <View
-                  style={{
-                    width: 11,
-                    height: 11,
-                    borderRadius: 10,
-                    backgroundColor: "red",
-                    position: "absolute",
-                    zIndex: 2,
-                    top: -4,
-                    left: -4,
-                  }}
-                ></View>
+                {hasNoty && (
+                  <View
+                    style={{
+                      width: 11,
+                      height: 11,
+                      borderRadius: 10,
+                      backgroundColor: "red",
+                      position: "absolute",
+                      zIndex: 2,
+                      top: -4,
+                      left: -4,
+                    }}
+                  ></View>
+                )}
                 <AntDesign name="hearto" size={22} color={color} />
               </View>
             ),
@@ -236,6 +241,7 @@ export default function BottomTabNavigator() {
         component={SettingsScreenNavigator}
         options={({ route }) => ({
           tabBarVisible: false,
+          unmountOnBlur: true,
           tabBarIcon: ({ color, focused }) => (
             <Octicons name="settings" size={22} color={color} />
           ),

@@ -108,7 +108,9 @@ const QrCodeModal = ({ modalVisible, setModalVisible, activeQrCode, uri }) => {
                       ? `${user.id}_myqr`
                       : activeQrCode === "tvqr"
                       ? `${tv.id}_tvqr`
-                      : `${store.id}_storeqr`
+                      : activeQrCode === "storeqr"
+                      ? `${store.id}_storeqr`
+                      : "null"
                   }
                   linearGradient={["#006eff74", "#006eff84"]}
                   outerEyeStyle="circle"
@@ -141,7 +143,9 @@ const QrCodeModal = ({ modalVisible, setModalVisible, activeQrCode, uri }) => {
                       ? `${user.username}`
                       : activeQrCode === "tvqr"
                       ? `${tv.tvHandle}`
-                      : `${store.storeHandle}`}
+                      : activeQrCode === "storeqr"
+                      ? `${store.storeHandle}`
+                      : "null"}
                   </Text>
                   <Text
                     style={{

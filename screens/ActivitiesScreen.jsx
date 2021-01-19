@@ -10,9 +10,10 @@ import {
   RefreshControl,
   TouchableOpacity,
 } from "react-native";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import moment from "moment";
 import { firestore } from "../firebase/firebase.utils";
+import { toggleHasNoty } from "../redux/user/actions";
 const wait = (timeout) => {
   return new Promise((resolve) => {
     setTimeout(resolve, timeout);
@@ -45,7 +46,11 @@ export default function ActivitiesScreen() {
     activityFeedRef.onSnapshot((snapshot) => {
       const activitiesArr = [];
       snapshot.docs.forEach((doc) => {
-        activitiesArr.push(doc.data());
+        const data = {
+          id: doc.id,
+          ...doc.data(),
+        };
+        activitiesArr.push(data);
       });
       setActivities(activitiesArr);
       setLoading(false);
@@ -84,72 +89,88 @@ export default function ActivitiesScreen() {
         )}
         <View>
           {activities.map((item, index) => (
-            <TouchableOpacity
-              key={index}
-              onPress={() => {
-                item.type === "follow" &&
-                  navigation.navigate("UserProfileScreen", {
-                    userId: item.userId,
-                  });
-              }}
-              style={{
-                width: "100%",
-                marginVertical: 5,
-              }}
-            >
-              <View
-                // key={index}
-                style={{
-                  flexDirection: "row",
-                  height: 80,
-                  width: "100%",
-                  flex: 1,
-                  justifyContent: "flex-start",
-                  alignItems: "center",
-                  paddingHorizontal: 20,
-                  backgroundColor: "white",
-                }}
-              >
-                <Image
-                  style={{
-                    width: 50,
-                    height: 50,
-                    resizeMode: "cover",
-                    borderRadius: 50,
-                    borderWidth: 2,
-                    borderColor: "#fff",
-                    marginRight: 10,
-                  }}
-                  source={{ uri: `${item.userProfileImg}` }}
-                />
-                <View style={{ flex: 1 }}>
-                  <Text style={{ fontWeight: "bold", fontSize: 16 }}>
-                    {item.username}{" "}
-                    <Text style={{ fontWeight: "400", fontSize: 14 }}>
-                      {item.type === "follow"
-                        ? "started following you"
-                        : item.type === "tvFollow"
-                        ? "started following your tv"
-                        : item.type === "storeFollow"
-                        ? "started following your store"
-                        : item.type === "like"
-                        ? "like your reel"
-                        : "commented on your reel"}
-                    </Text>
-                  </Text>
-                  <Text style={{ color: "gray" }}>
-                    {moment(item.timestamp).fromNow()}
-                  </Text>
-                </View>
-              </View>
-            </TouchableOpacity>
+            <ActivityPreview key={index} item={item} />
           ))}
         </View>
       </ScrollView>
     </>
   );
 }
+function ActivityPreview({ item }) {
+  const user = useSelector((state) => state.user.currentUser);
+  const dispatch = useDispatch();
+  !item.viewed && onView();
 
+  async function onView() {
+    await firestore
+      .collection("activity_feed")
+      .doc(user.id)
+      .collection("feedItems")
+      .doc(item.id)
+      .update({ viewed: true });
+    dispatch(toggleHasNoty(false));
+  }
+  return (
+    <TouchableOpacity
+      onPress={() => {
+        item.type === "follow" &&
+          navigation.navigate("UserProfileScreen", {
+            userId: item.userId,
+          });
+      }}
+      style={{
+        width: "100%",
+        marginVertical: 5,
+      }}
+    >
+      <View
+        // key={index}
+        style={{
+          flexDirection: "row",
+          height: 80,
+          width: "100%",
+          flex: 1,
+          justifyContent: "flex-start",
+          alignItems: "center",
+          paddingHorizontal: 20,
+          backgroundColor: "white",
+        }}
+      >
+        <Image
+          style={{
+            width: 50,
+            height: 50,
+            resizeMode: "cover",
+            borderRadius: 50,
+            borderWidth: 2,
+            borderColor: "#fff",
+            marginRight: 10,
+          }}
+          source={{ uri: `${item.userProfileImg}` }}
+        />
+        <View style={{ flex: 1 }}>
+          <Text style={{ fontWeight: "bold", fontSize: 16 }}>
+            {item.username}{" "}
+            <Text style={{ fontWeight: "400", fontSize: 14 }}>
+              {item.type === "follow"
+                ? "started following you"
+                : item.type === "tvFollow"
+                ? "started following your tv"
+                : item.type === "storeFollow"
+                ? "started following your store"
+                : item.type === "like"
+                ? "like your reel"
+                : "commented on your reel"}
+            </Text>
+          </Text>
+          <Text style={{ color: "gray" }}>
+            {moment(item.timestamp).fromNow()}
+          </Text>
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
+}
 const styles = StyleSheet.create({
   container: {
     flex: 1,

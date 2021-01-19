@@ -22,6 +22,7 @@ import {
   setCurrentUser,
   setCurrentUserTvProfile,
   setCurrentUserXStore,
+  toggleHasNoty,
 } from "../redux/user/actions";
 import ForgotPasswordScreen from "../screens/ForgotPasswordScreen";
 
@@ -46,14 +47,24 @@ function Navigation({ colorScheme }) {
             const snapshot = await xStoreRef.get();
             dispatch(setCurrentUserXStore({ ...snapshot.data() }));
           }
+          const activitiesSnapshot = await firestore
+            .collection("activity_feed")
+            .doc(currentUser.id)
+            .collection("feedItems")
+            .where("viewed", "==", false);
+          activitiesSnapshot.onSnapshot(async (snapShot) => {
+            if (snapShot.size > 0) {
+              dispatch(toggleHasNoty(true));
+            }
+          });
           const folowersSnapshot = await firestore
             .collection("followers")
-            .doc(snapShot.id)
+            .doc(currentUser.id)
             .collection("userFollowers")
             .get();
           dispatch(
             setCurrentUser({
-              id: snapShot.id,
+              id: currentUser.id,
               ...snapShot.data(),
               followers: !folowersSnapshot.empty
                 ? folowersSnapshot.docs.length - 1
@@ -62,12 +73,12 @@ function Navigation({ colorScheme }) {
           );
           const followingSnapshot = await firestore
             .collection("following")
-            .doc(snapShot.id)
+            .doc(currentUser.id)
             .collection("userFollowing")
             .get();
           dispatch(
             setCurrentUser({
-              id: snapShot.id,
+              id: currentUser.id,
               ...snapShot.data(),
               following: followingSnapshot.docs.length,
             })
@@ -80,7 +91,7 @@ function Navigation({ colorScheme }) {
                 const ref = firebase
                   .database()
                   .ref("presence")
-                  .child(snapShot.id);
+                  .child(currentUser.id);
                 ref.set({ status: true });
                 ref.onDisconnect().remove((err) => {
                   if (err !== null) {

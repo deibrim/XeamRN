@@ -15,6 +15,10 @@ import AppButton from "../../components/AppButton/AppButton";
 import CustomInput from "../../components/CustomInput/CustomInput";
 import ProductPreview from "../../components/ProductPreview/ProductPreview";
 import TopsellingProductPreview from "../../components/TopsellingProductPreview/TopsellingProductPreview";
+import XStoreNewProducts from "../../components/XStoreNewProducts/XStoreNewProducts";
+import XStoreProductsOnSale from "../../components/XStoreProductsOnSale/XStoreProductsOnSale";
+import XStoreProductsTopSelling from "../../components/XStoreProductsTopSelling/XStoreProductsTopSelling";
+import XStoreRecomendedStore from "../../components/XStoreRecomendedStore/XStoreRecomendedStore";
 import { firestore } from "../../firebase/firebase.utils";
 import { styles } from "./styles";
 
@@ -25,9 +29,12 @@ const XStoreProductsScreen = () => {
   const [loading, setLoading] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
   const [loadingTopSelling, setLoadingTopSelling] = useState(true);
+  const [topSellingAvailable, setTopSellingAvailable] = useState(true);
   const [loadingNewProduct, setLoadingNewProduct] = useState(true);
-  const [loadingSales, setLoadingSales] = useState(true);
-  const [sales, setSales] = useState([]);
+  const [newProductAvailable, setNewProductAvailable] = useState(false);
+  const [loadingOnSaleProduct, setLoadingOnSaleProduct] = useState(true);
+  const [onSaleProductAvailable, setOnSaleProductAvailable] = useState(false);
+  const [isTimelineEmpty, setIsTimelineEmpty] = useState(false);
   const [topSelling, setTopSelling] = useState([]);
   const [searching, setSearching] = useState(false);
   const [query, setQuery] = useState("");
@@ -57,8 +64,17 @@ const XStoreProductsScreen = () => {
   }, []);
   async function getStoreTimeline() {
     setLoading(true);
-    const userRef = firestore.doc(`xeamStoreTimeline/${currentUser.id}`);
+    const userRef = firestore
+      .collection("xeamStoreTimeline")
+      .doc(currentUser.id)
+      .collection("timelineProducts");
     const snapShot = await userRef.get();
+    if (snapShot.size > 0) {
+    } else {
+      setIsTimelineEmpty(true);
+      setActive("recomend");
+      // TODO: Fetch Suggested Stores to follow
+    }
     // setXStore(snapShot.data());
   }
   async function getTopSelling() {
@@ -135,8 +151,16 @@ const XStoreProductsScreen = () => {
       <View style={{ height: 60, backgroundColor: "#ecf2fa", paddingLeft: 10 }}>
         {filterButtons(active, setActive)}
       </View>
-      <ScrollView style={styles.container}>
-        <FlatList
+      {isTimelineEmpty ? (
+        <NoProduct />
+      ) : (
+        <ScrollView style={styles.container}>
+          <XStoreProductsTopSelling
+            user={currentUser}
+            setLoadingTopSelling={setLoadingTopSelling}
+            setTopSellingAvailable={setTopSellingAvailable}
+          />
+          {/* <FlatList
           contentContainerStyle={{}}
           style={{}}
           snapToInterval={Dimensions.get("screen").width}
@@ -149,12 +173,19 @@ const XStoreProductsScreen = () => {
           initialNumToRender={3}
           keyExtractor={(item, index) => index.toString()}
           renderItem={(item) => <TopsellingProductPreview data={item.item} />}
-        />
-        <View style={styles.newProductSection}>
-          <Text style={[styles.sectionTitle, { fontSize: 14 }]}>
-            NEW PRODUCTS
-          </Text>
-          <ScrollView
+        /> */}
+          <View style={styles.newProductSection}>
+            {newProductAvailable ? (
+              <Text style={[styles.sectionTitle, { fontSize: 14 }]}>
+                NEWLY ADDED
+              </Text>
+            ) : null}
+            <XStoreNewProducts
+              user={currentUser}
+              setLoadingNewProduct={setLoadingNewProduct}
+              setNewProductAvailable={setNewProductAvailable}
+            />
+            {/* <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
             style={{ paddingHorizontal: 10 }}
@@ -163,11 +194,18 @@ const XStoreProductsScreen = () => {
               <ProductPreview key={index} data={item} />
             ))}
             <View style={{ width: 10 }}></View>
-          </ScrollView>
-        </View>
-        <View style={styles.newProductSection}>
-          <Text style={[styles.sectionTitle, { fontSize: 14 }]}>SALES</Text>
-          <ScrollView
+          </ScrollView> */}
+          </View>
+          <View style={styles.newProductSection}>
+            {onSaleProductAvailable ? (
+              <Text style={[styles.sectionTitle, { fontSize: 14 }]}>SALES</Text>
+            ) : null}
+            <XStoreProductsOnSale
+              user={currentUser}
+              setLoadingOnSaleProduct={setLoadingOnSaleProduct}
+              setOnSaleProductAvailable={setOnSaleProductAvailable}
+            />
+            {/* <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
             style={{ paddingHorizontal: 10 }}
@@ -176,10 +214,11 @@ const XStoreProductsScreen = () => {
               <ProductPreview key={index} data={item} />
             ))}
             <View style={{ width: 10 }}></View>
-          </ScrollView>
-        </View>
-      </ScrollView>
-      <View style={{ ...styles.buttonContainer }}></View>
+          </ScrollView> */}
+          </View>
+        </ScrollView>
+      )}
+
       {searching ? (
         <View
           style={{
@@ -238,7 +277,7 @@ const XStoreProductsScreen = () => {
 };
 
 export default XStoreProductsScreen;
-function filterButtons(active, setActive) {
+function filterButtons(active, setActive, onSaleProductAvailable) {
   function FilterButton({ title, value }) {
     return (
       <AppButton
@@ -267,8 +306,30 @@ function filterButtons(active, setActive) {
       style={{ height: 60 }}
     >
       <FilterButton title={"Home"} value={"home"} />
-      <FilterButton title={"On Sale"} value={"all"} />
-      <FilterButton title={"Recomendation"} value={"about"} />
+      {onSaleProductAvailable && (
+        <FilterButton title={"On Sale"} value={"all"} />
+      )}
+      <FilterButton title={"Recomendation"} value={"recomend"} />
+    </ScrollView>
+  );
+}
+
+function NoProduct() {
+  const user = useSelector((state) => state.user.currentUser);
+  const [loadingRecommendedStores, setLoadingRecommendedStores] = useState(
+    true
+  );
+  return (
+    <ScrollView style={styles.container}>
+      <View style={{ padding: 20 }}>
+        <Text style={[styles.trendingIssuesHeadText]}>
+          Follow more store to see their products on your timeline
+        </Text>
+      </View>
+      <XStoreRecomendedStore
+        user={user}
+        setLoadingRecommendedStores={setLoadingRecommendedStores}
+      />
     </ScrollView>
   );
 }

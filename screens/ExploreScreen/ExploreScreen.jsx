@@ -96,11 +96,6 @@ export default function ExploreScreen() {
   return (
     <>
       <View style={styles.header}>
-        {/* <TouchableOpacity
-          onPress={() => navigation.navigate("ScanCameraScreen")}
-        >
-          <MaterialCommunityIcons name="qrcode-scan" size={24} color="gray" />
-        </TouchableOpacity> */}
         <TouchableOpacity
           onPress={() => navigation.navigate("XStoreProductsScreen")}
         >

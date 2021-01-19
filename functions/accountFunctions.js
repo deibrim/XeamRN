@@ -82,6 +82,24 @@ exports.deleteFollower = async (snapshot, context) => {
       doc.ref.delete();
     }
   });
+  const ayRef = admin
+    .firestore()
+    .collection("activity_feed")
+    .doc(followerId)
+    .collection("feedItems")
+    .doc(userId);
+  const aySnapshot = ayRef.get();
+
+  aySnapshot
+    .then((doc) => {
+      if (doc.exists) {
+        ayRef.delete();
+      }
+      return;
+    })
+    .catch((e) => {
+      console.log(e);
+    });
 };
 
 exports.createReel = async (snapshot, context) => {

@@ -59,7 +59,7 @@ const EditAndPostScreen = () => {
 
                 <TouchableOpacity
                   onPress={() => {
-                    setPaused(!paused);
+                    setPaused(false);
                     navigation.navigate("PostReelScreen", {
                       videoUri: route.params.videoUri,
                       type: route.params.type,

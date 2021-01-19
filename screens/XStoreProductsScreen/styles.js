@@ -10,14 +10,20 @@ export const styles = StyleSheet.create({
     width: "100%",
     alignItems: "center",
     paddingTop: 40,
-    // paddingBottom: 10,
     paddingHorizontal: 20,
     zIndex: 0,
     minHeight: 60,
     backgroundColor: "#ecf2fa",
     justifyContent: "space-between",
   },
-
+  trendingIssuesHeadText: {
+    color: "#33333399",
+    fontSize: 12,
+    letterSpacing: 1,
+    fontSize: 15,
+    fontWeight: "700",
+    textAlign: "center",
+  },
   title: {
     fontSize: 16,
     marginBottom: 4,

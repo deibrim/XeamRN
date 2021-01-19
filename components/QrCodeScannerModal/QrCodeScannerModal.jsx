@@ -58,13 +58,12 @@ const QrCodeScannerModal = ({
     const userRef = firestore.doc(`users/${id}`);
     const snapshot = await userRef.get();
     const token = snapshot.data().push_token.data;
-    console.log(token);
 
     if (analyseData[1] === "myqr") {
       user.id !== id && handleFollowUser(id, user, token);
     } else if (analyseData[1] === "tvqr") {
       tv.id !== id && handleFollowTv(id, user, token);
-    } else {
+    } else if (analyseData[1] === "storeqr") {
       store.id !== id && handleFollowStore(id, user, token);
     }
   };

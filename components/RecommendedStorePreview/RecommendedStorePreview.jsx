@@ -1,17 +1,28 @@
 import { useNavigation } from "@react-navigation/native";
 import React, { useEffect, useState } from "react";
-import { Image, Text, TouchableOpacity, View } from "react-native";
+import {
+  Image,
+  ImageBackground,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { useSelector } from "react-redux";
 import { firestore } from "../../firebase/firebase.utils";
 import AppButton from "../AppButton/AppButton";
 import { styles } from "./styles";
 
-const RecomendedStorePreview = ({ data }) => {
+const RecommendedStorePreview = ({ data }) => {
   const user = useSelector((state) => state.user.currentUser);
   const [productCount, setCount] = useState(Number("0"));
+  const [followerCount, setFollowerCount] = useState(Number("0"));
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [loading, setLoading] = useState(false);
   const navigation = useNavigation();
   useEffect(() => {
     GetProductCount();
+    getFollowers(data.id);
+    checkIfFollowing(data.id);
   }, []);
   async function GetProductCount() {
     const countRef = firestore
@@ -34,7 +45,7 @@ const RecomendedStorePreview = ({ data }) => {
       .collection("xStoreFollowers")
       .doc(storeId)
       .collection("storeFollowers")
-      .doc(currentUser.id)
+      .doc(user.id)
       .get();
     setIsFollowing(doc.exists);
     setLoading(false);
@@ -60,38 +71,45 @@ const RecomendedStorePreview = ({ data }) => {
       style={styles.wrapper}
     >
       <View style={styles.container}>
-        <View style={styles.innerContainer}>
-          <View style={styles.logoContainer}>
-            <Image
-              style={styles.logo}
-              //   resizeMode={""}
-              source={{ uri: data.logo }}
-            />
-          </View>
-          <View>
-            <Text style={styles.handle}>{data.storeHandle}</Text>
-            <Text style={styles.count}>{productCount} Products</Text>
-          </View>
+        <ImageBackground style={styles.background} source={{ uri: data.logo }}>
+          <View style={styles.overlay}>
+            <View style={styles.innerContainer}>
+              <View style={styles.logoContainer}>
+                <Image
+                  style={styles.logo}
+                  //   resizeMode={""}
+                  source={{ uri: data.logo }}
+                />
+              </View>
+              <View style={{ marginTop: 10 }}>
+                <Text style={styles.handle}>{data.storeHandle}</Text>
+                <Text style={styles.count}>
+                  {productCount} Product{productCount > 0 && "s"}
+                </Text>
+                {/* <Text style={styles.count}>
+              {followerCount} Follower{followerCount > 0 && "s"}
+            </Text> */}
+              </View>
 
-          <View style={{ marginTop: "auto", paddingBottom: 20 }}>
-            <AppButton
-              title={"Follow"}
-              customStyle={{
-                height: 30,
-                // width: "100%",
-                paddingHorizontal: 30,
-              }}
-              textStyle={{ fontSize: 12, textAlign: "center" }}
-            />
+              <View style={{ marginTop: "auto", paddingBottom: 30 }}>
+                <AppButton
+                  title={isFollowing ? "UnFollow" : "Follow"}
+                  onPress={() => {
+                    handleToggleFollow();
+                  }}
+                  customStyle={{
+                    height: 30,
+                    paddingHorizontal: 30,
+                  }}
+                  textStyle={{ fontSize: 12, textAlign: "center" }}
+                />
+              </View>
+            </View>
           </View>
-          {/* <View>
-          <Text style={styles.heading}>About store</Text>
-          <Text style={styles.paragraph}>About store</Text>
-        </View> */}
-        </View>
+        </ImageBackground>
       </View>
     </TouchableOpacity>
   );
 };
 
-export default RecomendedStorePreview;
+export default RecommendedStorePreview;

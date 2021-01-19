@@ -124,7 +124,7 @@ export default function BottomTabNavigator() {
         return false;
         break;
       case "XStoreProductsScreen":
-        return false;
+        return true;
         break;
       case "ProductDetailScreen":
         return false;
@@ -190,6 +190,19 @@ export default function BottomTabNavigator() {
             ),
         })}
       />
+      {/* <BottomTab.Screen
+        name="XStoreProductsScreen"
+        component={XStoreProductsScreen}
+        options={({ route }) => ({
+          tabBarVisible: getTabBarVisible(route),
+          tabBarIcon: ({ color, focused }) =>
+            focused ? (
+              <AntDesign name="isv" size={24} color={color} />
+            ) : (
+              <AntDesign name="isv" size={24} color={color} />
+            ),
+        })}
+      /> */}
       <BottomTab.Screen
         name="ActivitiesScreen"
         component={ActivitiesScreenNavigator}

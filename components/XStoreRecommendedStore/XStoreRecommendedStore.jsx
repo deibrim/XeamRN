@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Dimensions, FlatList } from "react-native";
 import { firestore } from "../../firebase/firebase.utils";
-import RecomendedStorePreview from "../RecomendedStorePreview/RecomendedStorePreview";
+import RecommendedStorePreview from "../RecommendedStorePreview/RecommendedStorePreview";
 
-const XStoreRecomendedStore = ({ user, setLoadingRecommendedStores }) => {
+const XStoreRecommendedStore = ({ user, setLoadingRecommendedStores }) => {
   const [recommendedStores, setRecommendedStores] = useState([]);
 
   const storeRefs = firestore.collection("xeamStores");
@@ -37,9 +37,12 @@ const XStoreRecomendedStore = ({ user, setLoadingRecommendedStores }) => {
       initialScrollIndex={0}
       initialNumToRender={3}
       keyExtractor={(item, index) => index.toString()}
-      renderItem={({ item }) => <RecomendedStorePreview data={item} />}
+      renderItem={({ item }) => (
+        // item.id !== user.id &&
+        <RecommendedStorePreview data={item} />
+      )}
     />
   );
 };
 
-export default XStoreRecomendedStore;
+export default XStoreRecommendedStore;

@@ -14,11 +14,11 @@ import { useSelector } from "react-redux";
 import AppButton from "../../components/AppButton/AppButton";
 import CustomInput from "../../components/CustomInput/CustomInput";
 import ProductPreview from "../../components/ProductPreview/ProductPreview";
-import TopsellingProductPreview from "../../components/TopsellingProductPreview/TopsellingProductPreview";
+import TopSellingProductPreview from "../../components/TopsellingProductPreview/TopsellingProductPreview";
 import XStoreNewProducts from "../../components/XStoreNewProducts/XStoreNewProducts";
 import XStoreProductsOnSale from "../../components/XStoreProductsOnSale/XStoreProductsOnSale";
 import XStoreProductsTopSelling from "../../components/XStoreProductsTopSelling/XStoreProductsTopSelling";
-import XStoreRecomendedStore from "../../components/XStoreRecomendedStore/XStoreRecomendedStore";
+import XStoreRecommendedStore from "../../components/XStoreRecommendedStore/XStoreRecommendedStore";
 import { firestore } from "../../firebase/firebase.utils";
 import { styles } from "./styles";
 
@@ -72,7 +72,7 @@ const XStoreProductsScreen = () => {
     if (snapShot.size > 0) {
     } else {
       setIsTimelineEmpty(true);
-      setActive("recomend");
+      setActive("recommend");
       // TODO: Fetch Suggested Stores to follow
     }
     // setXStore(snapShot.data());
@@ -110,24 +110,28 @@ const XStoreProductsScreen = () => {
   return (
     <>
       <View
-        // style={searching ? styles.header : { ...styles.header, elevation: 4 }}
-        style={styles.header}
+        style={
+          searching
+            ? styles.header
+            : { ...styles.header, elevation: 4, paddingBottom: 10 }
+        }
+        // style={styles.header}
       >
         <View style={{ flexDirection: "row", alignItems: "center" }}>
           <TouchableOpacity
-            onPress={() => navigation.goBack()}
+            onPress={() => {}}
             style={{ flexDirection: "row", alignItems: "center" }}
           >
-            <Ionicons name="ios-arrow-back" size={24} color="black" />
+            {/* <Ionicons name="ios-arrow-back" size={24} color="black" /> */}
             <Text
               style={{
                 color: "#42414C",
                 fontSize: 16,
-                marginLeft: 10,
+                // marginLeft: 10,
                 marginBottom: 1,
               }}
             >
-              Back
+              XStore
             </Text>
           </TouchableOpacity>
         </View>
@@ -137,19 +141,34 @@ const XStoreProductsScreen = () => {
             justifyContent: "space-between",
           }}
         >
-          <TouchableOpacity onPress={() => setSearching(true)}>
+          {!isTimelineEmpty && (
+            <TouchableOpacity onPress={() => setSearching(true)}>
+              <Feather
+                name="search"
+                size={20}
+                color="black"
+                style={{ marginRight: 20 }}
+              />
+            </TouchableOpacity>
+          )}
+          <TouchableOpacity onPress={() => navigation.navigate("CartScreen")}>
             <Feather
-              name="search"
-              size={18}
+              name="shopping-bag"
+              size={20}
               color="black"
-              style={{ marginRight: 10 }}
+              // style={{ marginRight: 10 }}
             />
           </TouchableOpacity>
         </View>
       </View>
 
       <View style={{ height: 60, backgroundColor: "#ecf2fa", paddingLeft: 10 }}>
-        {filterButtons(active, setActive)}
+        {filterButtons(
+          active,
+          setActive,
+          onSaleProductAvailable,
+          isTimelineEmpty
+        )}
       </View>
       {isTimelineEmpty ? (
         <NoProduct />
@@ -172,7 +191,7 @@ const XStoreProductsScreen = () => {
           initialScrollIndex={0}
           initialNumToRender={3}
           keyExtractor={(item, index) => index.toString()}
-          renderItem={(item) => <TopsellingProductPreview data={item.item} />}
+          renderItem={(item) => <TopSellingProductPreview data={item.item} />}
         /> */}
           <View style={styles.newProductSection}>
             {newProductAvailable ? (
@@ -224,7 +243,7 @@ const XStoreProductsScreen = () => {
           style={{
             ...styles.moreModalContainer,
             alignItems: "flex-start",
-            backgroundColor: "transparent",
+            backgroundColor: "#ffffff",
             paddingTop: 35,
             flexDirection: "row",
             paddingRight: 30,
@@ -272,12 +291,39 @@ const XStoreProductsScreen = () => {
           </View>
         </View>
       ) : null}
+      <View style={{ ...styles.buttonContainer }}>
+        <TouchableOpacity
+          onPress={() => {
+            navigation.navigate("ExploreScreen");
+          }}
+        >
+          <View
+            style={[
+              styles.button,
+              {
+                backgroundColor: "#006eff",
+                height: 40,
+                width: 40,
+                borderRadius: 25,
+                paddingHorizontal: 0,
+              },
+            ]}
+          >
+            <Ionicons name="md-arrow-back" size={24} color="white" />
+          </View>
+        </TouchableOpacity>
+      </View>
     </>
   );
 };
 
 export default XStoreProductsScreen;
-function filterButtons(active, setActive, onSaleProductAvailable) {
+function filterButtons(
+  active,
+  setActive,
+  onSaleProductAvailable,
+  isTimelineEmpty
+) {
   function FilterButton({ title, value }) {
     return (
       <AppButton
@@ -285,7 +331,7 @@ function filterButtons(active, setActive, onSaleProductAvailable) {
         customStyle={
           active === value
             ? { ...styles.btn }
-            : { ...styles.btn, backgroundColor: "#ecf2fa", elvation: 5 }
+            : { ...styles.btn, backgroundColor: "#ecf2fa", elevation: 5 }
         }
         textStyle={
           active === value
@@ -305,11 +351,11 @@ function filterButtons(active, setActive, onSaleProductAvailable) {
       showsHorizontalScrollIndicator={false}
       style={{ height: 60 }}
     >
-      <FilterButton title={"Home"} value={"home"} />
+      {!isTimelineEmpty && <FilterButton title={"Home"} value={"home"} />}
       {onSaleProductAvailable && (
         <FilterButton title={"On Sale"} value={"all"} />
       )}
-      <FilterButton title={"Recomendation"} value={"recomend"} />
+      <FilterButton title={"Recommended"} value={"recommend"} />
     </ScrollView>
   );
 }
@@ -321,12 +367,12 @@ function NoProduct() {
   );
   return (
     <ScrollView style={styles.container}>
-      <View style={{ padding: 20 }}>
+      <View style={{ paddingHorizontal: 20 }}>
         <Text style={[styles.trendingIssuesHeadText]}>
           Follow more store to see their products on your timeline
         </Text>
       </View>
-      <XStoreRecomendedStore
+      <XStoreRecommendedStore
         user={user}
         setLoadingRecommendedStores={setLoadingRecommendedStores}
       />

@@ -1,6 +1,7 @@
 const functions = require("firebase-functions");
 const {
   createUser,
+  deleteUser,
   createFollower,
   deleteFollower,
   createReel,
@@ -9,6 +10,7 @@ const {
 } = require("./accountFunctions");
 const {
   createTvProfile,
+  deleteTvProfile,
   createTvFollower,
   deleteTvFollower,
   createTvReel,
@@ -17,6 +19,7 @@ const {
 } = require("./tvFunctions");
 const {
   createXStore,
+  deleteXStore,
   createStoreFollower,
   deleteStoreFollower,
   createStoreReel,
@@ -32,6 +35,10 @@ admin.initializeApp();
 exports.onCreateUser = functions.firestore
   .document("/users/{userId}")
   .onCreate(createUser);
+
+exports.onDeleteUser = functions.firestore
+  .document("/users/{userId}")
+  .onDelete(deleteUser);
 
 exports.onCreateFollower = functions.firestore
   .document("/followers/{userId}/userFollowers/{followerId}")
@@ -59,6 +66,10 @@ exports.onCreateTvProfile = functions.firestore
   .document("/xeamTvs/{tvId}")
   .onCreate(createTvProfile);
 
+exports.onDeleteTvProfile = functions.firestore
+  .document("/xeamTvs/{tvId}")
+  .onDelete(deleteTvProfile);
+
 exports.onCreateTvFollower = functions.firestore
   .document("/tvFollowers/{tvId}/followers/{followerId}")
   .onCreate(createTvFollower);
@@ -84,6 +95,10 @@ exports.onDeleteTvReel = functions.firestore
 exports.onCreateXStore = functions.firestore
   .document("/xeamStores/{storeId}")
   .onCreate(createXStore);
+
+exports.onDeleteXStore = functions.firestore
+  .document("/xeamStores/{storeId}")
+  .onDelete(deleteXStore);
 
 exports.onCreateStoreFollower = functions.firestore
   .document("/storeFollowers/{storeId}/followers/{followerId}")

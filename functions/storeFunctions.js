@@ -10,6 +10,53 @@ exports.createXStore = async (snapshot, context) => {
     .doc(storeId)
     .set({});
 };
+exports.deleteXStore = async (snapshot, context) => {
+  const storeId = context.params.storeId;
+
+  // Refs
+  // Posts
+  const storeReelsCollectionRef = admin
+    .firestore()
+    .collection("storeReels")
+    .doc(storeId)
+    .collection("reels");
+  // Products
+  const storeProductsCollectionRef = admin
+    .firestore()
+    .collection("products")
+    .doc(storeId)
+    .collection("my_products");
+
+  // Followers
+  const storeFollowersRef = admin
+    .firestore()
+    .collection("storeFollowers")
+    .doc(storeId)
+    .collection("followers");
+
+  // Deleting Posts
+  const storeReelsSnapshot = await storeReelsCollectionRef.get();
+  if (storeReelsSnapshot.size > 0) {
+    storeReelsSnapshot.forEach((doc) => {
+      doc.ref.delete();
+    });
+  }
+  // Deleting Products
+  const storeProductsSnapshot = await storeProductsCollectionRef.get();
+  if (storeProductsSnapshot.size > 0) {
+    storeProductsSnapshot.forEach((doc) => {
+      doc.ref.delete();
+    });
+  }
+
+  // Delete from Store followers
+  const storeFollowersSnapshot = await storeFollowersRef.get();
+  if (storeFollowersSnapshot.size > 0) {
+    storeFollowersSnapshot.forEach((doc) => {
+      doc.ref.delete();
+    });
+  }
+};
 
 exports.createStoreFollower = async (snapshot, context) => {
   const storeId = context.params.storeId;

@@ -11,6 +11,40 @@ exports.createTvProfile = async (snapshot, context) => {
     .set({});
 };
 
+exports.deleteTvProfile = async (snapshot, context) => {
+  const tvId = context.params.tvId;
+  // Refs
+  // Posts
+  const tvReelsCollectionRef = admin
+    .firestore()
+    .collection("tvReels")
+    .doc(tvId)
+    .collection("reels");
+
+  // Followers
+  const tvFollowersRef = admin
+    .firestore()
+    .collection("tvFollowers")
+    .doc(tvId)
+    .collection("followers");
+
+  // Deleting Posts
+  const tvReelsSnapshot = await tvReelsCollectionRef.get();
+  if (tvReelsSnapshot.size > 0) {
+    tvReelsSnapshot.forEach((doc) => {
+      doc.ref.delete();
+    });
+  }
+
+  // Delete from Tv followers
+  const tvFollowersSnapshot = await tvFollowersRef.get();
+  if (tvFollowersSnapshot.size > 0) {
+    tvFollowersSnapshot.forEach((doc) => {
+      doc.ref.delete();
+    });
+  }
+};
+
 exports.createTvFollower = async (snapshot, context) => {
   const tvId = context.params.tvId;
   const followerId = context.params.followerId;

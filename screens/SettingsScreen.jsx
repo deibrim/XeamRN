@@ -131,6 +131,13 @@ export default function SettingsScreen() {
                 : navigation.navigate("StoreGetStartedScreen")
             }
           />
+          <SettingsItemWrapper
+            title={"More"}
+            description={"Change password purge accounts"}
+            icon={<Feather name="more-horizontal" size={20} color="#006eff" />}
+            onPress={() => navigation.navigate("MoreAccountSettingScreen")}
+            backgroundColor={"#ffffff"}
+          />
         </View>
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>GENERAL SETTINGS</Text>

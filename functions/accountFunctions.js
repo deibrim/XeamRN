@@ -10,6 +10,113 @@ exports.createUser = async (snapshot, context) => {
     .doc(userId)
     .set({});
 };
+exports.deleteUser = async (snapshot, context) => {
+  const userId = context.params.userId;
+  // Refs
+  // Posts
+  const reelsCollectionRef = admin
+    .firestore()
+    .collection("reels")
+    .doc(userId)
+    .collection("userReels");
+  const tvReelsCollectionRef = admin
+    .firestore()
+    .collection("tvReels")
+    .doc(userId)
+    .collection("reels");
+  const storeReelsCollectionRef = admin
+    .firestore()
+    .collection("storeReels")
+    .doc(userId)
+    .collection("reels");
+  // Products
+  const storeProductsCollectionRef = admin
+    .firestore()
+    .collection("products")
+    .doc(userId)
+    .collection("my_products");
+  // Followers
+  const followersRef = admin
+    .firestore()
+    .collection("followers")
+    .doc(userId)
+    .collection("userFollowers");
+  const tvFollowersRef = admin
+    .firestore()
+    .collection("tvFollowers")
+    .doc(userId)
+    .collection("followers");
+  const storeFollowersRef = admin
+    .firestore()
+    .collection("storeFollowers")
+    .doc(userId)
+    .collection("followers");
+  // Profiles
+  const tvRef = admin.firestore().collection("xeamTvs").doc(userId);
+  const storeRef = admin.firestore().collection("xeamStores").doc(userId);
+
+  // followersRef.doc(userId).delete()
+
+  // Delete Tv
+  const tvSnapshot = await tvRef.get();
+  tvSnapshot.exists && tvRef.delete();
+
+  // Delete Store
+  const storeSnapshot = await storeRef.get();
+  storeSnapshot.exists && storeRef.delete();
+
+  // Deleting Posts
+  const reelsSnapshot = await reelsCollectionRef.get();
+  if (reelsSnapshot.size > 0) {
+    reelsSnapshot.forEach((doc) => {
+      doc.ref.delete();
+    });
+  }
+  const tvReelsSnapshot = await tvReelsCollectionRef.get();
+  if (tvReelsSnapshot.size > 0) {
+    tvReelsSnapshot.forEach((doc) => {
+      doc.ref.delete();
+    });
+  }
+  const storeReelsSnapshot = await storeReelsCollectionRef.get();
+  if (storeReelsSnapshot.size > 0) {
+    storeReelsSnapshot.forEach((doc) => {
+      doc.ref.delete();
+    });
+  }
+
+  // Deleting Products
+  const storeProductsSnapshot = await storeProductsCollectionRef.get();
+  if (storeProductsSnapshot.size > 0) {
+    storeProductsSnapshot.forEach((doc) => {
+      doc.ref.delete();
+    });
+  }
+
+  // Deleting Followers
+
+  // Delete from all followers
+  const followersSnapshot = await followersRef.get();
+  if (followersSnapshot.size > 0) {
+    followersSnapshot.forEach((doc) => {
+      doc.ref.delete();
+    });
+  }
+  // Delete from all Tv followers
+  const tvFollowersSnapshot = await tvFollowersRef.get();
+  if (tvFollowersSnapshot.size > 0) {
+    tvFollowersSnapshot.forEach((doc) => {
+      doc.ref.delete();
+    });
+  }
+  // Delete from all Store followers
+  const storeFollowersSnapshot = await storeFollowersRef.get();
+  if (storeFollowersSnapshot.size > 0) {
+    storeFollowersSnapshot.forEach((doc) => {
+      doc.ref.delete();
+    });
+  }
+};
 
 exports.createFollower = async (snapshot, context) => {
   const userId = context.params.userId;

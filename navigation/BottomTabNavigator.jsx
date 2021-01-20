@@ -16,6 +16,7 @@ import ChatRoomScreen from "../screens/ChatRoomScreen/ChatRoomScreen";
 import ActivitiesScreen from "../screens/ActivitiesScreen";
 import SettingsScreen from "../screens/SettingsScreen";
 import EditChatScreen from "../screens/EditChatScreen/EditChatScreen";
+import MoreAccountSettingScreen from "../screens/MoreAccountSettingScreen/MoreAccountSettingScreen";
 import EditAndPostScreen from "../screens/EditAndPostScreen/EditAndPostScreen";
 import ExploreScreen from "../screens/ExploreScreen/ExploreScreen";
 import UserProfileScreen from "../screens/UserProfileScreen/UserProfileScreen";
@@ -530,6 +531,13 @@ function SettingsScreenNavigator() {
       <ScreenStack.Screen
         name="StoreGetStartedScreen"
         component={StoreGetStartedScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <ScreenStack.Screen
+        name="MoreAccountSettingScreen"
+        component={MoreAccountSettingScreen}
         options={{
           headerShown: false,
         }}

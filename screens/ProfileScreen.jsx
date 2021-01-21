@@ -20,6 +20,7 @@ import {
 } from "../redux/user/actions";
 import { setMyReels } from "../redux/reel/actions";
 import ReelPreview from "../components/ReelPreview/ReelPreview";
+import { setShoppingBagSize } from "../redux/shopping/actions";
 
 export default function ProfileScreen() {
   const user = useSelector((state) => state.user.currentUser);
@@ -81,6 +82,7 @@ export default function ProfileScreen() {
     dispatch(setCurrentUser(null));
     dispatch(setCurrentUserTvProfile(null));
     dispatch(setCurrentUserXStore(null));
+    dispatch(setShoppingBagSize(0));
   };
   return (
     <>

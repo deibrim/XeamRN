@@ -11,9 +11,9 @@ const XStoreProductsOnSale = ({
   const [products, setProducts] = useState([]);
 
   const productRefs = firestore
-    .collection("xeamStoreTimeline")
+    .collection("productTimeline")
     .doc(user.id)
-    .collection("timelineProducts");
+    .collection("products");
 
   useEffect(() => {
     getProductOnSaleFromTimeline();

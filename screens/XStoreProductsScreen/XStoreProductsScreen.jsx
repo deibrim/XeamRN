@@ -55,9 +55,9 @@ const XStoreProductsScreen = () => {
     },
   ]);
   const productRefs = firestore
-    .collection("xeamStoreTimeline")
+    .collection("productTimeline")
     .doc(currentUser.id)
-    .collection("timelineProducts");
+    .collection("products");
   useEffect(() => {
     getStoreTimeline();
     getTopSelling();
@@ -65,9 +65,9 @@ const XStoreProductsScreen = () => {
   async function getStoreTimeline() {
     setLoading(true);
     const userRef = firestore
-      .collection("xeamStoreTimeline")
+      .collection("productTimeline")
       .doc(currentUser.id)
-      .collection("timelineProducts");
+      .collection("products");
     const snapShot = await userRef.get();
     if (snapShot.size > 0) {
     } else {
@@ -302,14 +302,15 @@ const XStoreProductsScreen = () => {
               styles.button,
               {
                 backgroundColor: "#006eff",
-                height: 40,
-                width: 40,
+                height: 30,
+                width: "auto",
                 borderRadius: 25,
-                paddingHorizontal: 0,
+                paddingHorizontal: 10,
               },
             ]}
           >
-            <Ionicons name="md-arrow-back" size={24} color="white" />
+            <Ionicons name="md-arrow-back" size={20} color="white" />
+            <Text style={{ color: "#ffffff", marginLeft: 5 }}>Explore</Text>
           </View>
         </TouchableOpacity>
       </View>

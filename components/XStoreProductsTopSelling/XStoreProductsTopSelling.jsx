@@ -18,9 +18,9 @@ const XStoreProductsTopSelling = ({
     new Date(date.setDate(first)).toLocaleString()
   );
   const productRefs = firestore
-    .collection("xeamStoreTimeline")
+    .collection("productTimeline")
     .doc(user.id)
-    .collection("timelineProducts");
+    .collection("products");
 
   useEffect(() => {
     getTopSellingProductFromTimeline();

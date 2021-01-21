@@ -25,6 +25,7 @@ const UserStoreScreen = () => {
   const currentUser = useSelector((state) => state.user.currentUser);
   const navigation = useNavigation();
   const route = useRoute();
+  const storeId = route.params.storeId;
   const [xStore, setXStore] = useState({});
   const [token, setToken] = useState("");
   const [active, setActive] = useState("home");
@@ -50,7 +51,6 @@ const UserStoreScreen = () => {
   ]);
 
   useEffect(() => {
-    const storeId = route.params.storeId;
     getStoreData(storeId);
     getFollowers(storeId);
     checkIfFollowing(storeId);
@@ -74,9 +74,9 @@ const UserStoreScreen = () => {
   }
   async function checkIfFollowing(storeId) {
     const doc = await firestore
-      .collection("xStoreFollowers")
-      .doc(storeId)
       .collection("storeFollowers")
+      .doc(storeId)
+      .collection("followers")
       .doc(currentUser.id)
       .get();
     setIsFollowing(doc.exists);

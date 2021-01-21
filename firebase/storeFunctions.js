@@ -1,5 +1,6 @@
 import { firestore } from "./firebase.utils";
 const storeFollowersRef = firestore.collection("storeFollowers");
+const activityFeedRef = firestore.collection("activity_feed");
 export const postStoreReel = (postData) => {
   firestore
     .collection("storeReels")

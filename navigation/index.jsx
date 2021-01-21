@@ -25,6 +25,7 @@ import {
   toggleHasNoty,
 } from "../redux/user/actions";
 import ForgotPasswordScreen from "../screens/ForgotPasswordScreen";
+import { setShoppingBagSize } from "../redux/shopping/actions";
 
 // If you are not familiar with React Navigation, we recommend going through the
 // "Fundamentals" guide: https://reactnavigation.org/docs/getting-started
@@ -47,6 +48,7 @@ function Navigation({ colorScheme }) {
             const snapshot = await xStoreRef.get();
             dispatch(setCurrentUserXStore({ ...snapshot.data() }));
           }
+
           const activitiesSnapshot = await firestore
             .collection("activity_feed")
             .doc(currentUser.id)
@@ -55,6 +57,21 @@ function Navigation({ colorScheme }) {
           activitiesSnapshot.onSnapshot(async (snapShot) => {
             if (snapShot.size > 0) {
               dispatch(toggleHasNoty(true));
+            }
+          });
+          const shoppingBagRef = await firestore
+            .collection("shoppingBags")
+            .doc(currentUser.id)
+            .collection("products");
+          shoppingBagRef.onSnapshot(async (snapShot) => {
+            if (snapShot.size > 0) {
+              let count = 0;
+              snapShot.docs.forEach((doc) => {
+                count = count + doc.data().quantity;
+              });
+              dispatch(setShoppingBagSize(count));
+            } else {
+              dispatch(setShoppingBagSize(0));
             }
           });
           const folowersSnapshot = await firestore

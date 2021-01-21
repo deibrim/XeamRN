@@ -19,38 +19,43 @@ exports.deleteUser = async (snapshot, context) => {
     .collection("reels")
     .doc(userId)
     .collection("userReels");
-  const tvReelsCollectionRef = admin
-    .firestore()
-    .collection("tvReels")
-    .doc(userId)
-    .collection("reels");
-  const storeReelsCollectionRef = admin
-    .firestore()
-    .collection("storeReels")
-    .doc(userId)
-    .collection("reels");
-  // Products
-  const storeProductsCollectionRef = admin
-    .firestore()
-    .collection("products")
-    .doc(userId)
-    .collection("my_products");
+  // const tvReelsCollectionRef = admin
+  //   .firestore()
+  //   .collection("tvReels")
+  //   .doc(userId)
+  //   .collection("reels");
+  // const storeReelsCollectionRef = admin
+  //   .firestore()
+  //   .collection("storeReels")
+  //   .doc(userId)
+  //   .collection("reels");
+  // // Products
+  // const storeProductsCollectionRef = admin
+  //   .firestore()
+  //   .collection("products")
+  //   .doc(userId)
+  //   .collection("my_products");
   // Followers
   const followersRef = admin
     .firestore()
     .collection("followers")
     .doc(userId)
     .collection("userFollowers");
-  const tvFollowersRef = admin
+  const followingsRef = admin
     .firestore()
-    .collection("tvFollowers")
+    .collection("following")
     .doc(userId)
-    .collection("followers");
-  const storeFollowersRef = admin
-    .firestore()
-    .collection("storeFollowers")
-    .doc(userId)
-    .collection("followers");
+    .collection("userFollowing");
+  // const tvFollowersRef = admin
+  //   .firestore()
+  //   .collection("tvFollowers")
+  //   .doc(userId)
+  //   .collection("followers");
+  // const storeFollowersRef = admin
+  //   .firestore()
+  //   .collection("storeFollowers")
+  //   .doc(userId)
+  //   .collection("followers");
   // Profiles
   const tvRef = admin.firestore().collection("xeamTvs").doc(userId);
   const storeRef = admin.firestore().collection("xeamStores").doc(userId);
@@ -72,26 +77,26 @@ exports.deleteUser = async (snapshot, context) => {
       doc.ref.delete();
     });
   }
-  const tvReelsSnapshot = await tvReelsCollectionRef.get();
-  if (tvReelsSnapshot.size > 0) {
-    tvReelsSnapshot.forEach((doc) => {
-      doc.ref.delete();
-    });
-  }
-  const storeReelsSnapshot = await storeReelsCollectionRef.get();
-  if (storeReelsSnapshot.size > 0) {
-    storeReelsSnapshot.forEach((doc) => {
-      doc.ref.delete();
-    });
-  }
+  // const tvReelsSnapshot = await tvReelsCollectionRef.get();
+  // if (tvReelsSnapshot.size > 0) {
+  //   tvReelsSnapshot.forEach((doc) => {
+  //     doc.ref.delete();
+  //   });
+  // }
+  // const storeReelsSnapshot = await storeReelsCollectionRef.get();
+  // if (storeReelsSnapshot.size > 0) {
+  //   storeReelsSnapshot.forEach((doc) => {
+  //     doc.ref.delete();
+  //   });
+  // }
 
   // Deleting Products
-  const storeProductsSnapshot = await storeProductsCollectionRef.get();
-  if (storeProductsSnapshot.size > 0) {
-    storeProductsSnapshot.forEach((doc) => {
-      doc.ref.delete();
-    });
-  }
+  // const storeProductsSnapshot = await storeProductsCollectionRef.get();
+  // if (storeProductsSnapshot.size > 0) {
+  //   storeProductsSnapshot.forEach((doc) => {
+  //     doc.ref.delete();
+  //   });
+  // }
 
   // Deleting Followers
 
@@ -102,20 +107,32 @@ exports.deleteUser = async (snapshot, context) => {
       doc.ref.delete();
     });
   }
+  const followingSnapshot = await followingsRef.get();
+  if (followingSnapshot.size > 0) {
+    followingSnapshot.forEach((doc) => {
+      doc.ref.delete();
+    });
+  }
   // Delete from all Tv followers
-  const tvFollowersSnapshot = await tvFollowersRef.get();
-  if (tvFollowersSnapshot.size > 0) {
-    tvFollowersSnapshot.forEach((doc) => {
-      doc.ref.delete();
-    });
-  }
+  // const tvFollowersSnapshot = await tvFollowersRef.get();
+  // if (tvFollowersSnapshot.size > 0) {
+  //   tvFollowersSnapshot.forEach((doc) => {
+  //     doc.ref.delete();
+  //   });
+  // }
   // Delete from all Store followers
-  const storeFollowersSnapshot = await storeFollowersRef.get();
-  if (storeFollowersSnapshot.size > 0) {
-    storeFollowersSnapshot.forEach((doc) => {
-      doc.ref.delete();
-    });
-  }
+  //   const storeFollowersSnapshot = await storeFollowersRef.get();
+  //   if (storeFollowersSnapshot.size > 0) {
+  //     storeFollowersSnapshot.forEach((doc) => {
+  //       doc.ref.delete();
+  //     });
+  //   }
+  // delete uploaded lolo for the database storage
+  admin
+    .storage()
+    .bucket("chattie-3eb7b.appspot.com/")
+    .file(`users/${userId}/profile-pic`)
+    .delete();
 };
 
 exports.createFollower = async (snapshot, context) => {

@@ -1,4 +1,9 @@
-// import { AntDesign, Entypo } from "@expo/vector-icons";
+import {
+  Entypo,
+  Feather,
+  Ionicons,
+  MaterialCommunityIcons,
+} from "@expo/vector-icons";
 import React, { useState } from "react";
 import {
   Dimensions,
@@ -15,22 +20,38 @@ import AppButton from "../../components/AppButton/AppButton";
 import firebase, { firestore } from "../../firebase/firebase.utils";
 import CustomPopUp from "../../components/CustomPopUp/CustomPopUp";
 import { styles } from "./styles";
-import { Ionicons } from "@expo/vector-icons";
 
 const ProductDetailScreen = () => {
   const user = useSelector((state) => state.user.currentUser);
+  const bagSize = useSelector((state) => state.shopping.bagSize);
   const navigation = useNavigation();
   const route = useRoute();
-  const [name, setName] = useState(route.params.productData.name);
-  const [price, setPrice] = useState(route.params.productData.price);
-  const [oPrice, setOPrice] = useState(route.params.productData.oPrice);
-  const [quantity, setQuantity] = useState(route.params.productData.stock);
+  const productData = route.params.productData;
+  const [name, setName] = useState(productData.name);
+  const [price, setPrice] = useState(productData.price);
+  const [oPrice, setOPrice] = useState(productData.oPrice);
+  const [quantity, setQuantity] = useState(0);
   const [uploading, setUploading] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(false);
-  const [colors, setColors] = useState([]);
+  const [colors, setColors] = useState(["pink", "red", "violet"]);
+  const [productDetails] = useState(["pink", "red", "violet", "green"]);
   const [sizes, setSizes] = useState(["XS", "S", "M", "L"]);
   let flatListRef;
+
+  const onAddToBag = async () => {
+    // const productRef = firestore
+    //   .collection("shoppingBags")
+    //   .doc(user.id)
+    //   .collection("products")
+    //   .doc(productData.id);
+    // const snapshot = await productRef.get();
+    // if (snapshot.exists) {
+    //   productRef.update({ quantity: snapshot.data().quantity + quantity });
+    // } else {
+    //   productRef.set({ id: productData.id, quantity, timestamp: Date.now() });
+    // }
+  };
 
   const orderNow = async (pid, newImage) => {
     const timestamp = Date.now();
@@ -39,7 +60,7 @@ const ProductDetailScreen = () => {
       name,
       price: price * 1,
       oPrice: oPrice * 1,
-      stock: quantity * 1,
+      quantity: quantity * 1,
       orders: 0,
       storeId: user.id,
       timestamp,
@@ -60,21 +81,28 @@ const ProductDetailScreen = () => {
   };
   return (
     <>
-      <View style={{ position: "absolute", top: 30, left: 20, zIndex: 1 }}>
+      <View style={styles.topButtonsContainer}>
         <TouchableOpacity
-          style={{
-            alignItems: "center",
-            justifyContent: "center",
-            width: 35,
-            height: 35,
-            borderRadius: 20,
-            elevation: 2,
-            backgroundColor: "#ffffff",
-          }}
+          style={[styles.topButton, { width: 35 }]}
           onPress={() => navigation.goBack()}
         >
           <Ionicons name="md-arrow-back" size={24} color="black" />
-          {/* <AntDesign name="close" size={20} color="#111111" /> */}
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.topButton, { paddingHorizontal: 10 }]}
+          onPress={() => {}}
+        >
+          <Feather name="shopping-bag" size={18} color="black" />
+          <Text
+            style={{
+              marginLeft: 5,
+              fontSize: 14,
+              letterSpacing: 1,
+              fontWeight: "bold",
+            }}
+          >
+            {bagSize}
+          </Text>
         </TouchableOpacity>
       </View>
       <FlatList
@@ -90,22 +118,23 @@ const ProductDetailScreen = () => {
         decelerationRate={"fast"}
         showsHorizontalScrollIndicator={true}
         horizontal
-        data={route.params.productData.images}
+        data={productData.images}
         initialScrollIndex={0}
         initialNumToRender={3}
         keyExtractor={(item, index) => index.toString()}
         renderItem={(item) => imagePrev(item)}
       />
       <View style={styles.container}>
-        <View
+        <ScrollView
           style={{
+            minHeight: 260,
+            // maxHeight: 300,
             width: "100%",
             backgroundColor: "#ecf2fa",
+            borderRadius: 20,
+            marginTop: -20,
             padding: 20,
-            justifyContent: "flex-start",
-            alignItems: "flex-start",
-            borderTopLeftRadius: 20,
-            borderTopRightRadius: 20,
+            marginBottom: 20,
           }}
         >
           <View
@@ -155,7 +184,7 @@ const ProductDetailScreen = () => {
             </View>
           </View>
 
-          {sizes && (
+          {sizes.length ? (
             <View style={styles.infoSections}>
               <Text
                 style={[
@@ -185,61 +214,134 @@ const ProductDetailScreen = () => {
                 ))}
               </View>
             </View>
-          )}
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "space-between",
-            }}
-          >
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                width: "100%",
-                flexWrap: "wrap",
-                marginVertical: 5,
-                marginBottom: 0,
-              }}
-            >
-              {colors.map((item, index) => (
-                <View
-                  key={index}
-                  style={{
-                    height: 35,
-                    width: 35,
-                    borderRadius: 20,
-                    backgroundColor: item,
-                    elevation: 2,
-                    alignItems: "center",
-                    justifyContent: "center",
-                    marginRight: 10,
-                    position: "relative",
-                    marginVertical: 5,
-                  }}
-                ></View>
-              ))}
+          ) : null}
+          {colors.length ? (
+            <View style={styles.infoSections}>
+              <Text
+                style={[
+                  styles.infoText,
+                  {
+                    fontSize: 13,
+                    fontWeight: "bold",
+                    letterSpacing: 2,
+                    color: "#777777",
+                  },
+                ]}
+              >
+                AVAILABLE COLORS
+              </Text>
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  width: "100%",
+                  flexWrap: "wrap",
+                  marginVertical: 5,
+                  marginBottom: 0,
+                }}
+              >
+                {colors.map((item, index) => (
+                  <View
+                    key={index}
+                    style={{
+                      height: 35,
+                      width: 35,
+                      borderRadius: 20,
+                      backgroundColor: item,
+                      elevation: 2,
+                      alignItems: "center",
+                      justifyContent: "center",
+                      marginRight: 10,
+                      position: "relative",
+                      marginVertical: 5,
+                    }}
+                  ></View>
+                ))}
+              </View>
             </View>
-          </View>
-          <View style={styles.infoSections}>
-            <Text
-              style={[
-                styles.infoText,
-                {
-                  fontSize: 13,
-                  fontWeight: "bold",
-                  letterSpacing: 2,
-                  color: "#777777",
-                },
-              ]}
-            >
-              PRODUCT DETAILS
-            </Text>
-          </View>
-        </View>
+          ) : null}
+          {productDetails.length ? (
+            <View style={styles.infoSections}>
+              <Text
+                style={[
+                  styles.infoText,
+                  {
+                    fontSize: 13,
+                    fontWeight: "bold",
+                    letterSpacing: 2,
+                    color: "#777777",
+                  },
+                ]}
+              >
+                PRODUCT DETAILS
+              </Text>
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  width: "100%",
+                  flexWrap: "wrap",
+                  marginVertical: 5,
+                  marginBottom: 0,
+                }}
+              >
+                {productDetails.map((item, index) => (
+                  <View
+                    key={index}
+                    style={{
+                      elevation: 2,
+                      flexDirection: "row",
+                      alignItems: "flex-start",
+                      paddingRight: 10,
+                      position: "relative",
+                      width: "100%",
+                      marginVertical: 5,
+                    }}
+                  >
+                    <Entypo
+                      name="dot-single"
+                      size={30}
+                      color="black"
+                      style={{ marginTop: -5 }}
+                    />
+                    <Text style={{ fontSize: 16, width: "95%" }}>{item}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          ) : null}
+          <View style={{ height: 50 }}></View>
+        </ScrollView>
       </View>
-      <View style={{ position: "absolute", bottom: 10, right: 10 }}>
+      <View
+        style={{
+          position: "absolute",
+          bottom: 10,
+          right: 10,
+          flexDirection: "row",
+        }}
+      >
+        <AppButton
+          onPress={() => {
+            onAddToBag();
+          }}
+          iconComponent={
+            <Feather
+              name="shopping-bag"
+              size={20}
+              color="#006eff"
+              style={{ marginLeft: 10 }}
+            />
+          }
+          // iconComponent={}
+          title={"Add to bag"}
+          customStyle={{
+            margin: 10,
+            paddingHorizontal: 20,
+            backgroundColor: "#ffffff",
+          }}
+          textStyle={{ fontSize: 13, color: "#006eff" }}
+        />
         <AppButton
           onPress={() => {}}
           title={"Buy now"}

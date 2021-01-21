@@ -51,6 +51,12 @@ exports.deleteTvProfile = async (snapshot, context) => {
       doc.ref.delete();
     });
   }
+  // delete uploaded logo for the database storage
+  admin
+    .storage()
+    .bucket("chattie-3eb7b.appspot.com/")
+    .file(`tv/${tvId}/tv_logo`)
+    .delete();
 };
 
 exports.createTvFollower = async (snapshot, context) => {

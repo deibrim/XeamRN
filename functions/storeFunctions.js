@@ -36,7 +36,10 @@ exports.deleteXStore = async (snapshot, context) => {
     .doc(storeId)
     .collection("followers");
 
-  await userRef.update({ isBusinessAccount: false });
+  const userSnapshot = await userRef.get();
+  if (userSnapshot.exists) {
+    await userRef.update({ isBusinessAccount: false });
+  }
 
   // Deleting Posts
   const storeReelsSnapshot = await storeReelsCollectionRef.get();
@@ -60,6 +63,12 @@ exports.deleteXStore = async (snapshot, context) => {
       doc.ref.delete();
     });
   }
+  // delete uploaded video for the database storage
+  admin
+    .storage()
+    .bucket("chattie-3eb7b.appspot.com/")
+    .file(`xeamStores/${storeId}/store_logo`)
+    .delete();
 };
 
 exports.createStoreFollower = async (snapshot, context) => {

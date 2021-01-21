@@ -48,7 +48,7 @@ export const styles = StyleSheet.create({
   },
   buttonContainer: {
     position: "absolute",
-    bottom: 30,
+    bottom: 10,
     right: 15,
     backgroundColor: "transparent",
   },

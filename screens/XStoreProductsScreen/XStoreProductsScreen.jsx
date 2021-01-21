@@ -14,7 +14,7 @@ import { useSelector } from "react-redux";
 import AppButton from "../../components/AppButton/AppButton";
 import CustomInput from "../../components/CustomInput/CustomInput";
 import ProductPreview from "../../components/ProductPreview/ProductPreview";
-import TopSellingProductPreview from "../../components/TopsellingProductPreview/TopsellingProductPreview";
+import TopSellingProductPreview from "../../components/TopSellingProductPreview/TopSellingProductPreview";
 import XStoreNewProducts from "../../components/XStoreNewProducts/XStoreNewProducts";
 import XStoreProductsOnSale from "../../components/XStoreProductsOnSale/XStoreProductsOnSale";
 import XStoreProductsTopSelling from "../../components/XStoreProductsTopSelling/XStoreProductsTopSelling";

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Dimensions, FlatList } from "react-native";
 import { firestore } from "../../firebase/firebase.utils";
-import TopsellingProductPreview from "../TopsellingProductPreview/TopsellingProductPreview";
+import TopSellingProductPreview from "../TopSellingProductPreview/TopSellingProductPreview";
 
 const XStoreProductsTopSelling = ({
   user,
@@ -52,7 +52,7 @@ const XStoreProductsTopSelling = ({
       initialScrollIndex={0}
       initialNumToRender={3}
       keyExtractor={(item, index) => index.toString()}
-      renderItem={(item) => <TopsellingProductPreview data={item.item} />}
+      renderItem={(item) => <TopSellingProductPreview data={item.item} />}
     />
   );
 };

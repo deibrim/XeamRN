@@ -15,6 +15,7 @@ import AppButton from "../../components/AppButton/AppButton";
 import firebase, { firestore } from "../../firebase/firebase.utils";
 import CustomPopUp from "../../components/CustomPopUp/CustomPopUp";
 import { styles } from "./styles";
+import { Ionicons } from "@expo/vector-icons";
 
 const ProductDetailScreen = () => {
   const user = useSelector((state) => state.user.currentUser);
@@ -59,6 +60,23 @@ const ProductDetailScreen = () => {
   };
   return (
     <>
+      <View style={{ position: "absolute", top: 30, left: 20, zIndex: 1 }}>
+        <TouchableOpacity
+          style={{
+            alignItems: "center",
+            justifyContent: "center",
+            width: 35,
+            height: 35,
+            borderRadius: 20,
+            elevation: 2,
+            backgroundColor: "#ffffff",
+          }}
+          onPress={() => navigation.goBack()}
+        >
+          <Ionicons name="md-arrow-back" size={24} color="black" />
+          {/* <AntDesign name="close" size={20} color="#111111" /> */}
+        </TouchableOpacity>
+      </View>
       <FlatList
         contentContainerStyle={{}}
         style={{

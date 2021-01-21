@@ -2,6 +2,8 @@ const admin = require("firebase-admin");
 
 exports.createTvProfile = async (snapshot, context) => {
   const tvId = context.params.tvId;
+  const userRef = firestore.doc(`users/${tvId}`);
+  await userRef.update({ isTvActivated: true });
   await admin
     .firestore()
     .collection("tvFollowers")
@@ -14,6 +16,10 @@ exports.createTvProfile = async (snapshot, context) => {
 exports.deleteTvProfile = async (snapshot, context) => {
   const tvId = context.params.tvId;
   // Refs
+
+  // User
+  const userRef = admin.firestore().collection("users").doc(tvId);
+
   // Posts
   const tvReelsCollectionRef = admin
     .firestore()
@@ -27,6 +33,8 @@ exports.deleteTvProfile = async (snapshot, context) => {
     .collection("tvFollowers")
     .doc(tvId)
     .collection("followers");
+
+  await userRef.update({ isTvActivated: false });
 
   // Deleting Posts
   const tvReelsSnapshot = await tvReelsCollectionRef.get();
@@ -280,4 +288,39 @@ exports.deleteTvReel = async (snapshot, context) => {
       }
     });
   }
+
+  // delete uploaded video for the database storage
+  admin
+    .storage()
+    .bucket("chattie-3eb7b.appspot.com/")
+    .file(`reels/${postId}`)
+    .delete();
+
+  // then delete all activity feed notifications
+  const afRef = await admin
+    .firestore()
+    .collection("activity_feed")
+    .doc(userId)
+    .collection("feedItems")
+    .where("postId", "==", `${postId}`);
+  const activityFeedSnapshot = await afRef.get();
+
+  activityFeedSnapshot.docs.forEach((doc) => {
+    if (doc.exists) {
+      doc.ref.delete();
+    }
+  });
+
+  // Delete all comments
+  const csRef = admin
+    .firestore()
+    .collection("comments")
+    .doc(postId)
+    .collection("comments");
+  const commentsSnapshot = await csRef.get();
+  commentsSnapshot.docs.forEach((doc) => {
+    if (doc.exists) {
+      doc.ref.delete();
+    }
+  });
 };

@@ -14,6 +14,8 @@ exports.deleteXStore = async (snapshot, context) => {
   const storeId = context.params.storeId;
 
   // Refs
+  // User
+  const userRef = admin.firestore().collection("users").doc(storeId);
   // Posts
   const storeReelsCollectionRef = admin
     .firestore()
@@ -33,6 +35,8 @@ exports.deleteXStore = async (snapshot, context) => {
     .collection("storeFollowers")
     .doc(storeId)
     .collection("followers");
+
+  await userRef.update({ isBusinessAccount: false });
 
   // Deleting Posts
   const storeReelsSnapshot = await storeReelsCollectionRef.get();
@@ -327,6 +331,41 @@ exports.deleteStoreReel = async (snapshot, context) => {
       }
     });
   }
+
+  // delete uploaded video for the database storage
+  admin
+    .storage()
+    .bucket("chattie-3eb7b.appspot.com/")
+    .file(`reels/${postId}`)
+    .delete();
+
+  // then delete all activity feed notifications
+  const afRef = await admin
+    .firestore()
+    .collection("activity_feed")
+    .doc(userId)
+    .collection("feedItems")
+    .where("postId", "==", `${postId}`);
+  const activityFeedSnapshot = await afRef.get();
+
+  activityFeedSnapshot.docs.forEach((doc) => {
+    if (doc.exists) {
+      doc.ref.delete();
+    }
+  });
+
+  // Delete all comments
+  const csRef = admin
+    .firestore()
+    .collection("comments")
+    .doc(postId)
+    .collection("comments");
+  const commentsSnapshot = await csRef.get();
+  commentsSnapshot.docs.forEach((doc) => {
+    if (doc.exists) {
+      doc.ref.delete();
+    }
+  });
 };
 
 exports.createStoreProduct = async (snapshot, context) => {
@@ -518,4 +557,51 @@ exports.deleteStoreProduct = async (snapshot, context) => {
       }
     });
   }
+  // delete uploaded video for the database storage
+  snapshot.data().images.forEach((item, index) => {
+    admin
+      .storage()
+      .bucket("chattie-3eb7b.appspot.com/")
+      .file(`products/${productId}/${index}`)
+      .delete();
+  });
+
+  // then delete all activity feed notifications
+  // const afRef = await admin
+  //   .firestore()
+  //   .collection("activity_feed")
+  //   .doc(userId)
+  //   .collection("feedItems")
+  //   .where("productId", "==", `${productId}`);
+  // const activityFeedSnapshot = await afRef.get();
+
+  // activityFeedSnapshot.docs.forEach((doc) => {
+  //   if (doc.exists) {
+  //     doc.ref.delete();
+  //   }
+  // });
+
+  // Delete all comments
+  const commentsRef = admin
+    .firestore()
+    .collection("productComments")
+    .doc(productId)
+    .collection("comments");
+  const commentsSnapshot = await commentsRef.get();
+  commentsSnapshot.docs.forEach((doc) => {
+    if (doc.exists) {
+      doc.ref.delete();
+    }
+  });
+  const productQuestionRef = admin
+    .firestore()
+    .collection("productQuestions")
+    .doc(productId)
+    .collection("questions");
+  const questionsSnapshot = await productQuestionRef.get();
+  questionsSnapshot.docs.forEach((doc) => {
+    if (doc.exists) {
+      doc.ref.delete();
+    }
+  });
 };

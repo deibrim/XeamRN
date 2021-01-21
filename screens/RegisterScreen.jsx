@@ -68,6 +68,7 @@ const RegisterScreen = (props) => {
         username: username.toLowerCase(),
         name: fullname,
       });
+      await auth.currentUser.sendEmailVerification();
       setLoading(false);
     } catch (error) {
       error.code === "auth/email-already-in-use"

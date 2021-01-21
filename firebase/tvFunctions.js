@@ -66,3 +66,7 @@ export const handleUnfollowTv = (tvId, currentUserId) => {
     }
   });
 };
+
+export const handleDeleteTvProfile = async (tvId) => {
+  firestore.collection("xeamTvs").doc(tvId).delete();
+};

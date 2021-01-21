@@ -22,7 +22,7 @@ import {
   handleFollowUser,
   handleUnfollowUser,
 } from "../../firebase/firebase.utils";
-import Dialog, { DialogContent } from "react-native-popup-dialog";
+import Dialog from "react-native-popup-dialog";
 import { setCurrentChannel, setPrivateChannel } from "../../redux/chat/actions";
 import { setUserReels } from "../../redux/reel/actions";
 import ReelPreview from "../../components/ReelPreview/ReelPreview";

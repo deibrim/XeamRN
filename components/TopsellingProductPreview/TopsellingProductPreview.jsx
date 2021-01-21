@@ -3,7 +3,7 @@ import { useNavigation } from "@react-navigation/native";
 import React from "react";
 import { View, Image, Text, TouchableWithoutFeedback } from "react-native";
 import { styles } from "./styles";
-const TopsellingProductPreview = (props) => {
+const TopSellingProductPreview = (props) => {
   const { images, name, price } = props.data;
   const navigation = useNavigation();
   return (
@@ -89,4 +89,4 @@ const TopsellingProductPreview = (props) => {
   );
 };
 
-export default TopsellingProductPreview;
+export default TopSellingProductPreview;

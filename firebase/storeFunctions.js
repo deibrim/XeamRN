@@ -70,3 +70,7 @@ export const handleUnfollowStore = (storeId, currentUserId) => {
     }
   });
 };
+
+export const handleDeleteStore = async (storeId) => {
+  firestore.collection("xeamStores").doc(storeId).delete();
+};

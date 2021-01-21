@@ -22,6 +22,24 @@ export const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#111111",
   },
+  customErrorStyle: {
+    backgroundColor: "red",
+    paddingVertical: 0,
+    height: 20,
+    width: "100%",
+    justifyContent: "center",
+    borderRadius: 0,
+  },
+  customErrorTextStyles: {
+    color: "#ffffff",
+    fontSize: 14,
+    marginVertical: 0,
+  },
+  customSuccessTextStyles: {
+    color: "#ffffff",
+    fontSize: 14,
+    marginVertical: 0,
+  },
   inputGroup: {
     // flex: 1,
     flexDirection: "row",

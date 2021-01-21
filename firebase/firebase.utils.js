@@ -44,14 +44,16 @@ export const createUserProfileDocument = async (userAuth, additionalData) => {
   const snapShot = await userRef.get();
   const profile_pic = toonavatar.generate_avatar();
   if (!snapShot.exists) {
-    const { email, uid } = userAuth;
+    const { email, emailVerified, lastLoginAt, phoneNumber, uid } = userAuth;
     const joined = new Date();
     try {
       await userRef.set({
         id: uid,
-        verified: false,
         verifiedProfile: false,
         email,
+        emailVerified,
+        lastLoginAt,
+        phoneNumber,
         joined,
         isBusinessAccount: false,
         isTvActivated: false,
@@ -93,6 +95,17 @@ export const updateProfileData = async (userId, incomingData) => {
       console.log("error updating profile", error.message);
     }
   }
+};
+
+export const DeleteProfile = async (userId) => {
+  auth.currentUser
+    .delete()
+    .then(function () {
+      firestore.collection("users").doc(userId).delete();
+    })
+    .catch(function (error) {
+      // An error happened.
+    });
 };
 
 export const addNotification = async (notificationId, userId, notification) => {

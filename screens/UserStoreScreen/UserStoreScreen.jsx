@@ -13,8 +13,12 @@ import {
 import { useSelector } from "react-redux";
 import AppButton from "../../components/AppButton/AppButton";
 import ProductPreview from "../../components/ProductPreview/ProductPreview";
-import TopsellingProductPreview from "../../components/TopsellingProductPreview/TopsellingProductPreview";
+import TopSellingProductPreview from "../../components/TopSellingProductPreview/TopSellingProductPreview";
 import { firestore } from "../../firebase/firebase.utils";
+import {
+  handleFollowStore,
+  handleUnfollowStore,
+} from "../../firebase/storeFunctions";
 import { styles } from "./styles";
 
 const UserStoreScreen = () => {
@@ -22,6 +26,7 @@ const UserStoreScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const [xStore, setXStore] = useState({});
+  const [token, setToken] = useState("");
   const [active, setActive] = useState("home");
   const [loading, setLoading] = useState(false);
   const [isFollowing, setIsFollowing] = useState(false);
@@ -43,6 +48,7 @@ const UserStoreScreen = () => {
       ],
     },
   ]);
+
   useEffect(() => {
     const storeId = route.params.storeId;
     getStoreData(storeId);
@@ -51,9 +57,12 @@ const UserStoreScreen = () => {
   }, []);
   async function getStoreData(storeId) {
     setLoading(true);
-    const userRef = firestore.doc(`xeamStores/${storeId}`);
+    const storeRef = firestore.doc(`xeamStores/${storeId}`);
+    const userRef = firestore.doc(`users/${storeId}`);
     const snapShot = await userRef.get();
-    setXStore(snapShot.data());
+    setToken(snapShot.data().push_token.data);
+    const storeSnapShot = await storeRef.get();
+    setXStore(storeSnapShot.data());
   }
   async function getFollowers(storeId) {
     const snapshot = await firestore
@@ -78,11 +87,11 @@ const UserStoreScreen = () => {
 
     if (isFollowing) {
       setIsFollowing(false);
-      // handleUnfollowUser(storeId, currentUser.id);
+      handleUnfollowStore(storeId, currentUser.id);
       setFollowerCount(followerCount - 1);
     } else {
       setIsFollowing(true);
-      // handleFollowUser(storeId, currentUser, user);
+      handleFollowStore(storeId, currentUser, token);
       setFollowerCount(followerCount + 1);
     }
   };
@@ -127,7 +136,7 @@ const UserStoreScreen = () => {
           initialScrollIndex={0}
           initialNumToRender={3}
           keyExtractor={(item, index) => index.toString()}
-          renderItem={(item) => <TopsellingProductPreview data={item.item} />}
+          renderItem={(item) => <TopSellingProductPreview data={item.item} />}
         />
         <View style={styles.newProductSection}>
           <Text style={[styles.sectionTitle, { fontSize: 14 }]}>

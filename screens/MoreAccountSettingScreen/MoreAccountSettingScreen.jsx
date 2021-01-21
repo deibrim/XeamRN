@@ -40,6 +40,7 @@ const MoreAccountSettingScreen = () => {
           privacy
           purge account
            */}
+
         <ChangePasswordContainer />
         <DeleteAccountsContainer />
       </View>

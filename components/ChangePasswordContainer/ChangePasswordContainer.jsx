@@ -1,10 +1,20 @@
 import { AntDesign, Feather, MaterialIcons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import { View, Text, TextInput, TouchableWithoutFeedback } from "react-native";
+import { useSelector } from "react-redux";
+import firebase, { auth } from "../../firebase/firebase.utils";
+import AppButton from "../AppButton/AppButton";
 import CustomPopUp from "../CustomPopUp/CustomPopUp";
 import { styles } from "./styles";
 
+const wait = (timeout) => {
+  return new Promise((resolve) => {
+    setTimeout(resolve, timeout);
+  });
+};
+
 const ChangePasswordContainer = () => {
+  const user = useSelector((state) => state.user.currentUser);
   const [currentPassword, setCurrentPassword] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -15,10 +25,12 @@ const ChangePasswordContainer = () => {
   const [toggleShowConfirmPassword, setToggleShowConfirmPassword] = useState(
     false
   );
+  const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [visible, setVisible] = useState(false);
   const onTitlePress = () => {
+    setErrorMessage("");
     setVisible(!visible);
   };
   const onChangePassword = async () => {
@@ -34,16 +46,53 @@ const ChangePasswordContainer = () => {
       setErrorMessage("Password doesn't match");
       return;
     }
-    setLoading(false);
+    const credential = firebase.auth.EmailAuthProvider.credential(
+      user.email,
+      currentPassword
+    );
+    const currentUserAuth = auth.currentUser;
+    try {
+      const reAuth = await currentUserAuth.reauthenticateWithCredential(
+        credential
+      );
+      if (reAuth.user) {
+        currentUserAuth
+          .updatePassword(password)
+          .then(function () {
+            setCurrentPassword("");
+            setPassword("");
+            setConfirmPassword("");
+            setSuccessMessage("Password changed");
+            setLoading(false);
+            onTitlePress();
+            wait(2000).then(async () => {
+              setSuccessMessage("");
+            });
+          })
+          .catch(function (error) {
+            setErrorMessage("Something went wrong");
+            console.log(result);
+            setLoading(false);
+          });
+      }
+    } catch (err) {
+      setErrorMessage("Current password is incorrect");
+      setErrorMessage(err.message);
+      setLoading(false);
+      return;
+    }
   };
   return (
     <>
-      {errorMessage !== "" ? (
+      {successMessage !== "" ? (
         <CustomPopUp
-          message={`${errorMessage}`}
-          type={"error"}
-          customStyles={{ backgroundColor: "red" }}
-          customTextStyles={{ color: "#ffffff" }}
+          message={`${successMessage}`}
+          type={"success"}
+          customStyles={{
+            ...styles.customErrorStyle,
+            backgroundColor: "green",
+          }}
+          customTextStyles={styles.customErrorTextStyles}
         />
       ) : null}
       <View style={styles.deleteContainer}>
@@ -67,6 +116,15 @@ const ChangePasswordContainer = () => {
           </TouchableWithoutFeedback>
           {visible ? (
             <View style={styles.deleteContainerContent}>
+              {errorMessage !== "" ? (
+                <CustomPopUp
+                  message={`${errorMessage}`}
+                  type={"error"}
+                  customStyles={styles.customErrorStyle}
+                  customTextStyles={styles.customErrorTextStyles}
+                />
+              ) : null}
+
               <View style={styles.inputGroup}>
                 <AntDesign
                   style={styles.inputGroupIcon}
@@ -163,6 +221,25 @@ const ChangePasswordContainer = () => {
                     style={{ marginRight: 10 }}
                   />
                 </TouchableWithoutFeedback>
+              </View>
+              <View
+                style={{
+                  width: "100%",
+                  flexDirection: "row",
+                  justifyContent: "center",
+                  marginVertical: 10,
+                }}
+              >
+                <AppButton
+                  onPress={onChangePassword}
+                  title={"Change Password"}
+                  customStyle={{
+                    width: "50%",
+                  }}
+                  textStyle={{
+                    fontSize: 12,
+                  }}
+                />
               </View>
             </View>
           ) : null}

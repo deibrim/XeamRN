@@ -20,7 +20,7 @@ const XStoreProductsOnSale = ({
   }, []);
 
   async function getProductOnSaleFromTimeline() {
-    productRefs.orderBy("oPrice", "desc").where("oPrice", ">", 0).limit(3);
+    productRefs.orderBy("oPrice", "desc").where("oPrice", "!=", 0).limit(3);
     const snapshot = await productRefs.get();
     const productsArr = [];
     if (snapshot.size > 0) {

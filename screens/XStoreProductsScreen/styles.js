@@ -36,6 +36,16 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 15,
     marginHorizontal: 5,
   },
+  topButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    height: 35,
+    borderRadius: 20,
+    elevation: 2,
+    backgroundColor: "#ffffff",
+    paddingHorizontal: 10,
+  },
   sectionTitle: {
     fontSize: 18,
     marginBottom: 10,

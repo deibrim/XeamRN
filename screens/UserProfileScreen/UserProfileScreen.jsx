@@ -29,6 +29,7 @@ import ReelPreview from "../../components/ReelPreview/ReelPreview";
 import UserProfileMoreModal from "../../components/UserProfileMoreModal/UserProfileMoreModal";
 import { styles } from "./styles";
 import AfterReporting from "../../components/AfterReporting/AfterReporting";
+import FollowersImagePreview from "../../components/FollowersImagePreview/FollowersImagePreview";
 export default function UserProfileScreen() {
   const route = useRoute();
   const navigation = useNavigation();
@@ -36,6 +37,8 @@ export default function UserProfileScreen() {
   const reels = useSelector((state) => state.reel.userReels);
   const [userId] = useState(route.params.userId);
   const [focused, setFocused] = useState("reels");
+  const [lastVisible, setLastVisible] = useState({});
+  const [friendIds, setFriendIds] = useState([]);
   const [isFollowing, setIsFollowing] = useState(false);
   const [dialogVisible, setDialogVisible] = useState(false);
   const [followerCount, setFollowerCount] = useState(0);
@@ -49,6 +52,7 @@ export default function UserProfileScreen() {
   useEffect(() => {
     getUserData(userId);
     getFollowers(userId);
+    getFollowerIds(userId);
     getFollowing(userId);
     checkIfFollowing(userId);
     getUserReels(userId);
@@ -76,12 +80,38 @@ export default function UserProfileScreen() {
     });
   }
   async function getFollowers(userId) {
-    const snapshot = await firestore
+    const followersRef = firestore
+      .collection("followers")
+      .doc(userId)
+      .collection("userFollowers");
+    const followersSnapshot = await followersRef.get();
+    setFollowerCount(followersSnapshot.docs.length - 1);
+  }
+  async function getFollowerIds(userId) {
+    const followersRef = firestore
       .collection("followers")
       .doc(userId)
       .collection("userFollowers")
-      .get();
-    setFollowerCount(snapshot.docs.length - 1);
+      .orderBy("timestamp");
+    const first = followersRef.limit(10),
+      next = followersRef.startAfter(lastVisible).limit(10);
+    const friendArr = [];
+    if (lastVisible) {
+      const nextFollowersIdSnapshot = await next.get();
+      nextFollowersIdSnapshot.docs.forEach((doc) => {
+        friendArr(doc.id);
+        setFriendIds([...friendIds, ...friendArr]);
+      });
+    } else {
+      const firstFollowersIdSnapshot = await first.get();
+      setLastVisible(
+        firstFollowersIdSnapshot.docs[firstFollowersIdSnapshot.docs.length - 1]
+      );
+      firstFollowersIdSnapshot.docs.forEach((doc) => {
+        friendArr(doc.id);
+        setFriendIds(friendArr);
+      });
+    }
   }
   async function getFollowing(userId) {
     const snapshot = await firestore
@@ -411,7 +441,23 @@ export default function UserProfileScreen() {
               </View>
             </TouchableOpacity>
           </View> */}
-        <View
+        <View>
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-evenly",
+              alignItems: "center",
+              paddingHorizontal: 20,
+              marginTop: 10,
+            }}
+          >
+            {friendIds.map((item, index) => (
+              <FollowersImagePreview key={index} userId={item} />
+            ))}
+          </View>
+        </View>
+
+        {/* <View
           style={{
             flexDirection: "row",
             justifyContent: "space-evenly",
@@ -431,7 +477,7 @@ export default function UserProfileScreen() {
             <Text style={{}}>FOLLOWING</Text>
             <Text style={{}}>{followingCount}</Text>
           </View>
-        </View>
+        </View> */}
         {/* <View
           style={{
             alignItems: "center",

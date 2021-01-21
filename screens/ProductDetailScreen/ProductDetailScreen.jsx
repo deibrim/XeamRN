@@ -2,7 +2,7 @@ import {
   Entypo,
   Feather,
   Ionicons,
-  MaterialCommunityIcons,
+  // MaterialCommunityIcons,
 } from "@expo/vector-icons";
 import React, { useState } from "react";
 import {
@@ -17,9 +17,10 @@ import {
 import { useSelector } from "react-redux";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import AppButton from "../../components/AppButton/AppButton";
-import firebase, { firestore } from "../../firebase/firebase.utils";
+import { firestore } from "../../firebase/firebase.utils";
 import CustomPopUp from "../../components/CustomPopUp/CustomPopUp";
 import { styles } from "./styles";
+import AddToBagDialogBox from "../../components/AddToBagDialogBox/AddToBagDialogBox";
 
 const ProductDetailScreen = () => {
   const user = useSelector((state) => state.user.currentUser);
@@ -30,27 +31,32 @@ const ProductDetailScreen = () => {
   const [name] = useState(productData.name);
   const [price] = useState(productData.price);
   const [oPrice] = useState(productData.oPrice);
-  const [quantity] = useState(0);
+  const [total, setTotal] = useState(0 * 1);
+  const [stock] = useState(productData.stock);
+  const [quantity, setQuantity] = useState(1 * 1);
   const [uploading, setUploading] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(false);
-  const [colors] = useState(productData.colors || []);
   const [productDetails] = useState(productData.details || []);
-  const [sizes, setSizes] = useState(productData.sizes || []);
+  const [colors] = useState(productData.colors || []);
+  const [sizes] = useState(productData.sizes || []);
+  const [selectedColor, setSelectedColor] = useState("");
+  const [selectedSize, setSelectedSize] = useState("");
+  const [dialogVisible, setDialogVisible] = useState(false);
   let flatListRef;
 
   const onAddToBag = async () => {
-    // const productRef = firestore
-    //   .collection("shoppingBags")
-    //   .doc(user.id)
-    //   .collection("products")
-    //   .doc(productData.id);
-    // const snapshot = await productRef.get();
-    // if (snapshot.exists) {
-    //   productRef.update({ quantity: snapshot.data().quantity + quantity });
-    // } else {
-    //   productRef.set({ id: productData.id, quantity, timestamp: Date.now() });
-    // }
+    const productRef = firestore
+      .collection("shoppingBags")
+      .doc(user.id)
+      .collection("products")
+      .doc(productData.id);
+    const snapshot = await productRef.get();
+    if (snapshot.exists) {
+      productRef.update({ quantity: snapshot.data().quantity + quantity });
+    } else {
+      productRef.set({ id: productData.id, quantity, timestamp: Date.now() });
+    }
   };
 
   const orderNow = async (pid, newImage) => {
@@ -323,7 +329,7 @@ const ProductDetailScreen = () => {
       >
         <AppButton
           onPress={() => {
-            onAddToBag();
+            setDialogVisible(true);
           }}
           iconComponent={
             <Feather
@@ -371,6 +377,23 @@ const ProductDetailScreen = () => {
           />
         </View>
       ) : null}
+      <AddToBagDialogBox
+        dialogVisible={dialogVisible}
+        setDialogVisible={setDialogVisible}
+        sizes={sizes}
+        quantity={quantity}
+        setQuantity={setQuantity}
+        colors={colors}
+        onAddToBag={onAddToBag}
+        price={price}
+        stock={stock}
+        selectedColor={selectedColor}
+        setSelectedColor={setSelectedColor}
+        selectedSize={selectedSize}
+        setSelectedSize={setSelectedSize}
+        total={total}
+        setTotal={setTotal}
+      />
     </>
   );
 };

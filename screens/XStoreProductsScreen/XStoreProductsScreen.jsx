@@ -24,6 +24,7 @@ import { styles } from "./styles";
 
 const XStoreProductsScreen = () => {
   const currentUser = useSelector((state) => state.user.currentUser);
+  const bagSize = useSelector((state) => state.shopping.bagSize);
   const navigation = useNavigation();
   const [active, setActive] = useState("home");
   const [loading, setLoading] = useState(false);
@@ -139,6 +140,7 @@ const XStoreProductsScreen = () => {
           style={{
             flexDirection: "row",
             justifyContent: "space-between",
+            alignItems: "center",
           }}
         >
           {!isTimelineEmpty && (
@@ -147,17 +149,22 @@ const XStoreProductsScreen = () => {
                 name="search"
                 size={20}
                 color="black"
-                style={{ marginRight: 20 }}
+                style={{ marginRight: 10 }}
               />
             </TouchableOpacity>
           )}
-          <TouchableOpacity onPress={() => navigation.navigate("CartScreen")}>
-            <Feather
-              name="shopping-bag"
-              size={20}
-              color="black"
-              // style={{ marginRight: 10 }}
-            />
+          <TouchableOpacity style={[styles.topButton]} onPress={() => {}}>
+            <Feather name="shopping-bag" size={18} color="black" />
+            <Text
+              style={{
+                marginLeft: 5,
+                fontSize: 14,
+                letterSpacing: 1,
+                fontWeight: "bold",
+              }}
+            >
+              {bagSize}
+            </Text>
           </TouchableOpacity>
         </View>
       </View>

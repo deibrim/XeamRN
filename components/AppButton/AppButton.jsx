@@ -26,7 +26,9 @@ const AppButton = ({
           style={{ ...styles.appButtonIcon }}
         />
       )}
-      <Text style={{ ...styles.appButtonText, ...textStyle }}>{title}</Text>
+      {title ? (
+        <Text style={{ ...styles.appButtonText, ...textStyle }}>{title}</Text>
+      ) : null}
       {iconComponent && iconComponent}
       {loading && (
         <Image

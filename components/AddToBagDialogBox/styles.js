@@ -1,35 +1,9 @@
 import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#ecf2fa",
-    justifyContent: "flex-start",
-    alignItems: "flex-start",
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-  },
-  topButtonsContainer: {
-    position: "absolute",
-    top: 30,
-    left: 20,
-    right: 20,
-    zIndex: 1,
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  topButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    height: 35,
-    borderRadius: 20,
-    elevation: 2,
-    backgroundColor: "#ffffff",
-  },
   input: {
     height: 40,
-    width: 50,
+    width: 80,
     paddingTop: 10,
     paddingBottom: 10,
     backgroundColor: "#fff",
@@ -53,9 +27,7 @@ export const styles = StyleSheet.create({
     elevation: 2,
     alignItems: "center",
     justifyContent: "center",
-    marginRight: 20,
     position: "relative",
-    marginVertical: 5,
   },
   infoSections: {
     flexDirection: "row",
@@ -63,6 +35,7 @@ export const styles = StyleSheet.create({
     justifyContent: "space-between",
     flexWrap: "wrap",
     marginTop: 10,
+    paddingHorizontal: 10,
   },
   username: {
     color: "#42414C",
@@ -99,7 +72,8 @@ export const styles = StyleSheet.create({
   },
   quantitySelectorContainer: {
     flexDirection: "row",
-    alignItems: "center",
+    // alignItems: "center",
+    justifyContent: "flex-start",
   },
   quantitySelectorButtons: {
     marginLeft: 10,

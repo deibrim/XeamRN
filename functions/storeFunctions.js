@@ -28,6 +28,11 @@ exports.deleteXStore = async (snapshot, context) => {
     .collection("products")
     .doc(storeId)
     .collection("my_products");
+  const storeProductsTimelineCollectionRef = admin
+    .firestore()
+    .collection("productTimeline")
+    .doc(storeId)
+    .collection("products");
 
   // Followers
   const storeFollowersRef = admin
@@ -52,6 +57,12 @@ exports.deleteXStore = async (snapshot, context) => {
   const storeProductsSnapshot = await storeProductsCollectionRef.get();
   if (storeProductsSnapshot.size > 0) {
     storeProductsSnapshot.forEach((doc) => {
+      doc.ref.delete();
+    });
+  }
+  const storeProductsTimelineSnapshot = await storeProductsTimelineCollectionRef.get();
+  if (storeProductsTimelineSnapshot.size > 0) {
+    storeProductsTimelineSnapshot.forEach((doc) => {
       doc.ref.delete();
     });
   }
@@ -409,35 +420,35 @@ exports.createStoreProduct = async (snapshot, context) => {
     .doc(productId)
     .set(productCreated);
 
-  const tags = productCreated.tags;
+  // const tags = productCreated.tags;
 
-  if (tags.length > 0) {
-    tags.forEach(async (item) => {
-      const tagRefGetdoc = await admin
-        .firestore()
-        .collection("productTags")
-        .doc(item)
-        .get();
-      if (tagRefGetdoc.exists) {
-        tagRefGetdoc.ref.update({
-          productCount: tagRefGetdoc.data().productCount + 1,
-        });
-      } else {
-        admin
-          .firestore()
-          .collection("productTags")
-          .doc(item)
-          .set({ id: item, productCount: 1 });
-      }
-      admin
-        .firestore()
-        .collection("productTags")
-        .doc(item)
-        .collection("products")
-        .doc(productId)
-        .set(productCreated);
-    });
-  }
+  // if (tags.length > 0) {
+  //   tags.forEach(async (item) => {
+  //     const tagRefGetdoc = await admin
+  //       .firestore()
+  //       .collection("productTags")
+  //       .doc(item)
+  //       .get();
+  //     if (tagRefGetdoc.exists) {
+  //       tagRefGetdoc.ref.update({
+  //         productCount: tagRefGetdoc.data().productCount + 1,
+  //       });
+  //     } else {
+  //       admin
+  //         .firestore()
+  //         .collection("productTags")
+  //         .doc(item)
+  //         .set({ id: item, productCount: 1 });
+  //     }
+  //     admin
+  //       .firestore()
+  //       .collection("productTags")
+  //       .doc(item)
+  //       .collection("products")
+  //       .doc(productId)
+  //       .set(productCreated);
+  //   });
+  // }
 };
 
 exports.updateStoreProduct = async (change, context) => {
@@ -478,22 +489,22 @@ exports.updateStoreProduct = async (change, context) => {
     allProductRefGet.ref.update(productUpdated);
   }
 
-  const tags = productUpdated.tags;
+  // const tags = productUpdated.tags;
 
-  if (tags.lenght > 0) {
-    tags.forEach(async (item) => {
-      const tagRefGet = await admin
-        .firestore()
-        .collection("productTags")
-        .doc(item)
-        .collection("products")
-        .doc(productId)
-        .get();
-      if (tagRefGet.exists) {
-        tagRefGet.ref.update(productUpdated);
-      }
-    });
-  }
+  // if (tags.length > 0) {
+  //   tags.forEach(async (item) => {
+  //     const tagRefGet = await admin
+  //       .firestore()
+  //       .collection("productTags")
+  //       .doc(item)
+  //       .collection("products")
+  //       .doc(productId)
+  //       .get();
+  //     if (tagRefGet.exists) {
+  //       tagRefGet.ref.update(productUpdated);
+  //     }
+  //   });
+  // }
 };
 
 exports.deleteStoreProduct = async (snapshot, context) => {
@@ -535,37 +546,37 @@ exports.deleteStoreProduct = async (snapshot, context) => {
     allProductRefGet.ref.delete();
   }
 
-  const tags = snapshot.data().tags;
+  // const tags = snapshot.data().tags;
 
-  if (tags.length > 0) {
-    tags.forEach(async (item) => {
-      const tagRefGet = await admin
-        .firestore()
-        .collection("productTags")
-        .doc(item)
-        .collection("products")
-        .doc(productId)
-        .get();
+  // if (tags.length > 0) {
+  //   tags.forEach(async (item) => {
+  //     const tagRefGet = await admin
+  //       .firestore()
+  //       .collection("productTags")
+  //       .doc(item)
+  //       .collection("products")
+  //       .doc(productId)
+  //       .get();
 
-      if (tagRefGet.exists) {
-        tagRefGet.ref.delete();
-      }
-      const tagRefGetdoc = await admin
-        .firestore()
-        .collection("productTags")
-        .doc(item)
-        .get();
-      if (tagRefGetdoc.exists) {
-        if (tagRefGetdoc.data().productCount === 1) {
-          tagRefGetdoc.ref.delete();
-        } else {
-          tagRefGetdoc.ref.update({
-            productCount: tagRefGetdoc.data().productCount - 1,
-          });
-        }
-      }
-    });
-  }
+  //     if (tagRefGet.exists) {
+  //       tagRefGet.ref.delete();
+  //     }
+  //     const tagRefGetdoc = await admin
+  //       .firestore()
+  //       .collection("productTags")
+  //       .doc(item)
+  //       .get();
+  //     if (tagRefGetdoc.exists) {
+  //       if (tagRefGetdoc.data().productCount === 1) {
+  //         tagRefGetdoc.ref.delete();
+  //       } else {
+  //         tagRefGetdoc.ref.update({
+  //           productCount: tagRefGetdoc.data().productCount - 1,
+  //         });
+  //       }
+  //     }
+  //   });
+  // }
   // delete uploaded video for the database storage
   snapshot.data().images.forEach((item, index) => {
     admin

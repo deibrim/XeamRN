@@ -2,8 +2,8 @@ import { AntDesign, Ionicons, Feather } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import React, { useEffect, useState } from "react";
 import {
-  Dimensions,
-  FlatList,
+  // Dimensions,
+  // FlatList,
   Image,
   ScrollView,
   Text,
@@ -13,8 +13,8 @@ import {
 import { useSelector } from "react-redux";
 import AppButton from "../../components/AppButton/AppButton";
 import CustomInput from "../../components/CustomInput/CustomInput";
-import ProductPreview from "../../components/ProductPreview/ProductPreview";
-import TopSellingProductPreview from "../../components/TopSellingProductPreview/TopSellingProductPreview";
+// import ProductPreview from "../../components/ProductPreview/ProductPreview";
+// import TopSellingProductPreview from "../../components/TopSellingProductPreview/TopSellingProductPreview";
 import XStoreNewProducts from "../../components/XStoreNewProducts/XStoreNewProducts";
 import XStoreProductsOnSale from "../../components/XStoreProductsOnSale/XStoreProductsOnSale";
 import XStoreProductsTopSelling from "../../components/XStoreProductsTopSelling/XStoreProductsTopSelling";

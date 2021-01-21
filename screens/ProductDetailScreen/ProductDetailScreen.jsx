@@ -27,16 +27,16 @@ const ProductDetailScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const productData = route.params.productData;
-  const [name, setName] = useState(productData.name);
-  const [price, setPrice] = useState(productData.price);
-  const [oPrice, setOPrice] = useState(productData.oPrice);
-  const [quantity, setQuantity] = useState(0);
+  const [name] = useState(productData.name);
+  const [price] = useState(productData.price);
+  const [oPrice] = useState(productData.oPrice);
+  const [quantity] = useState(0);
   const [uploading, setUploading] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(false);
-  const [colors, setColors] = useState(["pink", "red", "violet"]);
-  const [productDetails] = useState(["pink", "red", "violet", "green"]);
-  const [sizes, setSizes] = useState(["XS", "S", "M", "L"]);
+  const [colors] = useState(productData.colors || []);
+  const [productDetails] = useState(productData.details || []);
+  const [sizes, setSizes] = useState(productData.sizes || []);
   let flatListRef;
 
   const onAddToBag = async () => {

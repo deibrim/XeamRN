@@ -9,57 +9,69 @@ import {
 } from "react-native";
 import { useSelector } from "react-redux";
 import { firestore } from "../../firebase/firebase.utils";
+import {
+  handleFollowStore,
+  handleUnfollowStore,
+} from "../../firebase/storeFunctions";
 import AppButton from "../AppButton/AppButton";
 import { styles } from "./styles";
 
 const RecommendedStorePreview = ({ data }) => {
-  const user = useSelector((state) => state.user.currentUser);
+  const currentUser = useSelector((state) => state.user.currentUser);
+  const [token, setToken] = useState("");
   const [productCount, setCount] = useState(Number("0"));
   const [followerCount, setFollowerCount] = useState(Number("0"));
   const [isFollowing, setIsFollowing] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigation = useNavigation();
   useEffect(() => {
-    GetProductCount();
-    getFollowers(data.id);
+    getStoreData(data.id);
+    GetProductCount(data.id);
+    // getFollowers(data.id);
     checkIfFollowing(data.id);
   }, []);
-  async function GetProductCount() {
+  async function getStoreData(storeId) {
+    const userRef = firestore.doc(`users/${storeId}`);
+    const snapShot = await userRef.get();
+    setToken(snapShot.data().push_token.data);
+  }
+  async function GetProductCount(storeId) {
     const countRef = firestore
       .collection("products")
-      .doc(data.id)
+      .doc(storeId)
       .collection("my_products");
     const snapshot = await countRef.get();
     setCount(Number(snapshot.size));
   }
   async function getFollowers(storeId) {
     const snapshot = await firestore
-      .collection("xStoreFollowers")
-      .doc(storeId)
       .collection("storeFollowers")
+      .doc(storeId)
+      .collection("followers")
       .get();
     setFollowerCount(snapshot.docs.length - 1);
   }
   async function checkIfFollowing(storeId) {
     const doc = await firestore
-      .collection("xStoreFollowers")
-      .doc(storeId)
       .collection("storeFollowers")
-      .doc(user.id)
+      .doc(storeId)
+      .collection("followers")
+      .doc(currentUser.id)
       .get();
+    console.log(doc.exists);
     setIsFollowing(doc.exists);
     setLoading(false);
   }
-  const handleToggleFollow = () => {
+  const handleToggleFollow = (storeId) => {
     /* handleFollow and unFollow */
 
     if (isFollowing) {
       setIsFollowing(false);
-      // handleUnfollowUser(storeId, currentUser.id);
+      handleUnfollowStore(storeId, currentUser.id);
       setFollowerCount(followerCount - 1);
     } else {
       setIsFollowing(true);
-      // handleFollowUser(storeId, currentUser, user);
+      handleFollowStore(storeId, currentUser, token);
       setFollowerCount(followerCount + 1);
     }
   };
@@ -95,7 +107,7 @@ const RecommendedStorePreview = ({ data }) => {
                 <AppButton
                   title={isFollowing ? "UnFollow" : "Follow"}
                   onPress={() => {
-                    handleToggleFollow();
+                    handleToggleFollow(data.id);
                   }}
                   customStyle={{
                     height: 30,

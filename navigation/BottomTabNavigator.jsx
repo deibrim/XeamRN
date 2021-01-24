@@ -36,6 +36,7 @@ import MyProductScreen from "../screens/MyProductScreen/MyProductScreen";
 import UserStoreScreen from "../screens/UserStoreScreen/UserStoreScreen";
 import XStoreProductsScreen from "../screens/XStoreProductsScreen/XStoreProductsScreen";
 import ProductDetailScreen from "../screens/ProductDetailScreen/ProductDetailScreen";
+import CheckoutScreen from "../screens/CheckoutScreen/CheckoutScreen";
 import { useSelector } from "react-redux";
 import { View } from "react-native";
 
@@ -128,6 +129,9 @@ export default function BottomTabNavigator() {
         return true;
         break;
       case "ProductDetailScreen":
+        return false;
+        break;
+      case "CheckoutScreen":
         return false;
         break;
       default:
@@ -354,6 +358,7 @@ function HomeScreenNavigator() {
         component={CameraScreen}
         options={{
           headerShown: false,
+          unmountOnBlur: true,
         }}
       />
       <HomeScreenStack.Screen
@@ -416,35 +421,42 @@ function ExploreScreenNavigator() {
           headerShown: false,
         }}
       />
-      <FriendListScreenStack.Screen
+      <ScreenStack.Screen
         name="ChatRoom"
         component={ChatRoomScreen}
         options={{
           headerShown: false,
         }}
       />
-      <FriendListScreenStack.Screen
+      <ScreenStack.Screen
         name="UserStoreScreen"
         component={UserStoreScreen}
         options={{
           headerShown: false,
         }}
       />
-      <FriendListScreenStack.Screen
+      <ScreenStack.Screen
         name="XStoreProductsScreen"
         component={XStoreProductsScreen}
         options={{
           headerShown: false,
         }}
       />
-      <FriendListScreenStack.Screen
+      <ScreenStack.Screen
         name="ProductDetailScreen"
         component={ProductDetailScreen}
         options={{
           headerShown: false,
         }}
       />
-      <FriendListScreenStack.Screen
+      <ScreenStack.Screen
+        name="CheckoutScreen"
+        component={CheckoutScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <ScreenStack.Screen
         name="UserTvProfileScreen"
         component={UserTvProfileScreen}
         options={{

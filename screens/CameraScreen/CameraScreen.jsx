@@ -17,6 +17,8 @@ import * as MediaLibrary from "expo-media-library";
 // import { MediaLibrary, Permissions } from "expo";
 import styles from "./styles";
 import MediaLibraryModal from "../../components/MediaLibraryModal/MediaLibraryModal";
+import { toggleShowBottomNavbar } from "../../redux/settings/actions";
+import { useDispatch } from "react-redux";
 
 export default function CameraScreen() {
   const navigation = useNavigation();
@@ -27,6 +29,7 @@ export default function CameraScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [deviceCameraRatio, setDeviceCameraRatio] = useState(["16:9"]);
   const route = useRoute();
+  const dispatch = useDispatch();
   let camera;
   useEffect(() => {
     getPermissionAsync();
@@ -101,7 +104,10 @@ export default function CameraScreen() {
             elevation: 2,
             backgroundColor: "#ffffff",
           }}
-          onPress={() => navigation.goBack()}
+          onPress={() => {
+            dispatch(toggleShowBottomNavbar(false));
+            navigation.goBack();
+          }}
         >
           <Ionicons name="md-arrow-back" size={24} color="black" />
           {/* <AntDesign name="close" size={20} color="#111111" /> */}

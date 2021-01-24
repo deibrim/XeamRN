@@ -36,7 +36,6 @@ const LoginScreen = (props) => {
         : setErrorMessage("Shit just got real");
       setLoading(false);
     }
-    // this.setState({ email: '', password: '' });
   };
 
   return (

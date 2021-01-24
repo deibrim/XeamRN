@@ -227,8 +227,8 @@ export default React.memo(function HomeScreen() {
               showsHorizontalScrollIndicator={false}
               style={{ paddingLeft: 11 }}
             >
-              <TrendingReelPreview />
-              <TrendingReelPreview />
+              {/* <TrendingReelPreview />
+              <TrendingReelPreview /> */}
             </ScrollView>
           </View>
         )}
@@ -261,13 +261,15 @@ export default React.memo(function HomeScreen() {
             ]}
           ></SkeletonContent>
           <View style={styles.listReels}>
-            {reels.map((item, index) => (
-              <ReelPreview
-                key={index}
-                data={{ ...item, index }}
-                reels={reels}
-              />
-            ))}
+            {reels.length
+              ? reels.map((item, index) => (
+                  <ReelPreview
+                    key={index}
+                    data={{ ...item, index }}
+                    reels={reels}
+                  />
+                ))
+              : null}
           </View>
         </View>
       </ScrollView>

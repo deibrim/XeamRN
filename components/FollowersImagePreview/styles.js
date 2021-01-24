@@ -1,14 +1,23 @@
 import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
-  container: {},
+  container: {
+    alignItems: "center",
+    marginRight: 10,
+  },
+  imageContainer: {
+    elevation: 4,
+    borderRadius: 25,
+    backgroundColor: "#ffffff",
+    marginVertical: 2,
+  },
   image: {
-    height: 50,
-    width: 50,
+    height: 35,
+    width: 35,
     borderRadius: 25,
   },
   username: {
-    fontSize: 12,
+    fontSize: 10,
     fontWeight: "700",
     letterSpacing: 1,
   },

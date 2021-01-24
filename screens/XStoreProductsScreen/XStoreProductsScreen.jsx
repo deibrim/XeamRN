@@ -36,78 +36,29 @@ const XStoreProductsScreen = () => {
   const [loadingOnSaleProduct, setLoadingOnSaleProduct] = useState(true);
   const [onSaleProductAvailable, setOnSaleProductAvailable] = useState(false);
   const [isTimelineEmpty, setIsTimelineEmpty] = useState(false);
-  const [topSelling, setTopSelling] = useState([]);
   const [searching, setSearching] = useState(false);
   const [query, setQuery] = useState("");
-  const [newProducts, setNewProducts] = useState([
-    {
-      name: 'Nike Adapt BB 2.0 "Tie-Dye" Basketball Shoe',
-      price: 350,
-      images: [
-        "https://static.nike.com/a/images/t_PDP_1280_v1/f_auto,q_auto:eco/i1-9cfea66d-b519-4b29-8e43-ce4164e8c558/adapt-bb-2-tie-dye-basketball-shoe-vdFwKS.jpg",
-      ],
-    },
-    {
-      name: "Nike Joyride",
-      price: 400,
-      images: [
-        "https://static.nike.com/a/images/w_1536,c_limit/9de44154-c8c3-4f77-b47e-d992b7b96379/image.jpg",
-      ],
-    },
-  ]);
+
   const productRefs = firestore
     .collection("productTimeline")
     .doc(currentUser.id)
     .collection("products");
   useEffect(() => {
     getStoreTimeline();
-    getTopSelling();
   }, []);
   async function getStoreTimeline() {
     setLoading(true);
-    const userRef = firestore
-      .collection("productTimeline")
-      .doc(currentUser.id)
-      .collection("products");
-    const snapShot = await userRef.get();
-    if (snapShot.size > 0) {
-    } else {
-      setIsTimelineEmpty(true);
-      setActive("recommend");
-      // TODO: Fetch Suggested Stores to follow
-    }
-    // setXStore(snapShot.data());
-  }
-  async function getTopSelling() {
-    productRefs.orderBy("orders", "desc").limit(3);
-    const snapshot = await productRefs.get();
-    const productsArr = [];
-    snapshot.docs.forEach((doc) => {
-      productsArr.push(doc.data());
+    await productRefs.onSnapshot(async (snapShot) => {
+      if (snapShot.docs.length > 0) {
+        setIsTimelineEmpty(false);
+        setActive("home");
+      } else {
+        setIsTimelineEmpty(true);
+        setActive("recommend");
+      }
     });
-    setTopSelling(productsArr);
-    setLoadingTopSelling(false);
   }
-  async function getNewProducts() {
-    productRefs.orderBy("timestamp", "desc").limit(3);
-    const snapshot = await productRefs.get();
-    const productsArr = [];
-    snapshot.docs.forEach((doc) => {
-      productsArr.push(doc.data());
-    });
-    setNewProducts(productsArr);
-    setLoadingNewProduct(false);
-  }
-  async function getSales() {
-    productRefs.orderBy("oPrice", "desc").limit(3);
-    const snapshot = await productRefs.get();
-    const productsArr = [];
-    snapshot.docs.forEach((doc) => {
-      productsArr.push(doc.data());
-    });
-    setSales(productsArr);
-    setLoadingSales(false);
-  }
+
   return (
     <>
       <View
@@ -116,19 +67,16 @@ const XStoreProductsScreen = () => {
             ? styles.header
             : { ...styles.header, elevation: 4, paddingBottom: 10 }
         }
-        // style={styles.header}
       >
         <View style={{ flexDirection: "row", alignItems: "center" }}>
           <TouchableOpacity
             onPress={() => {}}
             style={{ flexDirection: "row", alignItems: "center" }}
           >
-            {/* <Ionicons name="ios-arrow-back" size={24} color="black" /> */}
             <Text
               style={{
                 color: "#42414C",
                 fontSize: 16,
-                // marginLeft: 10,
                 marginBottom: 1,
               }}
             >

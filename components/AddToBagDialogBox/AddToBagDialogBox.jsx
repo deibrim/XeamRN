@@ -1,13 +1,19 @@
 import { Feather, Ionicons } from "@expo/vector-icons";
-import React from "react";
+import { useNavigation } from "@react-navigation/native";
+import React, { useState } from "react";
 import { Text, TextInput, TouchableOpacity, View } from "react-native";
+import { v4 as uuidv4 } from "uuid";
 import Dialog from "react-native-popup-dialog";
 import AppButton from "../AppButton/AppButton";
 import { styles } from "./styles";
+import { useDispatch, useSelector } from "react-redux";
+import CustomPopUp from "../CustomPopUp/CustomPopUp";
+import { setCurrentOrder } from "../../redux/shopping/actions";
 
 const AddToBagDialogBox = ({
   dialogVisible,
   setDialogVisible,
+  name,
   sizes,
   quantity,
   setQuantity,
@@ -15,13 +21,65 @@ const AddToBagDialogBox = ({
   onAddToBag,
   price,
   stock,
+  storeId,
+  productId,
   selectedColor,
   setSelectedColor,
   selectedSize,
   setSelectedSize,
   total,
   setTotal,
+  isBuyingNow,
 }) => {
+  const user = useSelector((state) => state.user.currentUser);
+  const [errorMessage, setErrorMessage] = useState("");
+  const navigation = useNavigation();
+  const dispatch = useDispatch();
+  const buyNow = () => {
+    setErrorMessage("");
+    const id = uuidv4().split("-").join("");
+    if (quantity <= 0) {
+      setErrorMessage(`Quantity can't be less than 1`);
+      return;
+    }
+    if (sizes.length && selectedSize.trim() === "") {
+      setErrorMessage(`Please select a size`);
+      return;
+    }
+    if (colors.length && selectedColor.trim() === "") {
+      setErrorMessage(`Please select a color`);
+      return;
+    }
+    const productInfo = {
+      productId,
+      name,
+      total: quantity * price,
+      price,
+      quantity,
+      storeId,
+    };
+    const data = {
+      id,
+      products: [productInfo],
+      timeOfOrder: Date.now(),
+      status: "pending",
+      customerId: user.id,
+      customer: {
+        name: user.name,
+        username: user.username,
+      },
+    };
+    if (selectedSize) {
+      productInfo["size"] = selectedSize;
+    }
+    if (selectedColor) {
+      productInfo["color"] = selectedColor;
+    }
+    setDialogVisible(false);
+    dispatch(setCurrentOrder(data));
+    navigation.navigate("CheckoutScreen");
+    setErrorMessage("");
+  };
   return (
     <Dialog
       visible={dialogVisible}
@@ -52,6 +110,14 @@ const AddToBagDialogBox = ({
               paddingBottom: 10,
             }}
           >
+            {errorMessage !== "" ? (
+              <CustomPopUp
+                message={`${errorMessage}`}
+                type={"error"}
+                customStyles={styles.customErrorStyle}
+                customTextStyles={styles.customErrorTextStyles}
+              />
+            ) : null}
             {sizes.length ? (
               <View style={styles.infoSections}>
                 <Text
@@ -199,7 +265,7 @@ const AddToBagDialogBox = ({
                       setTotal(price * e);
                       setQuantity(e * 1);
                     }}
-                    value={quantity}
+                    value={quantity * 1}
                   />
                 </View>
               </View>
@@ -257,27 +323,38 @@ const AddToBagDialogBox = ({
               }}
               textStyle={{ fontSize: 13, color: "#ff0000" }}
             />
-            <AppButton
-              onPress={() => {
-                onAddToBag();
-              }}
-              iconComponent={
-                <Feather
-                  name="shopping-bag"
-                  size={20}
-                  color="#006eff"
-                  style={{ marginLeft: 10 }}
-                />
-              }
-              // iconComponent={}
-              title={"Add to bag"}
-              customStyle={{
-                marginVertical: 10,
-                paddingHorizontal: 20,
-                backgroundColor: "#ffffff",
-              }}
-              textStyle={{ fontSize: 13, color: "#006eff" }}
-            />
+            {isBuyingNow ? (
+              <AppButton
+                onPress={() => {
+                  buyNow();
+                }}
+                title={"Buy now"}
+                customStyle={{ marginVertical: 10, paddingHorizontal: 20 }}
+                textStyle={{ fontSize: 13 }}
+              />
+            ) : (
+              <AppButton
+                onPress={() => {
+                  onAddToBag();
+                }}
+                iconComponent={
+                  <Feather
+                    name="shopping-bag"
+                    size={20}
+                    color="#006eff"
+                    style={{ marginLeft: 10 }}
+                  />
+                }
+                // iconComponent={}
+                title={"Add to bag"}
+                customStyle={{
+                  marginVertical: 10,
+                  paddingHorizontal: 20,
+                  backgroundColor: "#ffffff",
+                }}
+                textStyle={{ fontSize: 13, color: "#006eff" }}
+              />
+            )}
           </View>
         </View>
       </View>

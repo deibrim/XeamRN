@@ -30,6 +30,7 @@
     "expo-av": "~8.6.0",
     "expo-barcode-scanner": "~9.0.0",
     "expo-camera": "~9.0.0",
+    "expo-checkbox": "^1.0.2",
     "expo-constants": "~9.2.0",
     "expo-firebase-analytics": "~2.5.0",
     "expo-font": "~8.3.0",

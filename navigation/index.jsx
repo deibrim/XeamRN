@@ -35,9 +35,14 @@ function Navigation({ colorScheme }) {
   useEffect(() => {
     auth.onAuthStateChanged(async (User) => {
       if (User) {
+        console.log(User);
         const userRef = await createUserProfileDocument(User);
         userRef.onSnapshot(async (snapShot) => {
-          dispatch(setCurrentUser({ id: snapShot.id, ...snapShot.data() }));
+          const data = { id: snapShot.id, ...snapShot.data() };
+          dispatch(setCurrentUser(data));
+          data.emailVerified === false &&
+            User.emailVerified === true &&
+            snapShot.ref.update({ emailVerified: true });
           if (snapShot.data().isTvActivated) {
             const userRef = firestore.doc(`xeamTvs/${snapShot.id}`);
             const snapshot = await userRef.get();
@@ -51,7 +56,7 @@ function Navigation({ colorScheme }) {
 
           const activitiesSnapshot = await firestore
             .collection("activity_feed")
-            .doc(currentUser.id)
+            .doc(snapShot.id)
             .collection("feedItems")
             .where("viewed", "==", false);
           activitiesSnapshot.onSnapshot(async (snapShot) => {
@@ -61,7 +66,7 @@ function Navigation({ colorScheme }) {
           });
           const shoppingBagRef = await firestore
             .collection("shoppingBags")
-            .doc(currentUser.id)
+            .doc(snapShot.id)
             .collection("products");
           shoppingBagRef.onSnapshot(async (snapShot) => {
             if (snapShot.size > 0) {
@@ -74,32 +79,26 @@ function Navigation({ colorScheme }) {
               dispatch(setShoppingBagSize(0));
             }
           });
-          const folowersSnapshot = await firestore
-            .collection("followers")
-            .doc(currentUser.id)
-            .collection("userFollowers")
+          const timelineSnapshot = await firestore
+            .collection("timeline")
+            .doc(snapShot.id)
+            .collection("timelineReels")
             .get();
-          dispatch(
-            setCurrentUser({
-              id: currentUser.id,
-              ...snapShot.data(),
-              followers: !folowersSnapshot.empty
-                ? folowersSnapshot.docs.length - 1
-                : 0,
-            })
-          );
-          const followingSnapshot = await firestore
-            .collection("following")
-            .doc(currentUser.id)
-            .collection("userFollowing")
-            .get();
-          dispatch(
-            setCurrentUser({
-              id: currentUser.id,
-              ...snapShot.data(),
-              following: followingSnapshot.docs.length,
-            })
-          );
+          timelineSnapshot.docs.length > 0
+            ? dispatch(
+                setCurrentUser({
+                  id: snapShot.id,
+                  ...snapShot.data(),
+                  isTimelineEmpty: false,
+                })
+              )
+            : dispatch(
+                setCurrentUser({
+                  id: snapShot.id,
+                  ...snapShot.data(),
+                  isTimelineEmpty: true,
+                })
+              );
           firebase
             .database()
             .ref(".info/connected")
@@ -108,7 +107,7 @@ function Navigation({ colorScheme }) {
                 const ref = firebase
                   .database()
                   .ref("presence")
-                  .child(currentUser.id);
+                  .child(snapShot.id);
                 ref.set({ status: true });
                 ref.onDisconnect().remove((err) => {
                   if (err !== null) {

@@ -27,8 +27,11 @@ const XStoreProductsTopSelling = ({
   }, []);
 
   async function getTopSellingProductFromTimeline() {
-    productRefs.orderBy("orders", "desc").where("orders", ">", "0").limit(3);
-    const snapshot = await productRefs.get();
+    const query = productRefs
+      .orderBy("orders", "desc")
+      .where("orders", ">", "0")
+      .limit(1);
+    const snapshot = await query.get();
     const productsArr = [];
     if (snapshot.size > 0) {
       setTopSellingAvailable(true);

@@ -6,8 +6,8 @@ import { useSelector } from "react-redux";
 import { useNavigation } from "@react-navigation/native";
 import { styles } from "./styles";
 
-export default function ReelPreview(props) {
-  const { videoUri, user, index, views } = props.data;
+export default function ReelPreview({ data, reels }) {
+  const { videoUri, user, index, views } = data;
   const { profile_pic, name, username } = user;
   const [errorMessage, setErrorMessage] = useState("");
   const navigation = useNavigation();
@@ -20,7 +20,7 @@ export default function ReelPreview(props) {
         onPress={() =>
           navigation.navigate("ReelScreen", {
             selectedIndex: index,
-            reelsArray: props.reels,
+            reelsArray: reels,
           })
         }
       >

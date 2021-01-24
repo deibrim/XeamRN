@@ -13,7 +13,7 @@ const XStoreRecommendedStore = ({ user, setLoadingRecommendedStores }) => {
   }, []);
 
   async function getTopSellingProductFromTimeline() {
-    storeRefs.where("id", "!=", `${user.id}`).limit(3);
+    storeRefs.where("id", "!=", `${user.id}`).limit(10);
     const snapshot = await storeRefs.get();
     const storesArr = [];
     if (snapshot.size > 0) {

@@ -18,7 +18,7 @@ export default function TrendingReelPreview({
       <View style={[styles.reelCard, { ...customStyles }]}>
         {data.videoUri ? (
           <Video
-            source={{ uri: data.videoUri }}
+            source={{ uri: data && data.videoUri ? data.videoUri : "" }}
             style={styles.reelCardImage}
             onError={(e) => console.log(e)}
             resizeMode={"cover"}

@@ -113,7 +113,7 @@ exports.createStoreFollower = async (snapshot, context) => {
 
   // 3) Get followed store reels and products
   const querySnapshot = await followedStoreReelsRef.get();
-  const productQuerySnapshot = await productTimelineRef.get();
+  const productQuerySnapshot = await followedStoreProductsRef.get();
 
   // 4) Add each store post and product to following user's timeline and productTimeline
   querySnapshot.forEach((doc) => {
@@ -127,7 +127,7 @@ exports.createStoreFollower = async (snapshot, context) => {
     if (doc.exists) {
       const productId = doc.id;
       const productData = doc.data();
-      followedStoreProductsRef.doc(productId).set(productData);
+      productTimelineRef.doc(productId).set(productData);
     }
   });
 };

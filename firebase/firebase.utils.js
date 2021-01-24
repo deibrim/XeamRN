@@ -16,13 +16,10 @@ const firebaseConfig = {
   measurementId: "G-CYEEQR3P3H",
 };
 
-// Your App ID: 1e9e2d9d-29e3-40ca-8c53-2ff016d3f04b
-
-// firebase.initializeApp(firebaseConfig);
 if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 } else {
-  firebase.app(); // if already initialized, use that one
+  firebase.app();
 }
 
 export const auth = firebase.auth();
@@ -44,35 +41,37 @@ export const createUserProfileDocument = async (userAuth, additionalData) => {
   const snapShot = await userRef.get();
   const profile_pic = toonavatar.generate_avatar();
   if (!snapShot.exists) {
-    const { email, emailVerified, lastLoginAt, phoneNumber, uid } = userAuth;
+    const { email, emailVerified, phoneNumber, uid } = userAuth;
     const joined = new Date();
+    const data = {
+      id: uid,
+      verifiedProfile: false,
+      email,
+      emailVerified,
+      phoneNumber,
+      joined,
+      isBusinessAccount: false,
+      isTvActivated: false,
+      location: "",
+      website: "",
+      headline: "",
+      gender: "",
+      bio: "",
+      profile_pic,
+      ...additionalData,
+    };
     try {
-      await userRef.set({
-        id: uid,
-        verifiedProfile: false,
-        email,
-        emailVerified,
-        lastLoginAt,
-        phoneNumber,
-        joined,
-        isBusinessAccount: false,
-        isTvActivated: false,
-        location: "",
-        website: "",
-        headline: "",
-        gender: "",
-        bio: "",
-        profile_pic,
-        ...additionalData,
-      });
-      // await followersRef.doc(uid).collection("userFollowers").doc(uid).set({});
+      await userRef.set(data);
       await usersRef.child(uid).set({
         id: uid,
         profile_pic,
         ...additionalData,
       });
+      auth.currentUser.sendEmailVerification();
     } catch (error) {
-      console.log("Error creating user");
+      auth.currentUser.delete();
+      // auth.signOut();
+      console.log("Error creating user profile");
     }
   }
   return userRef;

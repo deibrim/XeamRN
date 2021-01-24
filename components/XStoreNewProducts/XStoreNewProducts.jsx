@@ -27,8 +27,8 @@ const XStoreNewProducts = ({
   }, []);
 
   async function getNewlyAddedProductFromTimeline() {
-    productRefs.orderBy("timestamp", "desc").limit(3);
-    const snapshot = await productRefs.get();
+    const query = productRefs.orderBy("timestamp", "asc").limit(5);
+    const snapshot = await query.get();
     const productsArr = [];
     if (snapshot.size > 0) {
       setNewProductAvailable(true);

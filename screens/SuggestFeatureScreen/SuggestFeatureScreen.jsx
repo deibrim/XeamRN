@@ -177,7 +177,7 @@ function FeaturePreview({ feature }) {
       let votes = feature.votes;
       setvoteCount(voteCount - 1);
       firestore
-        .collection("bug_reports")
+        .collection("featureSuggestions")
         .doc(feature.id)
         .update({ count: voteCount - 1, votes });
       setHasVoted(!hasVoted);
@@ -186,7 +186,7 @@ function FeaturePreview({ feature }) {
       let votes = feature.votes;
       setvoteCount(voteCount + 1);
       firestore
-        .collection("bug_reports")
+        .collection("featureSuggestions")
         .doc(feature.id)
         .update({ count: voteCount + 1, votes });
       setHasVoted(!hasVoted);

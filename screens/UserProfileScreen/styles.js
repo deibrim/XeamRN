@@ -38,6 +38,11 @@ export const styles = StyleSheet.create({
     marginLeft: 10,
     marginBottom: 1,
   },
+  row: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
   centerContainer: {
     position: "absolute",
     top: 90,

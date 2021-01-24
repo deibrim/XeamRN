@@ -1,6 +1,6 @@
 import { Feather } from "@expo/vector-icons";
 import React, { useEffect, useRef, useState } from "react";
-import { Dimensions, FlatList, ScrollView, Text, View } from "react-native";
+import { Dimensions, FlatList } from "react-native";
 import TrendingReelPreview from "../TrendingReelPreview/TrendingReelPreview";
 import { firestore } from "../../firebase/firebase.utils";
 import { styles } from "./styles";
@@ -12,13 +12,13 @@ const ExploreFeedTopTrending = ({
 }) => {
   const [currentReel, setCurrentReel] = useState({});
   const [reels, setReels] = useState([]);
-  const date = new Date();
+  // const date = new Date();
 
-  const first = date.getDate() - date.getDay();
+  // const first = date.getDate() - date.getDay();
 
-  const firstDayOfTheWeek = Date.parse(
-    new Date(date.setDate(first)).toLocaleString()
-  );
+  // const firstDayOfTheWeek = Date.parse(
+  //   new Date(date.setDate(first)).toLocaleString()
+  // );
 
   useEffect(() => {
     getTopTrending();
@@ -29,7 +29,7 @@ const ExploreFeedTopTrending = ({
     const productRefs = await firestore
       .collection("allReels")
       .orderBy("posted_at")
-      .where("posted_at", ">", firstDayOfTheWeek)
+      // .where("posted_at", ">", firstDayOfTheWeek)
       .limit(10);
     const snapshot = await productRefs.get();
     if (snapshot.size > 0) {

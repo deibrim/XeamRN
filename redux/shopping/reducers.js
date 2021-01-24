@@ -2,6 +2,7 @@ import { ActionTypes } from "./types";
 
 const INITIAL_STATE = {
   bagSize: 0,
+  currentOrder: {},
 };
 
 const shoppingReducer = (state = INITIAL_STATE, action) => {
@@ -10,6 +11,11 @@ const shoppingReducer = (state = INITIAL_STATE, action) => {
       return {
         ...state,
         bagSize: action.payload,
+      };
+    case ActionTypes.SET_CURRENT_ORDER:
+      return {
+        ...state,
+        currentOrder: action.payload,
       };
     default:
       return state;

@@ -19,6 +19,7 @@ export const handleFollowTv = (tvId, currentUser, token) => {
     username: currentUser.username,
     userId: currentUser.id,
     userProfileImg: currentUser.profile_pic,
+    viewed: false,
     timestamp: Date.now(),
   });
   fetch("https://exp.host/--/api/v2/push/send", {

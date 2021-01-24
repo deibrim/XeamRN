@@ -4292,6 +4292,11 @@ expo-camera@~9.0.0:
     invariant "2.2.4"
     lodash "^4.6.0"
 
+expo-checkbox@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/expo-checkbox/-/expo-checkbox-1.0.2.tgz#63395a56d85cded3f1272525b5ba653ca5707929"
+  integrity sha512-ATIcfjHCOHI4PPVRCFxsobOtmefAD/rwZp6Vpw2GKE2SVOhwsBiCe1brxdU5fVaeAW8gxkzYRsDcoc+DCZRPSw==
+
 expo-constants@9.2.0, expo-constants@~9.2.0:
   version "9.2.0"
   resolved "https://registry.yarnpkg.com/expo-constants/-/expo-constants-9.2.0.tgz#e86a38793deaff9018878afac65bce2543c80a4c"

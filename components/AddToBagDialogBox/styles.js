@@ -13,6 +13,19 @@ export const styles = StyleSheet.create({
     borderColor: "#424242",
     borderWidth: 1,
   },
+  customErrorStyle: {
+    backgroundColor: "red",
+    paddingVertical: 0,
+    height: 20,
+    width: "100%",
+    justifyContent: "center",
+    borderRadius: 0,
+  },
+  customErrorTextStyles: {
+    color: "#ffffff",
+    fontSize: 14,
+    marginVertical: 0,
+  },
   infoText: {
     fontSize: 18,
     color: "#555555",

@@ -66,9 +66,9 @@ const UserStoreScreen = () => {
   }
   async function getFollowers(storeId) {
     const snapshot = await firestore
-      .collection("xStoreFollowers")
-      .doc(storeId)
       .collection("storeFollowers")
+      .doc(storeId)
+      .collection("followers")
       .get();
     setFollowerCount(snapshot.docs.length - 1);
   }

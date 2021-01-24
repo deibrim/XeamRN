@@ -37,7 +37,7 @@ export default function UserProfileScreen() {
   const reels = useSelector((state) => state.reel.userReels);
   const [userId] = useState(route.params.userId);
   const [focused, setFocused] = useState("reels");
-  const [lastVisible, setLastVisible] = useState({});
+  const [lastVisible, setLastVisible] = useState("");
   const [friendIds, setFriendIds] = useState([]);
   const [isFollowing, setIsFollowing] = useState(false);
   const [dialogVisible, setDialogVisible] = useState(false);
@@ -91,25 +91,29 @@ export default function UserProfileScreen() {
     const followersRef = firestore
       .collection("followers")
       .doc(userId)
-      .collection("userFollowers")
-      .orderBy("timestamp");
-    const first = followersRef.limit(10),
-      next = followersRef.startAfter(lastVisible).limit(10);
-    const friendArr = [];
+      .collection("userFollowers");
     if (lastVisible) {
+      const nextFriendArr = [];
+      const next = followersRef.startAfter(lastVisible).limit(10);
       const nextFollowersIdSnapshot = await next.get();
       nextFollowersIdSnapshot.docs.forEach((doc) => {
-        friendArr(doc.id);
-        setFriendIds([...friendIds, ...friendArr]);
+        doc.id !== userId && nextFriendArr.push(doc.id);
+        // if (nextFollowersIdSnapshot.docs.length === nextFriendArr.length) {
+        setFriendIds([...friendIds, ...nextFriendArr]);
+        // }
       });
     } else {
+      const firstFriendArr = [];
+      const first = followersRef.limit(10);
       const firstFollowersIdSnapshot = await first.get();
       setLastVisible(
         firstFollowersIdSnapshot.docs[firstFollowersIdSnapshot.docs.length - 1]
       );
       firstFollowersIdSnapshot.docs.forEach((doc) => {
-        friendArr(doc.id);
-        setFriendIds(friendArr);
+        doc.id !== userId && firstFriendArr.push(doc.id);
+        // if (firstFollowersIdSnapshot.docs.length === firstFriendArr.length) {
+        setFriendIds(firstFriendArr);
+        // }
       });
     }
   }
@@ -441,20 +445,35 @@ export default function UserProfileScreen() {
               </View>
             </TouchableOpacity>
           </View> */}
-        <View>
+        <View style={{}}>
           <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-evenly",
-              alignItems: "center",
-              paddingHorizontal: 20,
-              marginTop: 10,
-            }}
+            style={[
+              styles.row,
+              { width: "100%", paddingVertical: 20, paddingHorizontal: 15 },
+            ]}
           >
-            {friendIds.map((item, index) => (
-              <FollowersImagePreview key={index} userId={item} />
-            ))}
+            <Text>{followerCount} Followers</Text>
+            <View style={styles.row}>
+              {followerCount > 0 ? (
+                <Text style={{ fontSize: 12, marginRight: 5 }}>View all</Text>
+              ) : null}
+              <Ionicons name="ios-arrow-forward" size={16} color="black" />
+            </View>
           </View>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={{ paddingHorizontal: 10 }}
+          >
+            {friendIds
+              .filter((item, index) => {
+                // console.log(item, userId);
+                return item !== userId;
+              })
+              .map((item, index) => (
+                <FollowersImagePreview key={index} userId={item} />
+              ))}
+          </ScrollView>
         </View>
 
         {/* <View

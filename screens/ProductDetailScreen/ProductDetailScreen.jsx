@@ -15,6 +15,7 @@ import {
   View,
 } from "react-native";
 import { useSelector } from "react-redux";
+import { v4 as uuidv4 } from "uuid";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import AppButton from "../../components/AppButton/AppButton";
 import { firestore } from "../../firebase/firebase.utils";
@@ -34,7 +35,7 @@ const ProductDetailScreen = () => {
   const [total, setTotal] = useState(0 * 1);
   const [stock] = useState(productData.stock);
   const [quantity, setQuantity] = useState(1 * 1);
-  const [uploading, setUploading] = useState("");
+  const [isBuyingNow, setIsBuyingNow] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [productDetails] = useState(productData.details || []);
@@ -46,43 +47,68 @@ const ProductDetailScreen = () => {
   let flatListRef;
 
   const onAddToBag = async () => {
+    const docId = `${productData.id}${productData.storeId}${
+      selectedSize.trim() !== "" && selectedSize
+    }${selectedColor.trim() !== "" && selectedColor}`;
     const productRef = firestore
       .collection("shoppingBags")
       .doc(user.id)
       .collection("products")
-      .doc(productData.id);
+      .doc(docId);
     const snapshot = await productRef.get();
     if (snapshot.exists) {
       productRef.update({ quantity: snapshot.data().quantity + quantity });
     } else {
-      productRef.set({ id: productData.id, quantity, timestamp: Date.now() });
+      const data = {
+        id: docId,
+        productId: productData.id,
+        storeId: productData.storeId,
+        quantity,
+        price,
+        timestamp: Date.now(),
+      };
+      if (selectedSize) {
+        data["size"] = selectedSize;
+      }
+      if (selectedColor) {
+        data["color"] = selectedColor;
+      }
+      productRef.set(data);
     }
   };
 
-  const orderNow = async (pid, newImage) => {
-    const timestamp = Date.now();
-    const data = {
-      id: pid,
+  const orderNow = async () => {
+    const id = uuidv4().split("-").join("");
+    const productInfo = {
+      productId: productData.id,
       name,
-      price: price * 1,
-      oPrice: oPrice * 1,
-      quantity: quantity * 1,
-      orders: 0,
-      storeId: user.id,
-      timestamp,
-      images: newImage,
+      total,
+      price,
+      quantity,
+      storeId: productData.storeId,
     };
-    if (colors.length > 0) {
-      data["colors"] = colors;
+    const data = {
+      id,
+      products: [productInfo],
+      timeOfOrder: Date.now(),
+      status: "pending",
+      customerId: user.id,
+      customer: {
+        name: user.name,
+        username: user.username,
+      },
+    };
+    if (selectedSize) {
+      productInfo["size"] = selectedSize;
     }
-    if (sizes.length > 0) {
-      data["sizes"] = sizes;
+    if (selectedColor) {
+      productInfo["color"] = selectedColor;
     }
     await firestore
-      .collection("products")
-      .doc(user.id)
-      .collection("my_products")
-      .doc(pid)
+      .collection("sellerOrders")
+      .doc(productData.storeId)
+      .collection("orders")
+      .doc(id)
       .set(data);
   };
   return (
@@ -329,6 +355,11 @@ const ProductDetailScreen = () => {
       >
         <AppButton
           onPress={() => {
+            setSelectedColor("");
+            setSelectedSize("");
+            setQuantity(1);
+            setTotal(price);
+            setIsBuyingNow(false);
             setDialogVisible(true);
           }}
           iconComponent={
@@ -349,7 +380,14 @@ const ProductDetailScreen = () => {
           textStyle={{ fontSize: 13, color: "#006eff" }}
         />
         <AppButton
-          onPress={() => {}}
+          onPress={() => {
+            setSelectedColor("");
+            setSelectedSize("");
+            setQuantity(1);
+            setTotal(price);
+            setIsBuyingNow(true);
+            setDialogVisible(true);
+          }}
           title={"Buy now"}
           customStyle={{ margin: 10, paddingHorizontal: 20 }}
           textStyle={{ fontSize: 13 }}
@@ -380,6 +418,7 @@ const ProductDetailScreen = () => {
       <AddToBagDialogBox
         dialogVisible={dialogVisible}
         setDialogVisible={setDialogVisible}
+        name={name}
         sizes={sizes}
         quantity={quantity}
         setQuantity={setQuantity}
@@ -387,12 +426,15 @@ const ProductDetailScreen = () => {
         onAddToBag={onAddToBag}
         price={price}
         stock={stock}
+        storeId={productData.storeId}
+        productId={productData.id}
         selectedColor={selectedColor}
         setSelectedColor={setSelectedColor}
         selectedSize={selectedSize}
         setSelectedSize={setSelectedSize}
         total={total}
         setTotal={setTotal}
+        isBuyingNow={isBuyingNow}
       />
     </>
   );

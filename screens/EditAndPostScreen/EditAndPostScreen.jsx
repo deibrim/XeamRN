@@ -1,4 +1,4 @@
-import { Ionicons, AntDesign } from "@expo/vector-icons";
+import { Ionicons, AntDesign, Entypo } from "@expo/vector-icons";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import React, { useState } from "react";
 import {
@@ -15,6 +15,7 @@ import styles from "./styles";
 
 const EditAndPostScreen = () => {
   const [paused, setPaused] = useState(false);
+  const [resizeMode, setResizeMode] = useState("cover");
 
   const onPlayPausePress = () => {
     setPaused(!paused);
@@ -34,13 +35,41 @@ const EditAndPostScreen = () => {
               source={{ uri: route.params.videoUri }}
               style={styles.video}
               onError={(e) => console.log(e)}
-              resizeMode={"cover"}
+              resizeMode={resizeMode}
               repeat={true}
               shouldPlay={paused}
               isLooping
               paused={paused}
             />
             <View style={styles.uiContainer}>
+              <TouchableOpacity
+                onPress={() =>
+                  setResizeMode(resizeMode === "cover" ? "contain" : "cover")
+                }
+                style={{
+                  position: "absolute",
+                  right: 15,
+                  bottom: "10%",
+                  zIndex: 2,
+                  backgroundColor: "#006eff89",
+                  elevation: 2,
+                  borderRadius: 50,
+                  height: 40,
+                  width: 40,
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <Entypo
+                  name={
+                    resizeMode === "contain"
+                      ? "resize-full-screen"
+                      : "resize-100-"
+                  }
+                  size={22}
+                  color="#ffffff"
+                />
+              </TouchableOpacity>
               <View style={styles.topContainer}>
                 <TouchableOpacity
                   style={{
@@ -63,6 +92,7 @@ const EditAndPostScreen = () => {
                     navigation.navigate("PostReelScreen", {
                       videoUri: route.params.videoUri,
                       type: route.params.type,
+                      resizeMode,
                     });
                   }}
                 >
@@ -70,7 +100,7 @@ const EditAndPostScreen = () => {
                     <Text style={styles.buttonText}>Next</Text>
                     <Ionicons
                       name="ios-arrow-forward"
-                      size={20}
+                      size={18}
                       color="black"
                     />
                   </View>

@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { ScrollView, Text, TextInput, View } from "react-native";
 import Checkbox from "expo-checkbox";
 import AppButton from "../AppButton/AppButton";
+import CustomPopUp from "../CustomPopUp/CustomPopUp";
 import { styles } from "./styles";
 
 const CheckoutShippingForm = ({ setStep }) => {
@@ -12,12 +13,53 @@ const CheckoutShippingForm = ({ setStep }) => {
   const [country, setCountry] = useState("");
   const [city, setCity] = useState("");
   const [zip, setZip] = useState("");
+  const [message, setMessage] = useState({ type: "", text: "" });
+  const onProceedToPayment = () => {
+    if (name.trim() === "") {
+      setMessage({ type: "error", text: "Name is required" });
+      return;
+    } else if (address.trim() === "") {
+      setMessage({ type: "error", text: "Address is required" });
+      return;
+    } else if (country.trim() === "") {
+      setMessage({ type: "error", text: "Country is required" });
+      return;
+    } else if (city.trim() === "") {
+      setMessage({ type: "error", text: "City is required" });
+      return;
+    } else if (zip.trim() === "") {
+      setMessage({ type: "error", text: "Zip Code is required" });
+      return;
+    } else {
+      setStep(2);
+    }
+  };
   return (
     <>
       <View style={styles.header}>
         <Text style={styles.step}>Step 1</Text>
         <Text style={styles.headText}>Shipping</Text>
       </View>
+      {message.type !== "" ? (
+        <CustomPopUp
+          message={
+            message.type === "success" ? `${message.text}` : `${message.text}`
+          }
+          type={"success"}
+          customStyles={
+            message.type === "success"
+              ? {
+                  ...styles.customMessageStyle,
+                  backgroundColor: "green",
+                }
+              : {
+                  ...styles.customMessageStyle,
+                  backgroundColor: "red",
+                }
+          }
+          customTextStyles={styles.customMessageTextStyles}
+        />
+      ) : null}
       <ScrollView style={styles.container}>
         <CustomTextInput
           icon={
@@ -93,6 +135,7 @@ const CheckoutShippingForm = ({ setStep }) => {
         <View style={styles.btnWrapper}>
           <AppButton
             onPress={() => {
+              // onProceedToPayment();
               setStep(2);
             }}
             title={"Continue to Payment"}

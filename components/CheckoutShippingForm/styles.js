@@ -28,6 +28,22 @@ export const styles = StyleSheet.create({
     letterSpacing: 1,
     fontWeight: "600",
   },
+  customMessageStyle: {
+    backgroundColor: "red",
+    paddingVertical: 0,
+    height: 10,
+    width: "100%",
+    justifyContent: "center",
+    borderRadius: 0,
+    elevation: 4,
+    marginTop: -20,
+    marginBottom: 5,
+  },
+  customMessageTextStyles: {
+    color: "#ffffff",
+    fontSize: 14,
+    marginVertical: 0,
+  },
   inputGroupWrapper: {
     marginBottom: 40,
     flex: 1,
@@ -53,7 +69,7 @@ export const styles = StyleSheet.create({
   input: {
     flex: 1,
     paddingRight: 10,
-    paddingLeft: 30,
+    paddingLeft: 13,
     borderBottomColor: "#111111",
     borderBottomWidth: 1,
     color: "#424242",

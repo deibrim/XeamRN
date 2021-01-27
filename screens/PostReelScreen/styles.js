@@ -10,7 +10,8 @@ const styles = StyleSheet.create({
   uiContainer: {
     flex: 1,
     height: Dimensions.get("screen").height,
-    justifyContent: "space-between",
+    justifyContent: "center",
+    alignItems: "center",
   },
   topContainer: {
     width: "100%",
@@ -21,6 +22,20 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+  },
+  customErrorStyle: {
+    backgroundColor: "red",
+    paddingVertical: 0,
+    height: 20,
+    width: "90%",
+    justifyContent: "center",
+    borderRadius: 25,
+    marginTop: "20%",
+  },
+  customErrorTextStyles: {
+    color: "#ffffff",
+    fontSize: 14,
+    marginVertical: 0,
   },
   bottomContainer: {
     marginTop: "auto",

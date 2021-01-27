@@ -44,7 +44,8 @@ export const styles = StyleSheet.create({
     textAlign: "center",
   },
   btnWrapper: {
-    flexDirection: "row",
+    flexDirection: "column",
+    alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 20,
     paddingVertical: 20,

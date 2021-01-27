@@ -17,6 +17,7 @@ import styles from "./styles";
 import { postReel } from "../../firebase/firebase.utils";
 import { postTvReel } from "../../firebase/tvFunctions";
 import { postStoreReel } from "../../firebase/storeFunctions";
+import CustomPopUp from "../../components/CustomPopUp/CustomPopUp";
 // import { Base64 } from "../../utils/DeEncoder";
 
 const PostReelScreen = () => {
@@ -26,6 +27,7 @@ const PostReelScreen = () => {
   const [description, setDescription] = useState("");
   const [videoUri, setVideoUri] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const [uploadingPercentage, setUploadingPercentage] = useState(0);
   const [loading, setLoading] = useState(false);
 
@@ -61,7 +63,6 @@ const PostReelScreen = () => {
             setVideoUri(downloadURL);
             setUploading("");
             onPublish(downloadURL, id);
-            return downloadURL;
           });
         }
       );
@@ -98,32 +99,45 @@ const PostReelScreen = () => {
     navigation.goBack();
   };
   const handlePublish = async () => {
+    let hashtags = description.split(" ").filter((n, i) => {
+      if (/#/.test(n)) return n;
+    });
+    let usertags = description.split(" ").filter(function (n, i) {
+      if (/@/.test(n)) return n;
+    });
+    if (hashtags.length > 5) {
+      setErrorMessage(`Sorry you can't add more than 5 #tags`);
+      return;
+    }
+    if (usertags.length > 5) {
+      setErrorMessage(`Sorry you tag more than 3 users`);
+      return;
+    }
     setLoading(true);
     const id = uuidv4().split("-").join("");
     // uploadToCloud(route.params.videoUri);\
     uploadToStorage(route.params.videoUri, id);
   };
-  const onPublish = async (uri, id) => {
-    let hashtags = description.split(" ").filter(function (n) {
+  async function onPublish(uri, id) {
+    let hashtags = description.split(" ").filter((n, i) => {
       if (/#/.test(n)) return n;
     });
-    let usertags = description.split(" ").filter(function (n) {
+    let usertags = description.split(" ").filter(function (n, i) {
       if (/@/.test(n)) return n;
     });
     try {
       const newPost = {
         id,
         videoUri: uri,
+        resizeMode: route.params.resizeMode,
         description,
         likes: {},
         views: {},
         comments: 0,
         posted_at: Date.now(),
       };
-
       newPost["tags"] = hashtags;
       newPost["descriptionUserTags"] = usertags;
-
       if (route.params.type === "feedReel") {
         newPost["user_id"] = user.id;
         newPost["user"] = {
@@ -157,7 +171,7 @@ const PostReelScreen = () => {
       setLoading(false);
       console.error(e);
     }
-  };
+  }
 
   return (
     <>
@@ -186,6 +200,15 @@ const PostReelScreen = () => {
               </View>
             </TouchableOpacity>
           </View>
+
+          {errorMessage !== "" ? (
+            <CustomPopUp
+              message={`${errorMessage}`}
+              type={"error"}
+              customStyles={styles.customErrorStyle}
+              customTextStyles={styles.customErrorTextStyles}
+            />
+          ) : null}
           <View style={styles.bottomContainer}>
             <TextInput
               value={description}

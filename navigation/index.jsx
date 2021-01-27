@@ -35,7 +35,6 @@ function Navigation({ colorScheme }) {
   useEffect(() => {
     auth.onAuthStateChanged(async (User) => {
       if (User) {
-        console.log(User);
         const userRef = await createUserProfileDocument(User);
         userRef.onSnapshot(async (snapShot) => {
           const data = { id: snapShot.id, ...snapShot.data() };
@@ -79,26 +78,26 @@ function Navigation({ colorScheme }) {
               dispatch(setShoppingBagSize(0));
             }
           });
-          const timelineSnapshot = await firestore
-            .collection("timeline")
-            .doc(snapShot.id)
-            .collection("timelineReels")
-            .get();
-          timelineSnapshot.docs.length > 0
-            ? dispatch(
-                setCurrentUser({
-                  id: snapShot.id,
-                  ...snapShot.data(),
-                  isTimelineEmpty: false,
-                })
-              )
-            : dispatch(
-                setCurrentUser({
-                  id: snapShot.id,
-                  ...snapShot.data(),
-                  isTimelineEmpty: true,
-                })
-              );
+          // const timelineSnapshot = await firestore
+          //   .collection("timeline")
+          //   .doc(snapShot.id)
+          //   .collection("timelineReels")
+          //   .get();
+          // timelineSnapshot.docs.length > 0
+          //   ? dispatch(
+          //       setCurrentUser({
+          //         id: snapShot.id,
+          //         ...snapShot.data(),
+          //         isTimelineEmpty: false,
+          //       })
+          //     )
+          //   : dispatch(
+          //       setCurrentUser({
+          //         id: snapShot.id,
+          //         ...snapShot.data(),
+          //         isTimelineEmpty: true,
+          //       })
+          //     );
           firebase
             .database()
             .ref(".info/connected")

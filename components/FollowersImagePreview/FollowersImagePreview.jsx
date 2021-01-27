@@ -1,10 +1,14 @@
+import { useNavigation } from "@react-navigation/native";
 import React, { useEffect, useState } from "react";
-import { Image, Text, View } from "react-native";
+import { Image, Text, TouchableWithoutFeedback, View } from "react-native";
+import { useSelector } from "react-redux";
 import { firestore } from "../../firebase/firebase.utils";
 import { styles } from "./styles";
 
 const FollowersImagePreview = ({ userId }) => {
   const [friend, setFriend] = useState({});
+  const user = useSelector((state) => state.user.currentUser);
+  const navigation = useNavigation();
   useEffect;
   useEffect(() => {
     getUser();
@@ -22,14 +26,24 @@ const FollowersImagePreview = ({ userId }) => {
     }
   }
   return (
-    <View style={styles.container}>
-      <View style={styles.imageContainer}>
-        <Image style={styles.image} source={{ uri: friend.profile_pic }} />
+    <TouchableWithoutFeedback
+      onPress={() => {
+        friend.id === user.id
+          ? navigation.navigate("ProfileScreen")
+          : navigation.navigate("UserProfileScreen", {
+              userId: friend.id,
+            });
+      }}
+    >
+      <View style={styles.container}>
+        <View style={styles.imageContainer}>
+          <Image style={styles.image} source={{ uri: friend.profile_pic }} />
+        </View>
+        <Text numberOfLines={1} style={styles.username}>
+          {friend.username ? friend.username.substring(0, 6) : null}
+        </Text>
       </View>
-      <Text numberOfLines={1} style={styles.username}>
-        {friend.username ? friend.username.substring(0, 6) : null}
-      </Text>
-    </View>
+    </TouchableWithoutFeedback>
   );
 };
 

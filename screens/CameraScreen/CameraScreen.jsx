@@ -1,9 +1,17 @@
-import { Ionicons, AntDesign } from "@expo/vector-icons";
+import {
+  Ionicons,
+  AntDesign,
+  Entypo,
+  MaterialCommunityIcons,
+  MaterialIcons,
+} from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { Camera } from "expo-camera";
 import * as Permissions from "expo-permissions";
 import React, { useEffect, useRef, useState } from "react";
 import {
+  Animated,
+  Easing,
   Text,
   View,
   TouchableOpacity,
@@ -16,24 +24,29 @@ import {
 import * as MediaLibrary from "expo-media-library";
 // import { MediaLibrary, Permissions } from "expo";
 import styles from "./styles";
+import { AssetsSelector } from "expo-images-picker";
 import MediaLibraryModal from "../../components/MediaLibraryModal/MediaLibraryModal";
 import { toggleShowBottomNavbar } from "../../redux/settings/actions";
 import { useDispatch } from "react-redux";
+import { LongPressGestureHandler } from "react-native-gesture-handler";
 
 export default function CameraScreen() {
   const navigation = useNavigation();
   const [hasPermission, setHasPermission] = useState(null);
-  const [album, setAlbum] = useState(null);
   const [type, setType] = useState("back");
+  const [flashMode, setFlashMode] = useState("off");
+  const [progressBarDirection] = useState("fromLeft");
+  const [timer] = useState(new Animated.Value(0));
   const [isRecording, setIsRecording] = useState(false);
-  const [modalVisible, setModalVisible] = useState(false);
+  const [isPanelActive, setIsPanelActive] = useState(false);
+  const [showProgressBar, setShowProgressBar] = useState(false);
   const [deviceCameraRatio, setDeviceCameraRatio] = useState(["16:9"]);
   const route = useRoute();
   const dispatch = useDispatch();
   let camera;
   useEffect(() => {
     getPermissionAsync();
-    getMedias();
+    // getMedias();
   }, []);
   async function getPermissionAsync() {
     const cam = await Permissions.askAsync(Permissions.CAMERA);
@@ -51,7 +64,7 @@ export default function CameraScreen() {
     return <View />;
   }
   if (hasPermission === false) {
-    getPermission();
+    getPermissionAsync();
     return <Text>No access to camera</Text>;
   }
 
@@ -62,30 +75,76 @@ export default function CameraScreen() {
     } else {
       setIsRecording(true);
       const data = await camera.recordAsync({
-        maxDuration: 300,
+        maxDuration: 15,
         maxFileSize: 5000000,
         quality: Camera.Constants.VideoQuality["480p"],
       });
       setIsRecording(false);
-      navigation.navigate("EditAndPostScreen", {
-        videoUri: data.uri,
-        type: route.params.type,
-      });
+      if (data) {
+        setShowProgressBar(false);
+        timer.stopAnimation(() => {});
+        setIsRecording(false);
+        navigation.navigate("EditAndPostScreen", {
+          videoUri: data.uri,
+          type: route.params.type,
+        });
+      }
     }
   };
 
-  async function getMedias() {
-    // let photos = CameraRoll.getAlbums({ assetType: "All" });
-    const album = await MediaLibrary.getAssetsAsync({
-      first: 12,
-      mediaType: "video",
-    });
-    const filteredAlbum = album.assets.filter((item) => item.duration < 1500);
-    setAlbum(filteredAlbum);
-  }
+  const animation = () => {
+    return Animated.timing(timer, {
+      toValue: 1,
+      easing: Easing.ease,
+      useNativeDriver: true,
+      duration: 15000,
+    }).start(({ finished }) => console.log(finished));
+  };
+  const renderProgressBar = () => {
+    const { width } = Dimensions.get("window");
+
+    let animation = { transform: [{ scaleX: timer }] };
+
+    if (
+      progressBarDirection === "fromLeft" ||
+      progressBarDirection === "fromRight"
+    ) {
+      // Footer container as a width of 100% with paddingHorizontal of 7.5%
+      let initialValue = width;
+
+      if (progressBarDirection === "fromLeft") initialValue *= -1;
+
+      const translateX = timer.interpolate({
+        inputRange: [0, 1],
+        outputRange: [initialValue, 0],
+        extrapolate: "clamp",
+      });
+
+      animation.transform = [{ translateX }];
+    }
+
+    animation.backgroundColor = "#ffffff";
+
+    return (
+      <View style={styles.progressBarContainer}>
+        <Animated.View style={[styles.progressBar, animation]} />
+      </View>
+    );
+  };
+
+  const onSwitchFlashMode = () => {
+    if (flashMode === "on") {
+      setFlashMode("off");
+    } else if (flashMode === "off") {
+      setFlashMode("on");
+    }
+  };
   const pickVideo = (uri) => {
-    setModalVisible(false);
-    navigation.navigate("EditAndPostScreen", { videoUri: uri });
+    setIsPanelActive(false);
+    navigation.navigate("EditAndPostScreen", {
+      videoUri: uri,
+      type: route.params.type,
+    });
   };
   const getRatio = async () => {
     let ratio = await camera.getSupportedRatiosAsync(); //android only now
@@ -110,9 +169,35 @@ export default function CameraScreen() {
           }}
         >
           <Ionicons name="md-arrow-back" size={24} color="black" />
-          {/* <AntDesign name="close" size={20} color="#111111" /> */}
         </TouchableOpacity>
       </View>
+      <TouchableOpacity
+        onPress={onSwitchFlashMode}
+        style={{
+          position: "absolute",
+          left: 20,
+          top: "20%",
+          zIndex: 1,
+          backgroundColor: "#006eff89",
+          borderRadius: 50,
+          height: 35,
+          width: 35,
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <MaterialIcons
+          name={
+            flashMode === "off"
+              ? "flash-off"
+              : flashMode === "on"
+              ? "flash-on"
+              : "flash-auto"
+          }
+          size={20}
+          color="#ffffff89"
+        />
+      </TouchableOpacity>
       <View
         style={{
           flex: 1,
@@ -120,17 +205,15 @@ export default function CameraScreen() {
           position: "relative",
         }}
       >
-        {album && modalVisible && (
-          <MediaLibraryModal
-            modalVisible={modalVisible}
-            setModalVisible={setModalVisible}
-            album={album}
-            pickVideo={pickVideo}
-          />
-        )}
+        <MediaLibraryModal
+          isPanelActive={isPanelActive}
+          setIsPanelActive={setIsPanelActive}
+          type={route.params.type}
+        />
         <Camera
           ref={(ref) => (camera = ref)}
           focusDepth={"on"}
+          flashMode={flashMode}
           autoFocus={true}
           // useCamera2Api={true}
           ratio={deviceCameraRatio}
@@ -138,65 +221,57 @@ export default function CameraScreen() {
           style={{ flex: 1 }}
           type={type}
         >
-          <View style={styles.recordControl}>
-            <View style={styles.recordControlBorder}>
+          <View style={styles.otherControl}>
+            {showProgressBar ? renderProgressBar() : null}
+            <View style={styles.otherControlWrapper}>
               <TouchableOpacity
-                onPress={onRecord}
-                style={isRecording ? styles.buttonStop : styles.buttonRecord}
-              />
+                style={styles.selectFromPhoneContainer}
+                onPress={() => setIsPanelActive(true)}
+              >
+                <View style={styles.selectFromPhone}>
+                  <Entypo name="folder-video" size={30} color="white" />
+                </View>
+              </TouchableOpacity>
+              <View style={styles.recordControlBorder}>
+                <LongPressGestureHandler
+                  onHandlerStateChange={({ nativeEvent }) => {
+                    if (nativeEvent.state === 4) {
+                      setShowProgressBar(true);
+                      animation();
+                      onRecord();
+                    } else if (nativeEvent.state === 5) {
+                      setShowProgressBar(false);
+                      timer.stopAnimation(() => {});
+                      onRecord();
+                    }
+                  }}
+                  minDurationMs={250}
+                >
+                  <View style={styles.recordControlWrapper}>
+                    <View
+                      style={
+                        isRecording ? styles.buttonStop : styles.buttonRecord
+                      }
+                    ></View>
+                  </View>
+                </LongPressGestureHandler>
+              </View>
+              <TouchableOpacity
+                style={styles.flipCamera}
+                onPress={() => {
+                  setType(type === "back" ? "front" : "back");
+                }}
+              >
+                <MaterialCommunityIcons
+                  name="axis-z-rotate-counterclockwise"
+                  size={30}
+                  color="black"
+                />
+              </TouchableOpacity>
             </View>
           </View>
-          <View style={styles.otherControl}>
-            <TouchableOpacity
-              style={styles.selectFromPhoneContainer}
-              onPress={() => setModalVisible(true)}
-            >
-              <View style={styles.selectFromPhone}>
-                {/* <AntDesign name="plus" size={20} color="white" /> */}
-                {album && (
-                  <Image
-                    source={{ uri: album[0].uri }}
-                    resizeMode={"cover"}
-                    style={{ width: 20, height: 20, margin: 2 }}
-                  />
-                )}
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.flipCamera}
-              onPress={() => {
-                setType(type === "back" ? "front" : "back");
-              }}
-            >
-              <Ionicons name={"ios-reverse-camera"} size={40} color="white" />
-            </TouchableOpacity>
-          </View>
         </Camera>
-        {/* {album ? (
-          <View style={styles.assets}>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              {album.assets.map((item, index) => (
-                <Video
-                  key={index}
-                  source={{ uri: item.uri }}
-                  style={{ width: 80, height: 80, margin: 2 }}
-                  onError={(e) => console.log(e)}
-                  resizeMode={"cover"}
-                  shouldPlay={false}
-                />
-              ))}
-            </ScrollView>
-          </View>
-        ) : null} */}
       </View>
     </>
   );
-}
-{
-  /*<Image
-                  key={index}
-                  source={{ uri: item.uri }}
-                  resizeMode={"cover"}
-                  style={{ width: 80, height: 80, margin: 2 }}
-                /> */
 }

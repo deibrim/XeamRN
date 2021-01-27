@@ -1,14 +1,15 @@
-import { Feather, MaterialIcons } from "@expo/vector-icons";
+import { AntDesign, Feather, MaterialIcons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import {
   View,
   Text,
   TouchableWithoutFeedback,
   TouchableOpacity,
+  TextInput,
 } from "react-native";
 import Dialog from "react-native-popup-dialog";
 import { useDispatch, useSelector } from "react-redux";
-import { auth, firestore } from "../../firebase/firebase.utils";
+import firebase, { auth, firestore } from "../../firebase/firebase.utils";
 import {
   setCurrentUser,
   setCurrentUserTvProfile,
@@ -19,25 +20,49 @@ import { styles } from "./styles";
 const DeleteAccountsContainer = ({ title, value }) => {
   const currentUser = useSelector((state) => state.user.currentUser);
   const [dialogVisible, setDialogVisible] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [toggleShowCurrentPassword, setToggleShowCurrentPassword] = useState(
+    false
+  );
   const [deleting, setDeleting] = useState(false);
+  const [reAuth, setReAuth] = useState(false);
   const [accountType, setAccountType] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
   const dispatch = useDispatch();
   const [visible, setVisible] = useState(false);
   const onTitlePress = () => {
     setVisible(!visible);
   };
+
   const DeleteProfile = async () => {
-    auth.currentUser
-      .delete()
-      .then(function () {
-        firestore.collection("users").doc(currentUser.id).delete();
-        dispatch(setCurrentUser(null));
-        dispatch(setCurrentUserTvProfile(null));
-        dispatch(setCurrentUserXStore(null));
-      })
-      .catch(function (error) {
-        setErrorMessage("Something went wrong");
-      });
+    const credential = firebase.auth.EmailAuthProvider.credential(
+      currentUser.email,
+      currentPassword
+    );
+    const currentUserAuth = auth.currentUser;
+    try {
+      const reAuth = await currentUserAuth.reauthenticateWithCredential(
+        credential
+      );
+      if (reAuth.user) {
+        currentUserAuth
+          .delete()
+          .then(function () {
+            firestore.collection("users").doc(currentUser.id).delete();
+            auth.signOut();
+            dispatch(setCurrentUser(null));
+            dispatch(setCurrentUserTvProfile(null));
+            dispatch(setCurrentUserXStore(null));
+          })
+          .catch(function (error) {
+            console.log(error);
+            setErrorMessage("Something went wrong");
+          });
+      }
+    } catch (error) {
+      setErrorMessage("Current password is incorrect");
+      setErrorMessage(err.message);
+    }
   };
   const DeleteTvProfile = async () => {
     firestore.collection("xeamTvs").doc(currentUser.id).delete();
@@ -76,6 +101,7 @@ const DeleteAccountsContainer = ({ title, value }) => {
               style={{
                 flexDirection: "row",
                 justifyContent: "center",
+                width: " 100%",
                 paddingBottom: 20,
                 paddingTop: 10,
               }}
@@ -83,7 +109,52 @@ const DeleteAccountsContainer = ({ title, value }) => {
               {deleting ? (
                 <Text>Sad to see you go</Text>
               ) : (
-                <Text>Are you sure you want to delete?</Text>
+                <View style={{ flexDirection: "column" }}>
+                  <View>
+                    <Text>Are you sure you want to delete?</Text>
+                  </View>
+                  {accountType === "Profile" ? (
+                    <View style={styles.inputGroup}>
+                      {/* <AntDesign
+                        style={styles.inputGroupIcon}
+                        name="lock"
+                        size={22}
+                        color="black"
+                      /> */}
+                      <TextInput
+                        style={styles.input}
+                        underlineColorAndroid="transparent"
+                        secureTextEntry={
+                          !toggleShowCurrentPassword ? true : false
+                        }
+                        placeholder="Current password"
+                        placeholderTextColor="#000000"
+                        autoFocus={true}
+                        autoCapitalize="none"
+                        onChangeText={(e) => {
+                          setErrorMessage("");
+                          setReAuth(true);
+                          setCurrentPassword(e);
+                        }}
+                        value={currentPassword}
+                      />
+                      {/* <TouchableWithoutFeedback
+                        onPress={() =>
+                          setToggleShowCurrentPassword(
+                            !toggleShowCurrentPassword
+                          )
+                        }
+                      >
+                        <Feather
+                          name={toggleShowCurrentPassword ? "eye-off" : "eye"}
+                          size={20}
+                          color="black"
+                          style={{ marginRight: 10 }}
+                        />
+                      </TouchableWithoutFeedback> */}
+                    </View>
+                  ) : null}
+                </View>
               )}
             </View>
             <View
@@ -115,10 +186,12 @@ const DeleteAccountsContainer = ({ title, value }) => {
                       DeleteStore();
                       setDeleting(false);
                       setDialogVisible(false);
-                    } else {
+                    } else if (accountType === "Profile" && reAuth) {
                       DeleteProfile();
                       setDeleting(false);
                       setDialogVisible(false);
+                    } else {
+                      setReAuth(true);
                     }
                   } else {
                     setDeleting(true);

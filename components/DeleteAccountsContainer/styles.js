@@ -65,4 +65,38 @@ export const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#ff000096",
   },
+  inputGroup: {
+    // flex: 1,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#fff",
+    // margin: 10,
+    marginHorizontal: 0,
+    // borderRadius: ,
+  },
+  inputGroupIcon: {
+    padding: 10,
+  },
+  input: {
+    flex: 1,
+    paddingTop: 10,
+    paddingRight: 10,
+    paddingBottom: 5,
+    paddingLeft: 0,
+    backgroundColor: "#fff",
+    borderColor: "#424242",
+    borderBottomWidth: 1,
+    color: "#424242",
+    // borderRadius: 25,
+    textAlign: "center",
+  },
+  btns: {
+    alignItems: "center",
+    marginTop: 30,
+  },
+  btn: {
+    padding: 20,
+    width: "70%",
+  },
 });

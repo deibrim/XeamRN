@@ -40,6 +40,8 @@ export default function UserProfileScreen() {
   const [lastVisible, setLastVisible] = useState("");
   const [friendIds, setFriendIds] = useState([]);
   const [isFollowing, setIsFollowing] = useState(false);
+  const [followingMe, setFollowingMe] = useState(false);
+  const [mutual, setMutual] = useState(false);
   const [dialogVisible, setDialogVisible] = useState(false);
   const [followerCount, setFollowerCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
@@ -54,9 +56,9 @@ export default function UserProfileScreen() {
     getFollowers(userId);
     getFollowerIds(userId);
     getFollowing(userId);
-    checkIfFollowing(userId);
+    checkIfMutual(userId);
     getUserReels(userId);
-  }, []);
+  }, [userId]);
   async function getUserData(userId) {
     setLoading(true);
     const userRef = firestore.doc(`users/${userId}`);
@@ -125,16 +127,27 @@ export default function UserProfileScreen() {
       .get();
     setFollowingCount(snapshot.docs.length);
   }
-  async function checkIfFollowing(userId) {
-    const doc = await firestore
+  async function checkIfMutual(userId) {
+    const followingDoc = await firestore
       .collection("followers")
       .doc(userId)
       .collection("userFollowers")
       .doc(currentUser.id)
       .get();
-    setIsFollowing(doc.exists);
+    const followersDoc = await firestore
+      .collection("followers")
+      .doc(currentUser.id)
+      .collection("userFollowers")
+      .doc(userId)
+      .get();
+    setIsFollowing(followingDoc.exists);
+    setFollowingMe(followersDoc.exists);
+    if (followingDoc.exists) {
+      setMutual(followingDoc.exists === followersDoc.exists);
+    }
     setLoading(false);
   }
+
   const handleToggleFollow = () => {
     /* handleFollow and unFollow */
     if (isFollowing) {
@@ -185,56 +198,17 @@ export default function UserProfileScreen() {
               <Ionicons name="ios-arrow-back" size={24} color="black" />
             </View>
           </TouchableOpacity>
-          {/* <Text style={styles.title}>{user.name}</Text> */}
         </View>
+        <Text style={styles.title}>{user.name}</Text>
         <View
           style={{
             flexDirection: "row",
-            justifyContent: "space-between",
+            justifyContent: "flex-end",
+            width: 60,
           }}
         >
-          {!loading && (
-            <TouchableOpacity
-              onPress={() =>
-                isFollowing
-                  ? setDialogVisible(!dialogVisible)
-                  : handleToggleFollow()
-              }
-            >
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  paddingHorizontal: 10,
-                  paddingVertical: 5,
-                  borderWidth: 1.5,
-                  borderRadius: 20,
-                  borderColor: "#006aff",
-                  backgroundColor: isFollowing ? "transparent" : "#006aff",
-                }}
-              >
-                <Text
-                  style={
-                    isFollowing ? { color: "#006aff" } : { color: "white" }
-                  }
-                >
-                  {isFollowing ? "following" : "Follow"}
-                </Text>
-              </View>
-            </TouchableOpacity>
-          )}
           <TouchableOpacity
-            style={{
-              alignItems: "center",
-              justifyContent: "center",
-              width: 30,
-              height: 30,
-              borderRadius: 20,
-              marginLeft: 5,
-              elevation: 2,
-              backgroundColor: "#ffffff",
-            }}
+            style={styles.circle}
             onPress={() => setShowMore(!showMore)}
           >
             <Feather name="more-vertical" size={24} color="black" />
@@ -253,23 +227,6 @@ export default function UserProfileScreen() {
           <AfterReporting setReported={setReported} customText={"profile"} />
         </View>
       ) : null}
-      {/* {loading ? (
-        <View
-          style={{
-            flex: 1,
-            minHeight: 200,
-            width: "100%",
-            justifyContent: "center",
-            alignItems: "center",
-            backgroundColor: "transparent",
-          }}
-        >
-          <Image
-            style={{ marginLeft: 5, width: 30, height: 30 }}
-            source={require("../../assets/loader.gif")}
-          />
-        </View>
-      ) : ( */}
       <View style={styles.container}>
         <Dialog
           visible={showMore}
@@ -369,52 +326,83 @@ export default function UserProfileScreen() {
           </View>
         </Dialog>
         <View style={styles.userPreview}>
-          <View
-            style={{
-              width: "40%",
-              backgroundColor: "#006aff",
-              padding: 10,
-              borderTopRightRadius: 100,
-              borderBottomRightRadius: 100,
-              flexDirection: "row",
-              justifyContent: "flex-end",
-              marginVertical: 40,
-            }}
-          >
+          <View style={styles.userImageContainer}>
             <Image
-              style={{
-                width: 80,
-                height: 80,
-                resizeMode: "cover",
-                borderRadius: 50,
-                borderWidth: 2,
-                borderColor: "#fff",
-              }}
+              style={styles.userImage}
               source={{ uri: `${user.profile_pic}` }}
             />
           </View>
           <View style={{ marginLeft: 20 }}>
-            <Text style={styles.username}>@ {user.username || ""}</Text>
-            <Text style={{ color: "#42414C", fontSize: 14, fontWeight: "500" }}>
-              {user.headline || ""}
-            </Text>
-            <View
-              style={{
-                flexDirection: "row",
-                marginVertical: 5,
-                alignItems: "center",
-              }}
-            >
-              <Entypo
-                name="location-pin"
-                size={18}
-                color="gray"
-                style={{ marginLeft: -4, marginRight: 3 }}
+            <View style={styles.usernameContainer}>
+              <Text style={styles.username}>@{user.username || ""}</Text>
+              <MaterialCommunityIcons
+                name="star-four-points"
+                size={16}
+                color="#006eff"
               />
-              <Text style={{ fontSize: 14, color: "gray" }}>
-                {user.location || "Washington DC"}
-              </Text>
             </View>
+            {!loading && (
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <TouchableOpacity
+                  onPress={() =>
+                    isFollowing
+                      ? setDialogVisible(!dialogVisible)
+                      : handleToggleFollow()
+                  }
+                >
+                  <View
+                    style={[
+                      styles.fufBtn,
+                      {
+                        backgroundColor: "#ffffff",
+                      },
+                    ]}
+                  >
+                    <Text style={styles.fufBtnText}>
+                      {isFollowing
+                        ? "following"
+                        : followingMe && !isFollowing
+                        ? "Follow Back"
+                        : "Follow"}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+                {mutual ? (
+                  <View style={[styles.circle, { backgroundColor: "#006eff" }]}>
+                    <MaterialCommunityIcons
+                      name="rotate-3d-variant"
+                      size={20}
+                      color="#ffffff"
+                    />
+                  </View>
+                ) : null}
+              </View>
+            )}
+          </View>
+        </View>
+        <View style={{ paddingHorizontal: 10 }}>
+          {/* <Text style={{ color: "#42414C", fontSize: 14, fontWeight: "bold" }}>
+            {user.name || ""}
+          </Text> */}
+          <Text style={{ color: "#42414C", fontSize: 14, fontWeight: "500" }}>
+            {user.headline || ""}
+          </Text>
+          <View
+            style={{
+              flexDirection: "row",
+              marginVertical: 5,
+              alignItems: "center",
+            }}
+          >
+            <Entypo
+              name="location-pin"
+              size={18}
+              color="gray"
+              style={{ marginLeft: -4, marginRight: 3 }}
+            />
+            <Text style={{ fontSize: 14, color: "gray" }}>
+              {user.location || "Somewhere on earth"}
+            </Text>
           </View>
         </View>
         {/* <View style={{ paddingHorizontal: "10%" }}>
@@ -452,13 +440,15 @@ export default function UserProfileScreen() {
               { width: "100%", paddingVertical: 20, paddingHorizontal: 15 },
             ]}
           >
-            <Text>{followerCount} Followers</Text>
-            <View style={styles.row}>
-              {followerCount > 0 ? (
+            <Text style={[styles.title, { fontSize: 12 }]}>
+              {followerCount} Followers
+            </Text>
+            {followerCount > 10 ? (
+              <View style={styles.row}>
                 <Text style={{ fontSize: 12, marginRight: 5 }}>View all</Text>
-              ) : null}
-              <Ionicons name="ios-arrow-forward" size={16} color="black" />
-            </View>
+                <Ionicons name="ios-arrow-forward" size={16} color="black" />
+              </View>
+            ) : null}
           </View>
           <ScrollView
             horizontal

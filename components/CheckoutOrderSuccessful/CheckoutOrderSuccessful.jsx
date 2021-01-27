@@ -41,6 +41,19 @@ const CheckoutOrderSuccessful = ({ dialogVisible, setDialogVisible }) => {
               }}
               textStyle={{ fontSize: 13 }}
             />
+            <AppButton
+              onPress={() => {
+                // setDialogVisible(false);
+              }}
+              title={"Continue Shoping"}
+              customStyle={{
+                marginVertical: 10,
+                paddingHorizontal: 20,
+                width: "80%",
+                backgroundColor: "#ffffff",
+              }}
+              textStyle={{ fontSize: 13, color: "#006eff" }}
+            />
           </View>
         </View>
       </View>

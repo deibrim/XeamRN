@@ -1,4 +1,8 @@
-import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
+import {
+  Feather,
+  MaterialCommunityIcons,
+  MaterialIcons,
+} from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import Constants from "expo-constants";
 import * as Permissions from "expo-permissions";
@@ -24,6 +28,8 @@ import { setCurrentChannel, setPrivateChannel } from "../redux/chat/actions";
 import SwipeablePanelContent from "../components/SwipeablePanelContent/SwipeablePanelContent";
 import { toggleShowBottomNavbar } from "../redux/settings/actions";
 import AddProductModal from "../components/AddProductModal/AddProductModal";
+import StoriesPreviewContainer from "../components/StoriesPreviewContainer/StoriesPreviewContainer";
+import FeedContainer from "../components/FeedContainer/FeedContainer";
 const wait = (timeout) => {
   return new Promise((resolve) => {
     setTimeout(resolve, timeout);
@@ -159,6 +165,7 @@ export default React.memo(function HomeScreen() {
       setLoading(false);
     });
   }
+
   const togglePanel = () => {
     dispatch(toggleShowBottomNavbar(true));
     setIsPanelActive(true);
@@ -167,12 +174,13 @@ export default React.memo(function HomeScreen() {
     <>
       <View style={styles.header}>
         <TouchableOpacity
-          onPress={() =>
-            user.isBusinessAccount
-              ? togglePanel()
-              : user.isTvActivated
-              ? togglePanel()
-              : navigation.navigate("CameraScreen")
+          onPress={
+            () => togglePanel()
+            // user.isBusinessAccount
+            //   ? togglePanel()
+            //   : user.isTvActivated
+            //   ? togglePanel()
+            //   : navigation.navigate("CameraScreen")
           }
         >
           <Feather name="video" size={26} color="#444444" />
@@ -211,6 +219,18 @@ export default React.memo(function HomeScreen() {
         }
         style={styles.container}
       >
+        <View style={styles.storiesSection}>
+          {/* <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <MaterialIcons
+              name="amp-stories"
+              size={22}
+              color="#444444"
+              style={{ marginBottom: 10, marginLeft: 10 }}
+            />
+            <Text style={styles.sectionTitle}>Stories</Text>
+          </View> */}
+          <StoriesPreviewContainer />
+        </View>
         {!hasTimeline && (
           <View style={styles.trendSection}>
             <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -242,35 +262,7 @@ export default React.memo(function HomeScreen() {
             />
             <Text style={styles.sectionTitle}>Feed</Text>
           </View>
-          <SkeletonContent
-            containerStyle={{
-              flex: 1,
-              width: "100%",
-              flexDirection: "row",
-              justifyContent: "space-evenly",
-              alignItems: "center",
-              flexWrap: "wrap",
-              paddingHorizontal: 10,
-            }}
-            isLoading={loading}
-            layout={[
-              { width: "48%", height: 220, marginTop: 6 },
-              { width: "48%", height: 220, marginTop: 6 },
-              { width: "48%", height: 220, marginTop: 6 },
-              { width: "48%", height: 220, marginTop: 6 },
-            ]}
-          ></SkeletonContent>
-          <View style={styles.listReels}>
-            {reels.length
-              ? reels.map((item, index) => (
-                  <ReelPreview
-                    key={index}
-                    data={{ ...item, index }}
-                    reels={reels}
-                  />
-                ))
-              : null}
-          </View>
+          <FeedContainer reels={reels} loading={loading} />
         </View>
       </ScrollView>
       <SwipeablePanel
@@ -338,15 +330,10 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: "#444444",
     paddingLeft: 10,
+    // transform: "RotateX",
   },
   trendSection: {
     marginTop: 20,
   },
   recentSection: { marginVertical: 20, paddingHorizontal: 0 },
-  listReels: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    flexWrap: "wrap",
-    paddingHorizontal: 10,
-  },
 });

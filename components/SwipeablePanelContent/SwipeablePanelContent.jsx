@@ -49,6 +49,22 @@ const SwipeablePanelContent = ({ setModalVisible, setIsPanelActive }) => {
           }
           title={"Feed Reel"}
         />
+        {/* <PanelLinkItem
+          onPress={() => {
+            dispatch(toggleShowBottomNavbar(false));
+            setIsPanelActive(false);
+            navigation.navigate("CameraScreen", { type: "story" });
+          }}
+          icon={
+            <MaterialCommunityIcons
+              name="animation-play-outline"
+              size={22}
+              color="black"
+              style={{ paddingBottom: 15 }}
+            />
+          }
+          title={"Stories"}
+        /> */}
         {user.isTvActivated ? (
           <PanelLinkItem
             onPress={() => {

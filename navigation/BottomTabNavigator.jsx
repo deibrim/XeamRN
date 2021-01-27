@@ -9,8 +9,9 @@ import useColorScheme from "../hooks/useColorScheme";
 import HomeScreen from "../screens/HomeScreen";
 import ProfileScreen from "../screens/ProfileScreen";
 import EditProfileScreen from "../screens/EditProfileScreen/EditProfileScreen";
-import ReelScreen from "../screens/ReelScreen";
 import CameraScreen from "../screens/CameraScreen/CameraScreen";
+import StoryViewScreen from "../screens/StoryViewScreen/StoryViewScreen";
+import ReelScreen from "../screens/ReelScreen";
 import FriendListScreen from "../screens/FriendListScreen";
 import ChatRoomScreen from "../screens/ChatRoomScreen/ChatRoomScreen";
 import ActivitiesScreen from "../screens/ActivitiesScreen";
@@ -38,7 +39,7 @@ import XStoreProductsScreen from "../screens/XStoreProductsScreen/XStoreProducts
 import ProductDetailScreen from "../screens/ProductDetailScreen/ProductDetailScreen";
 import CheckoutScreen from "../screens/CheckoutScreen/CheckoutScreen";
 import { useSelector } from "react-redux";
-import { View } from "react-native";
+import { Text, View } from "react-native";
 
 const BottomTab = createBottomTabNavigator();
 
@@ -68,10 +69,13 @@ export default function BottomTabNavigator() {
       case "UserProfileScreen":
         return false;
         break;
-      case "ReelScreen":
+      case "CameraScreen":
         return false;
         break;
-      case "CameraScreen":
+      case "StoryViewScreen":
+        return false;
+        break;
+      case "ReelScreen":
         return false;
         break;
       case "CameraScreenBackup":
@@ -145,9 +149,9 @@ export default function BottomTabNavigator() {
       tabBarOptions={{
         activeTintColor: Colors[colorScheme].tint,
         inactiveTintColor: "#b3b4b6",
-        showLabel: false,
+        // showLabel: false,
         style: {
-          height: 50,
+          height: 60,
         },
         keyboardHidesTabBar: true,
       }}
@@ -157,11 +161,27 @@ export default function BottomTabNavigator() {
         component={HomeScreenNavigator}
         options={({ route }) => ({
           tabBarVisible: getTabBarVisible(route),
+          tabBarLabel: ({ color, focused, position }) =>
+            focused && (
+              <Text
+                position="right"
+                style={{
+                  color: "#006eff",
+                  fontSize: 9,
+                  fontWeight: "bold",
+                  letterSpacing: 1,
+                  marginBottom: 5,
+                  textTransform: "uppercase",
+                }}
+              >
+                Feed
+              </Text>
+            ),
           tabBarIcon: ({ color, focused }) =>
             focused ? (
-              <AntDesign name="appstore1" size={24} color={color} />
+              <AntDesign name="appstore1" size={22} color={color} />
             ) : (
-              <AntDesign name="appstore-o" size={22} color={color} />
+              <AntDesign name="appstore-o" size={20} color={color} />
             ),
         })}
       />
@@ -170,13 +190,29 @@ export default function BottomTabNavigator() {
         component={FriendListScreenNavigator}
         options={({ route }) => ({
           tabBarVisible: getTabBarVisible(route),
+          tabBarLabel: ({ color, focused, position }) =>
+            focused && (
+              <Text
+                position="right"
+                style={{
+                  color: "#006eff",
+                  fontSize: 9,
+                  fontWeight: "bold",
+                  letterSpacing: 1,
+                  marginBottom: 5,
+                  textTransform: "uppercase",
+                }}
+              >
+                Chat
+              </Text>
+            ),
           tabBarIcon: ({ color, focused }) =>
             focused ? (
-              <MaterialIcons name="chat-bubble" size={26} color={color} />
+              <MaterialIcons name="chat-bubble" size={24} color={color} />
             ) : (
               <MaterialIcons
                 name="chat-bubble-outline"
-                size={22}
+                size={20}
                 color={color}
               />
             ),
@@ -187,11 +223,27 @@ export default function BottomTabNavigator() {
         component={ExploreScreenNavigator}
         options={({ route }) => ({
           tabBarVisible: getTabBarVisible(route),
+          tabBarLabel: ({ color, focused, position }) =>
+            focused && (
+              <Text
+                position="right"
+                style={{
+                  color: "#006eff",
+                  fontSize: 9,
+                  fontWeight: "bold",
+                  letterSpacing: 1,
+                  marginBottom: 5,
+                  textTransform: "uppercase",
+                }}
+              >
+                Explore
+              </Text>
+            ),
           tabBarIcon: ({ color, focused }) =>
             focused ? (
-              <MaterialIcons name="explore" size={35} color={color} />
+              <MaterialIcons name="explore" size={33} color={color} />
             ) : (
-              <AntDesign name="find" size={24} color={color} />
+              <AntDesign name="find" size={22} color={color} />
             ),
         })}
       />
@@ -214,6 +266,22 @@ export default function BottomTabNavigator() {
         options={({ route }) => ({
           tabBarVisible: getTabBarVisible(route),
           unmountOnBlur: true,
+          tabBarLabel: ({ color, focused, position }) =>
+            focused && (
+              <Text
+                position="right"
+                style={{
+                  color: "#006eff",
+                  fontSize: 9,
+                  fontWeight: "bold",
+                  letterSpacing: 1,
+                  marginBottom: 5,
+                  textTransform: "uppercase",
+                }}
+              >
+                Activities
+              </Text>
+            ),
           tabBarIcon: ({ color, focused }) =>
             focused ? (
               <View style={{ position: "relative" }}>
@@ -231,7 +299,7 @@ export default function BottomTabNavigator() {
                     }}
                   ></View>
                 )}
-                <AntDesign name="heart" size={26} color={color} />
+                <AntDesign name="heart" size={24} color={color} />
               </View>
             ) : (
               <View style={{ position: "relative" }}>
@@ -249,7 +317,7 @@ export default function BottomTabNavigator() {
                     }}
                   ></View>
                 )}
-                <AntDesign name="hearto" size={22} color={color} />
+                <AntDesign name="hearto" size={20} color={color} />
               </View>
             ),
         })}
@@ -260,8 +328,24 @@ export default function BottomTabNavigator() {
         options={({ route }) => ({
           tabBarVisible: false,
           unmountOnBlur: true,
+          tabBarLabel: ({ color, focused, position }) =>
+            focused && (
+              <Text
+                position="right"
+                style={{
+                  color: "#006eff",
+                  fontSize: 9,
+                  fontWeight: "bold",
+                  letterSpacing: 1,
+                  marginBottom: 5,
+                  textTransform: "uppercase",
+                }}
+              >
+                Settings
+              </Text>
+            ),
           tabBarIcon: ({ color, focused }) => (
-            <Octicons name="settings" size={22} color={color} />
+            <Octicons name="settings" size={20} color={color} />
           ),
         })}
       />
@@ -347,18 +431,25 @@ function HomeScreenNavigator() {
         }}
       />
       <HomeScreenStack.Screen
-        name="ReelScreen"
-        component={ReelScreen}
-        options={{
-          headerShown: false,
-        }}
-      />
-      <HomeScreenStack.Screen
         name="CameraScreen"
         component={CameraScreen}
         options={{
           headerShown: false,
           unmountOnBlur: true,
+        }}
+      />
+      <HomeScreenStack.Screen
+        name="StoryViewScreen"
+        component={StoryViewScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <HomeScreenStack.Screen
+        name="ReelScreen"
+        component={ReelScreen}
+        options={{
+          headerShown: false,
         }}
       />
       <HomeScreenStack.Screen

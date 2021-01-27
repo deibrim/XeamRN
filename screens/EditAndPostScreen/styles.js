@@ -4,6 +4,7 @@ const styles = StyleSheet.create({
   container: {
     width: "100%",
     height: "100%",
+    backgroundColor: "#000000",
   },
   videPlayButton: {
     position: "absolute",
@@ -58,13 +59,13 @@ const styles = StyleSheet.create({
     elevation: 2,
     alignItems: "center",
     justifyContent: "center",
-    height: 40,
+    height: 38,
     borderRadius: 20,
     width: 80,
   },
   buttonText: {
     color: "#111111",
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: "bold",
     marginBottom: 2,
     marginRight: 5,

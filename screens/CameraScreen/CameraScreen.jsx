@@ -4,6 +4,7 @@ import {
   Entypo,
   MaterialCommunityIcons,
   MaterialIcons,
+  Feather,
 } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { Camera } from "expo-camera";
@@ -15,22 +16,27 @@ import {
   Text,
   View,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   Image,
   Dimensions,
-  ScrollView,
 } from "react-native";
-// import { Video } from "expo-av";
-// import CameraRoll from "@react-native-community/cameraroll";
-import * as MediaLibrary from "expo-media-library";
-// import { MediaLibrary, Permissions } from "expo";
 import styles from "./styles";
-import { AssetsSelector } from "expo-images-picker";
 import MediaLibraryModal from "../../components/MediaLibraryModal/MediaLibraryModal";
 import { toggleShowBottomNavbar } from "../../redux/settings/actions";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { LongPressGestureHandler } from "react-native-gesture-handler";
+import TextStoryContainer from "../../components/TextStoryContainer/TextStoryContainer";
+
+const wait = (timeout) => {
+  return new Promise((resolve) => {
+    setTimeout(resolve, timeout);
+  });
+};
 
 export default function CameraScreen() {
+  const user = useSelector((state) => state.user.currentUser);
+  const tvProfile = useSelector((state) => state.user.currentUserTvProfile);
+  const xStore = useSelector((state) => state.user.currentUserXStore);
   const navigation = useNavigation();
   const [hasPermission, setHasPermission] = useState(null);
   const [type, setType] = useState("back");
@@ -38,15 +44,20 @@ export default function CameraScreen() {
   const [progressBarDirection] = useState("fromLeft");
   const [timer] = useState(new Animated.Value(0));
   const [isRecording, setIsRecording] = useState(false);
+  const [labelHidden, hideLabel] = useState(false);
   const [isPanelActive, setIsPanelActive] = useState(false);
   const [showProgressBar, setShowProgressBar] = useState(false);
   const [deviceCameraRatio, setDeviceCameraRatio] = useState(["16:9"]);
+  const [storyType, setStoryType] = useState("video");
+  const [postingTo, setPostingTo] = useState("personal");
   const route = useRoute();
   const dispatch = useDispatch();
   let camera;
   useEffect(() => {
     getPermissionAsync();
-    // getMedias();
+    wait(5000).then(() => {
+      hideLabel(true);
+    });
   }, []);
   async function getPermissionAsync() {
     const cam = await Permissions.askAsync(Permissions.CAMERA);
@@ -87,8 +98,23 @@ export default function CameraScreen() {
         navigation.navigate("EditAndPostScreen", {
           videoUri: data.uri,
           type: route.params.type,
+          mediaType: "video",
         });
       }
+    }
+  };
+  const onTakePicture = async () => {
+    const data = await camera.takePictureAsync()({
+      quality: 1,
+    });
+
+    if (data) {
+      console.log(data);
+      // navigation.navigate("EditAndPostScreen", {
+      //   photoUri: data.uri,
+      //   type: route.params.type,
+      //   mediaType: "photo",
+      // });
     }
   };
 
@@ -139,30 +165,23 @@ export default function CameraScreen() {
       setFlashMode("on");
     }
   };
-  const pickVideo = (uri) => {
-    setIsPanelActive(false);
-    navigation.navigate("EditAndPostScreen", {
-      videoUri: uri,
-      type: route.params.type,
-    });
-  };
+  // const pickVideo = (uri) => {
+  //   setIsPanelActive(false);
+  //   navigation.navigate("EditAndPostScreen", {
+  //     videoUri: uri,
+  //     type: route.params.type,
+  //     mediaType: "video",
+  //   });
+  // };
   const getRatio = async () => {
     let ratio = await camera.getSupportedRatiosAsync(); //android only now
     setDeviceCameraRatio(ratio.pop());
   };
   return (
     <>
-      <View style={{ position: "absolute", top: 30, left: 20, zIndex: 1 }}>
+      <View style={styles.header}>
         <TouchableOpacity
-          style={{
-            alignItems: "center",
-            justifyContent: "center",
-            width: 35,
-            height: 35,
-            borderRadius: 20,
-            elevation: 2,
-            backgroundColor: "#ffffff",
-          }}
+          style={styles.backBtn}
           onPress={() => {
             dispatch(toggleShowBottomNavbar(false));
             navigation.goBack();
@@ -170,6 +189,78 @@ export default function CameraScreen() {
         >
           <Ionicons name="md-arrow-back" size={24} color="black" />
         </TouchableOpacity>
+        {route.params.type === "story" ? (
+          <View style={styles.postToContainer}>
+            {xStore && (
+              <>
+                <TouchableWithoutFeedback
+                  onPress={() => {
+                    setPostingTo("store");
+                  }}
+                >
+                  <View
+                    style={[
+                      styles.postTo,
+                      postingTo !== "store" && { backgroundColor: "#ffffff45" },
+                    ]}
+                  >
+                    <Image
+                      source={{ uri: user.profile_pic }}
+                      style={styles.postToImage}
+                    />
+                    {labelHidden ? null : (
+                      <Text style={styles.postToText}>Store Story</Text>
+                    )}
+                  </View>
+                </TouchableWithoutFeedback>
+                <View style={{ width: 10, height: 10 }}></View>
+              </>
+            )}
+            <TouchableWithoutFeedback
+              onPress={() => {
+                setPostingTo("personal");
+              }}
+            >
+              <View
+                style={[
+                  styles.postTo,
+                  postingTo !== "personal" && { backgroundColor: "#ffffff45" },
+                ]}
+              >
+                <Image
+                  source={{ uri: user.profile_pic }}
+                  style={styles.postToImage}
+                />
+                {labelHidden ? null : (
+                  <Text style={styles.postToText}>Your Story</Text>
+                )}
+              </View>
+            </TouchableWithoutFeedback>
+            <View style={{ width: 10, height: 10 }}></View>
+            {tvProfile && (
+              <TouchableWithoutFeedback
+                onPress={() => {
+                  setPostingTo("tv");
+                }}
+              >
+                <View
+                  style={[
+                    styles.postTo,
+                    postingTo !== "tv" && { backgroundColor: "#ffffff45" },
+                  ]}
+                >
+                  <Image
+                    source={{ uri: user.profile_pic }}
+                    style={styles.postToImage}
+                  />
+                  {labelHidden ? null : (
+                    <Text style={styles.postToText}>Tv Story</Text>
+                  )}
+                </View>
+              </TouchableWithoutFeedback>
+            )}
+          </View>
+        ) : null}
       </View>
       <TouchableOpacity
         onPress={onSwitchFlashMode}
@@ -210,51 +301,150 @@ export default function CameraScreen() {
           setIsPanelActive={setIsPanelActive}
           type={route.params.type}
         />
-        <Camera
-          ref={(ref) => (camera = ref)}
-          focusDepth={"on"}
-          flashMode={flashMode}
-          autoFocus={true}
-          // useCamera2Api={true}
-          ratio={deviceCameraRatio}
-          onCameraReady={getRatio}
-          style={{ flex: 1 }}
-          type={type}
-        >
-          <View style={styles.otherControl}>
-            {showProgressBar ? renderProgressBar() : null}
+        {storyType !== "text" && (
+          <Camera
+            ref={(ref) => (camera = ref)}
+            focusDepth={"on"}
+            flashMode={flashMode}
+            autoFocus={true}
+            // useCamera2Api={true}
+            ratio={deviceCameraRatio}
+            onCameraReady={getRatio}
+            style={{ flex: 1 }}
+            type={type}
+          >
+            {/* <Feather name="camera" size={24} color="black" /> */}
+          </Camera>
+        )}
+        {storyType === "text" && <TextStoryContainer />}
+        <View style={styles.otherControl}>
+          {route.params.type === "story" ? (
+            <View style={styles.storyTypes}>
+              <TouchableWithoutFeedback
+                onPress={() => {
+                  setStoryType("text");
+                }}
+              >
+                <View style={[styles.storyType]}>
+                  <View
+                    style={[
+                      styles.storyTypeIconWrapper,
+                      storyType !== "text" && { borderColor: "#ffffff45" },
+                    ]}
+                  >
+                    <MaterialCommunityIcons
+                      name="cursor-text"
+                      size={30}
+                      color="#000000"
+                    />
+                  </View>
+                  <View style={[styles.storyTypeTextWrapper]}>
+                    {labelHidden ? null : (
+                      <Text style={styles.storyTypeText}>Text</Text>
+                    )}
+                  </View>
+                </View>
+              </TouchableWithoutFeedback>
+              <View style={{ width: 10, height: 10 }}></View>
+              <TouchableWithoutFeedback
+                onPress={() => {
+                  setStoryType("video");
+                }}
+              >
+                <View style={[styles.storyType]}>
+                  <View
+                    style={[
+                      styles.storyTypeIconWrapper,
+                      storyType !== "video" && { borderColor: "#ffffff45" },
+                    ]}
+                  >
+                    <Feather name="video" size={30} color="#000000" />
+                  </View>
+                  <View style={[styles.storyTypeTextWrapper]}>
+                    {labelHidden ? null : (
+                      <Text style={styles.storyTypeText}>Video</Text>
+                    )}
+                  </View>
+                </View>
+              </TouchableWithoutFeedback>
+              <View style={{ width: 10, height: 10 }}></View>
+              <TouchableWithoutFeedback
+                onPress={() => {
+                  setStoryType("photo");
+                }}
+              >
+                <View style={[styles.storyType]}>
+                  <View
+                    style={[
+                      styles.storyTypeIconWrapper,
+                      storyType !== "photo" && { borderColor: "#ffffff45" },
+                    ]}
+                  >
+                    <AntDesign name="picture" size={30} color="#000000" />
+                  </View>
+                  <View style={[styles.storyTypeTextWrapper]}>
+                    {labelHidden ? null : (
+                      <Text style={styles.storyTypeText}>Photo</Text>
+                    )}
+                  </View>
+                </View>
+              </TouchableWithoutFeedback>
+            </View>
+          ) : null}
+
+          {showProgressBar ? renderProgressBar() : null}
+          {storyType === "text" ? null : (
             <View style={styles.otherControlWrapper}>
               <TouchableOpacity
                 style={styles.selectFromPhoneContainer}
                 onPress={() => setIsPanelActive(true)}
               >
                 <View style={styles.selectFromPhone}>
-                  <Entypo name="folder-video" size={30} color="white" />
+                  <Entypo
+                    name={
+                      storyType === "video" ? "folder-video" : "folder-images"
+                    }
+                    size={30}
+                    color="white"
+                  />
                 </View>
               </TouchableOpacity>
               <View style={styles.recordControlBorder}>
-                <LongPressGestureHandler
-                  onHandlerStateChange={({ nativeEvent }) => {
-                    if (nativeEvent.state === 4) {
-                      setShowProgressBar(true);
-                      animation();
-                      onRecord();
-                    } else if (nativeEvent.state === 5) {
-                      setShowProgressBar(false);
-                      timer.stopAnimation(() => {});
-                      onRecord();
-                    }
-                  }}
-                  minDurationMs={250}
-                >
-                  <View style={styles.recordControlWrapper}>
-                    <View
-                      style={
-                        isRecording ? styles.buttonStop : styles.buttonRecord
+                {storyType === "video" ? (
+                  <LongPressGestureHandler
+                    onHandlerStateChange={({ nativeEvent }) => {
+                      if (nativeEvent.state === 4) {
+                        setShowProgressBar(true);
+                        animation();
+                        onRecord();
+                      } else if (nativeEvent.state === 5) {
+                        setShowProgressBar(false);
+                        timer.stopAnimation(() => {});
+                        onRecord();
                       }
-                    ></View>
-                  </View>
-                </LongPressGestureHandler>
+                    }}
+                    minDurationMs={250}
+                  >
+                    <View style={styles.recordControlWrapper}>
+                      <View
+                        style={
+                          isRecording ? styles.buttonStop : styles.buttonRecord
+                        }
+                      ></View>
+                    </View>
+                  </LongPressGestureHandler>
+                ) : null}
+                {storyType === "photo" ? (
+                  <TouchableOpacity onPress={onTakePicture}>
+                    <View style={styles.recordControlWrapper}>
+                      <View
+                        style={
+                          isRecording ? styles.buttonStop : styles.buttonRecord
+                        }
+                      ></View>
+                    </View>
+                  </TouchableOpacity>
+                ) : null}
               </View>
               <TouchableOpacity
                 style={styles.flipCamera}
@@ -264,13 +454,13 @@ export default function CameraScreen() {
               >
                 <MaterialCommunityIcons
                   name="axis-z-rotate-counterclockwise"
-                  size={30}
+                  size={22}
                   color="black"
                 />
               </TouchableOpacity>
             </View>
-          </View>
-        </Camera>
+          )}
+        </View>
       </View>
     </>
   );

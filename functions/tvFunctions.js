@@ -108,6 +108,78 @@ exports.deleteTvFollower = async (snapshot, context) => {
   });
 };
 
+exports.createTvStory = async (snapshot, context) => {
+  const postCreated = snapshot.data();
+  const tvId = context.params.tvId;
+
+  // 1) Get all the followers of the tv who made the post
+  const tvFollowersRef = admin
+    .firestore()
+    .collection("tvFollowers")
+    .doc(tvId)
+    .collection("followers");
+
+  const querySnapshot = await tvFollowersRef.get();
+
+  // 2) Add new post to each follower's timeline
+  querySnapshot.forEach((doc) => {
+    const followerId = doc.id;
+
+    admin
+      .firestore()
+      .collection("stories")
+      .doc(followerId)
+      .collection("stories")
+      .doc(tvId)
+      .set(postCreated);
+  });
+};
+
+exports.updateTvStory = async (change, context) => {
+  const postUpdated = change.after.data();
+  const action = change.after.data().action;
+  const tvId = context.params.tvId;
+
+  // 1) Get all the followers of the tv who made the post
+  const tvFollowersRef = admin
+    .firestore()
+    .collection("tvFollowers")
+    .doc(tvId)
+    .collection("followers");
+
+  const querySnapshot = await tvFollowersRef.get();
+
+  // 2) Update each post in each follower's timeline
+  querySnapshot.forEach(async (doc) => {
+    const followerId = doc.id;
+    const storiesRefGet = await admin
+      .firestore()
+      .collection("stories")
+      .doc(followerId)
+      .collection("stories")
+      .doc(tvId)
+      .get();
+    if (storiesRefGet.exists) {
+      if (postUpdated.stories.length === 0) {
+        storiesRefGet.ref.delete();
+      } else {
+        storiesRefGet.ref.update({
+          stories: postUpdated.stories,
+          updatedAt: postUpdated.updatedAt,
+        });
+      }
+    }
+  });
+  if (action.type === "DELETE") {
+    // delete uploaded video for the database storage
+    admin
+      .storage()
+      .bucket("chattie-3eb7b.appspot.com/")
+      .file(`stories/${action.userId}/${action.payload}`)
+      .delete();
+  }
+};
+
 exports.createTvReel = async (snapshot, context) => {
   const postCreated = snapshot.data();
   const tvId = context.params.tvId;

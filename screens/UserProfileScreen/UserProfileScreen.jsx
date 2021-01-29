@@ -5,6 +5,8 @@ import {
   Entypo,
   MaterialCommunityIcons,
   SimpleLineIcons,
+  MaterialIcons,
+  Octicons,
 } from "@expo/vector-icons";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import React, { useEffect, useState } from "react";
@@ -20,6 +22,8 @@ import { Text, View } from "../../components/Themed";
 import {
   firestore,
   handleFollowUser,
+  handleTurnPostNotificationOff,
+  handleTurnPostNotificationOn,
   handleUnfollowUser,
 } from "../../firebase/firebase.utils";
 import Dialog from "react-native-popup-dialog";
@@ -40,6 +44,7 @@ export default function UserProfileScreen() {
   const [lastVisible, setLastVisible] = useState("");
   const [friendIds, setFriendIds] = useState([]);
   const [isFollowing, setIsFollowing] = useState(false);
+  const [isPostNotyOn, setIsPostNotyOn] = useState(false);
   const [followingMe, setFollowingMe] = useState(false);
   const [mutual, setMutual] = useState(false);
   const [dialogVisible, setDialogVisible] = useState(false);
@@ -49,13 +54,15 @@ export default function UserProfileScreen() {
   const [reported, setReported] = useState(false);
   const [loadingReels, setLoadingReels] = useState(false);
   const [showMore, setShowMore] = useState(false);
+  const [visible, setVisible] = useState(true);
   const [user, setUser] = useState({});
   const dispatch = useDispatch();
   useEffect(() => {
     getUserData(userId);
     getFollowers(userId);
     getFollowerIds(userId);
-    getFollowing(userId);
+    // getFollowing(userId);
+    getPostNoty(userId);
     checkIfMutual(userId);
     getUserReels(userId);
   }, [userId]);
@@ -119,14 +126,14 @@ export default function UserProfileScreen() {
       });
     }
   }
-  async function getFollowing(userId) {
-    const snapshot = await firestore
-      .collection("following")
-      .doc(userId)
-      .collection("userFollowing")
-      .get();
-    setFollowingCount(snapshot.docs.length);
-  }
+  // async function getFollowing(userId) {
+  //   const snapshot = await firestore
+  //     .collection("following")
+  //     .doc(userId)
+  //     .collection("userFollowing")
+  //     .get();
+  //   setFollowingCount(snapshot.docs.length);
+  // }
   async function checkIfMutual(userId) {
     const followingDoc = await firestore
       .collection("followers")
@@ -147,6 +154,29 @@ export default function UserProfileScreen() {
     }
     setLoading(false);
   }
+  async function getPostNoty(userId) {
+    const postNotyDoc = await firestore
+      .collection("postNotifications")
+      .doc(userId)
+      .collection("users")
+      .doc(currentUser.id)
+      .get();
+    setIsPostNotyOn(postNotyDoc.exists);
+    setLoading(false);
+  }
+  async function togglePostNoty(userId) {
+    if (isPostNotyOn) {
+      setIsPostNotyOn(false);
+      handleTurnPostNotificationOff(userId, currentUser.id);
+      setFollowerCount(followerCount - 1);
+      setDialogVisible(false);
+    } else {
+      setIsPostNotyOn(true);
+      handleTurnPostNotificationOn(userId, currentUser.id);
+      setDialogVisible(false);
+    }
+    setLoading(false);
+  }
 
   const handleToggleFollow = () => {
     /* handleFollow and unFollow */
@@ -154,10 +184,14 @@ export default function UserProfileScreen() {
       setIsFollowing(false);
       handleUnfollowUser(userId, currentUser.id);
       setFollowerCount(followerCount - 1);
+      setMutual(false);
       setDialogVisible(false);
     } else {
       setIsFollowing(true);
       handleFollowUser(userId, currentUser, user.push_token.data);
+      if (followingMe) {
+        setMutual(true);
+      }
       setFollowerCount(followerCount + 1);
     }
   };
@@ -298,15 +332,19 @@ export default function UserProfileScreen() {
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.modalTextButton}
-                onPress={() => {}}
+                onPress={() => {
+                  togglePostNoty(userId);
+                }}
               >
                 <Feather
-                  name="bell"
+                  name={isPostNotyOn ? "bell-off" : "bell"}
                   size={20}
                   color="black"
                   style={{ marginRight: 20 }}
                 />
-                <Text style={styles.modalText}>Turn on post notification</Text>
+                <Text style={styles.modalText}>
+                  Turn {isPostNotyOn ? "off" : "on"} post notification
+                </Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.modalTextButton]}
@@ -457,7 +495,6 @@ export default function UserProfileScreen() {
           >
             {friendIds
               .filter((item, index) => {
-                // console.log(item, userId);
                 return item !== userId;
               })
               .map((item, index) => (
@@ -465,81 +502,70 @@ export default function UserProfileScreen() {
               ))}
           </ScrollView>
         </View>
-
-        {/* <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-evenly",
-            alignItems: "center",
-            paddingHorizontal: 20,
-            marginTop: 10,
+        <TouchableWithoutFeedback
+          onPress={() => {
+            setVisible(!visible);
+            setFocused("reels");
           }}
         >
-          <View style={{ alignItems: "center", width: 100 }}>
-            <Text style={{}}>FOLLOWERS</Text>
-            <Text style={{}}>{followerCount}</Text>
-          </View>
           <View
-            style={{ height: 50, width: 2, backgroundColor: "#006eff" }}
-          ></View>
-          <View style={{ alignItems: "center", width: 100 }}>
-            <Text style={{}}>FOLLOWING</Text>
-            <Text style={{}}>{followingCount}</Text>
-          </View>
-        </View> */}
-        {/* <View
-          style={{
-            alignItems: "center",
-            width: "100%",
-            justifyContent: "center",
-            marginTop: 10,
-          }}
-        >
-          <Text style={{}}>REELS</Text>
-          <Text style={{}}>{reels.length}</Text>
-        </View> */}
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-around",
-            alignItems: "center",
-            paddingHorizontal: 20,
-            marginTop: 20,
-            elevation: 2,
-            paddingVertical: 15,
-          }}
-        >
-          <View style={{ alignItems: "center", width: 100 }}>
-            <TouchableOpacity onPress={() => setFocused("reels")}>
+            style={{
+              flexDirection: "row",
+              justifyContent: "flex-start",
+              alignItems: "center",
+              width: "100%",
+              paddingHorizontal: 20,
+              marginTop: 20,
+              elevation: 2,
+              paddingVertical: 15,
+            }}
+          >
+            <View>
               {focused === "reels" ? (
                 <AntDesign name="appstore1" size={25} color="#006eff" />
               ) : (
                 <AntDesign name="appstore-o" size={25} color="#b3b4b6" />
               )}
-            </TouchableOpacity>
-          </View>
-          <View style={{ alignItems: "center", width: 100 }}>
+            </View>
+            {focused === "reels" ? (
+              <Text style={styles.focusedText}>Posts</Text>
+            ) : null}
+            <MaterialIcons
+              name="keyboard-arrow-down"
+              size={24}
+              color="black"
+              style={{
+                transform: [
+                  {
+                    rotate: visible ? "180deg" : "0deg",
+                  },
+                ],
+                marginLeft: "auto",
+              }}
+            />
+            {/* <View style={{ alignItems: "center", width: 100 }}>
             <TouchableOpacity onPress={() => setFocused("saves")}>
-              {focused === "saves" ? (
-                <MaterialCommunityIcons
-                  name="bookmark-multiple"
-                  size={25}
-                  color="#006eff"
-                />
+            {focused === "saves" ? (
+              <MaterialCommunityIcons
+              name="bookmark-multiple"
+              size={25}
+              color="#006eff"
+              />
               ) : (
                 <MaterialCommunityIcons
                   name="bookmark-multiple-outline"
                   size={25}
                   color="#b3b4b6"
                 />
-              )}
-            </TouchableOpacity>
+                )}
+                </TouchableOpacity>
+              </View> */}
           </View>
-        </View>
+        </TouchableWithoutFeedback>
         <ScrollView>
           {focused === "reels" && (
             <View style={styles.listReels}>
-              {loadingReels && (
+              {loadingReels ? (
                 <View
                   style={{
                     flex: 1,
@@ -555,14 +581,27 @@ export default function UserProfileScreen() {
                     source={require("../../assets/loader.gif")}
                   />
                 </View>
-              )}
-              {reels.map((item, index) => (
-                <ReelPreview
-                  key={index}
-                  data={{ ...item, index }}
-                  reels={reels}
-                />
-              ))}
+              ) : reels.length === 0 ? (
+                <View style={styles.noPostContainerWrapper}>
+                  <View style={styles.noPostContainer}>
+                    <AntDesign
+                      name="appstore-o"
+                      size={50}
+                      color="#b3b4b6"
+                      style={styles.noPostNot}
+                    />
+                  </View>
+                  <Text style={styles.title}>No post yet</Text>
+                </View>
+              ) : null}
+              {visible &&
+                reels.map((item, index) => (
+                  <ReelPreview
+                    key={index}
+                    data={{ ...item, index }}
+                    reels={reels}
+                  />
+                ))}
             </View>
           )}
         </ScrollView>

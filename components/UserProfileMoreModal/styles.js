@@ -11,6 +11,7 @@ export const styles = StyleSheet.create({
     paddingVertical: 10,
     flexDirection: "row",
     alignItems: "center",
+    paddingHorizontal: 10,
   },
   modalText: {
     color: "#111111",

@@ -127,7 +127,6 @@ export const styles = StyleSheet.create({
     paddingVertical: 10,
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 10,
   },
   modalText: {
     color: "#111111",
@@ -136,10 +135,10 @@ export const styles = StyleSheet.create({
   },
   focusedText: {
     color: "#006eff",
-    fontSize: 12,
+    fontSize: 9,
     fontWeight: "bold",
     letterSpacing: 1,
-    marginLeft: 5,
+    marginTop: 5,
     textTransform: "uppercase",
     textAlign: "center",
   },
@@ -177,6 +176,14 @@ export const styles = StyleSheet.create({
     backgroundColor: "transparent",
     paddingTop: 85,
   },
+  listReels: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    flexWrap: "wrap",
+    paddingHorizontal: 10,
+    paddingVertical: 10,
+    paddingBottom: 20,
+  },
   buttonContainer: {
     position: "absolute",
     bottom: 20,
@@ -192,5 +199,12 @@ export const styles = StyleSheet.create({
     height: 50,
     width: 50,
     borderRadius: 25,
+  },
+  buttonText: {
+    color: "#111111",
+    fontSize: 16,
+    fontWeight: "bold",
+    marginBottom: 2,
+    marginRight: 5,
   },
 });

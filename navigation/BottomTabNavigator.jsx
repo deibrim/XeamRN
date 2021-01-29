@@ -7,7 +7,7 @@ import firebase from "../firebase/firebase.utils";
 import Colors from "../constants/Colors";
 import useColorScheme from "../hooks/useColorScheme";
 import HomeScreen from "../screens/HomeScreen";
-import ProfileScreen from "../screens/ProfileScreen";
+import ProfileScreen from "../screens/ProfileScreen/ProfileScreen";
 import EditProfileScreen from "../screens/EditProfileScreen/EditProfileScreen";
 import CameraScreen from "../screens/CameraScreen/CameraScreen";
 import StoryViewScreen from "../screens/StoryViewScreen/StoryViewScreen";

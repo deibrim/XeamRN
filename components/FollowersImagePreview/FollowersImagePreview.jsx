@@ -17,11 +17,6 @@ const FollowersImagePreview = ({ userId }) => {
     const userRef = firestore.collection("users").doc(userId);
     const userSnapshot = await userRef.get();
     if (userSnapshot.exists) {
-      console.log(
-        userSnapshot.data().profile_pic,
-        userSnapshot.data().username,
-        userSnapshot.data().id
-      );
       setFriend(userSnapshot.data());
     }
   }

@@ -146,7 +146,7 @@ const ReelPost = (props) => {
           source={{ uri: videoUri }}
           style={styles.video}
           onError={(e) => console.log(e)}
-          resizeMode={"cover"}
+          resizeMode={post.resizeMode ? post.resizeMode : "cover"}
           repeat={true}
           shouldPlay={
             props.currentReel.index === props.index ? activePaused : paused

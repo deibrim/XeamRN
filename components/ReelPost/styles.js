@@ -4,6 +4,7 @@ const styles = StyleSheet.create({
   container: {
     width: "100%",
     height: Dimensions.get("window").height,
+    backgroundColor: "#000000",
   },
   videPlayButton: {
     position: "absolute",

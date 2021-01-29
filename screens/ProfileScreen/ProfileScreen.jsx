@@ -7,26 +7,27 @@ import {
   MaterialCommunityIcons,
 } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
-import { StyleSheet, Image, TouchableOpacity, ScrollView } from "react-native";
+import { Image, Text, View, TouchableOpacity, ScrollView } from "react-native";
 import { useSelector, useDispatch } from "react-redux";
-import { Text, View } from "../components/Themed";
-import { firestore } from "../firebase/firebase.utils";
+import { auth, firestore } from "../../firebase/firebase.utils";
 import { useNavigation } from "@react-navigation/native";
-import { auth } from "../firebase/firebase.utils";
 import {
   setCurrentUser,
   setCurrentUserTvProfile,
   setCurrentUserXStore,
-} from "../redux/user/actions";
-import { setMyReels } from "../redux/reel/actions";
-import ReelPreview from "../components/ReelPreview/ReelPreview";
-import { setShoppingBagSize } from "../redux/shopping/actions";
-
+} from "../../redux/user/actions";
+import { setMyReels } from "../../redux/reel/actions";
+import ReelPreview from "../../components/ReelPreview/ReelPreview";
+import { setShoppingBagSize } from "../../redux/shopping/actions";
+import { styles } from "./styles";
+import FollowersImagePreview from "../../components/FollowersImagePreview/FollowersImagePreview";
 export default function ProfileScreen() {
   const user = useSelector((state) => state.user.currentUser);
   const reels = useSelector((state) => state.reel.myReels);
   const savedReels = useSelector((state) => state.save.posts);
   const [followerCount, setFollowerCount] = useState(0);
+  const [lastVisible, setLastVisible] = useState("");
+  const [friendIds, setFriendIds] = useState([]);
   const [followingCount, setFollowingCount] = useState(0);
   const [focused, setFocused] = useState("reels");
   const [loading, setLoading] = useState(false);
@@ -35,6 +36,7 @@ export default function ProfileScreen() {
   const navigation = useNavigation();
   useEffect(() => {
     getFollowers(user.id);
+    getFollowerIds(user.id);
     getFollowing(user.id);
     getUserReels(user.id);
   }, []);
@@ -64,6 +66,36 @@ export default function ProfileScreen() {
     !snapshot.empty
       ? setFollowerCount(snapshot.docs.length - 1)
       : setFollowerCount(0);
+  }
+  async function getFollowerIds(userId) {
+    const followersRef = firestore
+      .collection("followers")
+      .doc(userId)
+      .collection("userFollowers");
+    if (lastVisible) {
+      const nextFriendArr = [];
+      const next = followersRef.startAfter(lastVisible).limit(10);
+      const nextFollowersIdSnapshot = await next.get();
+      nextFollowersIdSnapshot.docs.forEach((doc) => {
+        doc.id !== userId && nextFriendArr.push(doc.id);
+        // if (nextFollowersIdSnapshot.docs.length === nextFriendArr.length) {
+        setFriendIds([...friendIds, ...nextFriendArr]);
+        // }
+      });
+    } else {
+      const firstFriendArr = [];
+      const first = followersRef.limit(10);
+      const firstFollowersIdSnapshot = await first.get();
+      setLastVisible(
+        firstFollowersIdSnapshot.docs[firstFollowersIdSnapshot.docs.length - 1]
+      );
+      firstFollowersIdSnapshot.docs.forEach((doc) => {
+        doc.id !== userId && firstFriendArr.push(doc.id);
+        // if (firstFollowersIdSnapshot.docs.length === firstFriendArr.length) {
+        setFriendIds(firstFriendArr);
+        // }
+      });
+    }
   }
   async function getFollowing(userId) {
     const snapshot = await firestore
@@ -104,10 +136,7 @@ export default function ProfileScreen() {
             width: 60,
           }}
         >
-          <TouchableOpacity
-            style={styles.circle}
-            onPress={() => setShowMore(!showMore)}
-          >
+          <TouchableOpacity style={styles.circle} onPress={() => {}}>
             <Feather name="more-vertical" size={24} color="black" />
           </TouchableOpacity>
         </View>
@@ -125,7 +154,7 @@ export default function ProfileScreen() {
         >
           <Image
             style={{ marginLeft: 5, width: 30, height: 30 }}
-            source={require("../assets/loader.gif")}
+            source={require("../../assets/loader.gif")}
           />
         </View>
       ) : (
@@ -146,6 +175,10 @@ export default function ProfileScreen() {
                   color="#006eff"
                 />
               </View>
+              <Text style={[styles.title, { fontSize: 14 }]}>
+                {followingCount} Following
+              </Text>
+
               {!loading && (
                 <View style={{ flexDirection: "row", alignItems: "center" }}>
                   <TouchableOpacity
@@ -163,13 +196,13 @@ export default function ProfileScreen() {
                     </View>
                   </TouchableOpacity>
 
-                  <View style={[styles.circle, { backgroundColor: "#006eff" }]}>
+                  {/* <View style={[styles.circle, { backgroundColor: "#006eff" }]}>
                     <MaterialCommunityIcons
                       name="rotate-3d-variant"
                       size={20}
                       color="#ffffff"
                     />
-                  </View>
+                  </View> */}
                 </View>
               )}
             </View>
@@ -179,6 +212,9 @@ export default function ProfileScreen() {
               style={{ color: "#42414C", fontSize: 14, fontWeight: "bold" }}
             >
               {user.name || ""}
+            </Text>
+            <Text style={{ color: "#42414C", fontSize: 14, fontWeight: "500" }}>
+              {user.bio || ""}
             </Text>
             <Text style={{ color: "#42414C", fontSize: 14, fontWeight: "500" }}>
               {user.headline || ""}
@@ -201,26 +237,37 @@ export default function ProfileScreen() {
               </Text>
             </View>
           </View>
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-evenly",
-              alignItems: "center",
-              paddingHorizontal: 20,
-              marginTop: -10,
-            }}
-          >
-            <View style={{ alignItems: "center", width: 100 }}>
-              <Text style={{}}>Followers</Text>
-              <Text style={{ fontWeight: "bold" }}>{followerCount}</Text>
-            </View>
+          <View style={{}}>
             <View
-              style={{ height: 50, width: 2, backgroundColor: "#006eff" }}
-            ></View>
-            <View style={{ alignItems: "center", width: 100 }}>
-              <Text style={{}}>Following</Text>
-              <Text style={{ fontWeight: "bold" }}>{followingCount}</Text>
+              style={[
+                styles.row,
+                { width: "100%", paddingVertical: 20, paddingHorizontal: 15 },
+              ]}
+            >
+              <Text style={[styles.title, { fontSize: 12 }]}>
+                {followerCount} Followers
+              </Text>
+              {followerCount > 10 ? (
+                <View style={styles.row}>
+                  <Text style={{ fontSize: 12, marginRight: 5 }}>View all</Text>
+                  <Ionicons name="ios-arrow-forward" size={16} color="black" />
+                </View>
+              ) : null}
             </View>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={{ paddingHorizontal: 10 }}
+            >
+              {friendIds
+                .filter((item, index) => {
+                  // console.log(item, userId);
+                  return item !== user.id;
+                })
+                .map((item, index) => (
+                  <FollowersImagePreview key={index} userId={item} />
+                ))}
+            </ScrollView>
           </View>
           <View
             style={{
@@ -228,28 +275,36 @@ export default function ProfileScreen() {
               justifyContent: "space-around",
               alignItems: "center",
               paddingHorizontal: 20,
+              backgroundColor: "#ffffff",
               marginTop: 20,
-              elevation: 2,
-              paddingVertical: 15,
+              elevation: 1,
+              paddingVertical: 10,
             }}
           >
             <View style={{ alignItems: "center", width: 100 }}>
               <TouchableOpacity onPress={() => setFocused("reels")}>
                 {focused === "reels" ? (
-                  <AntDesign name="appstore1" size={25} color="#006eff" />
+                  <>
+                    <AntDesign name="appstore1" size={25} color="#006eff" />
+                  </>
                 ) : (
                   <AntDesign name="appstore-o" size={25} color="#b3b4b6" />
                 )}
               </TouchableOpacity>
+              {focused === "reels" ? (
+                <Text style={styles.focusedText}>Posts</Text>
+              ) : null}
             </View>
             <View style={{ alignItems: "center", width: 100 }}>
               <TouchableOpacity onPress={() => setFocused("saves")}>
                 {focused === "saves" ? (
-                  <MaterialCommunityIcons
-                    name="bookmark-multiple"
-                    size={25}
-                    color="#006eff"
-                  />
+                  <>
+                    <MaterialCommunityIcons
+                      name="bookmark-multiple"
+                      size={25}
+                      color="#006eff"
+                    />
+                  </>
                 ) : (
                   <MaterialCommunityIcons
                     name="bookmark-multiple-outline"
@@ -258,13 +313,16 @@ export default function ProfileScreen() {
                   />
                 )}
               </TouchableOpacity>
+              {focused === "saves" ? (
+                <Text style={styles.focusedText}>Saved</Text>
+              ) : null}
             </View>
           </View>
 
           <ScrollView>
             {focused === "reels" && (
               <View style={styles.listReels}>
-                {loadingReels && (
+                {loadingReels ? (
                   <View
                     style={{
                       flex: 1,
@@ -277,17 +335,31 @@ export default function ProfileScreen() {
                   >
                     <Image
                       style={{ marginLeft: 5, width: 30, height: 30 }}
-                      source={require("../assets/loader.gif")}
+                      source={require("../../assets/loader.gif")}
                     />
                   </View>
-                )}
-                {reels.map((item, index) => (
-                  <ReelPreview
-                    key={index}
-                    data={{ ...item, index }}
-                    reels={reels}
-                  />
-                ))}
+                ) : reels.length === 0 ? (
+                  <View style={styles.noPostContainerWrapper}>
+                    <View style={styles.noPostContainer}>
+                      <AntDesign
+                        name="appstore-o"
+                        size={50}
+                        color="#b3b4b6"
+                        style={styles.noPostNot}
+                      />
+                    </View>
+                    <Text style={styles.title}>You have no post yet</Text>
+                  </View>
+                ) : null}
+                {reels.length
+                  ? reels.map((item, index) => (
+                      <ReelPreview
+                        key={index}
+                        data={{ ...item, index }}
+                        reels={reels}
+                      />
+                    ))
+                  : null}
               </View>
             )}
             {focused === "saves" && (
@@ -326,66 +398,3 @@ export default function ProfileScreen() {
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-  },
-  header: {
-    flexDirection: "row",
-    width: "100%",
-    alignItems: "center",
-    paddingTop: 40,
-    paddingBottom: 10,
-    paddingHorizontal: 20,
-    zIndex: 1,
-    minHeight: 80,
-    backgroundColor: "#ffffff",
-    justifyContent: "space-between",
-    elevation: 4,
-  },
-  userPreview: {
-    flexDirection: "row",
-    alignItems: "center",
-    // justifyContent: "space-between",
-    paddingRight: 50,
-  },
-  title: {
-    color: "#42414C",
-    fontSize: 20,
-    marginLeft: 10,
-    marginBottom: 1,
-  },
-  listReels: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    flexWrap: "wrap",
-    paddingHorizontal: 10,
-    paddingVertical: 10,
-    paddingBottom: 20,
-  },
-  buttonContainer: {
-    position: "absolute",
-    bottom: 20,
-    right: 20,
-    backgroundColor: "transparent",
-  },
-  button: {
-    flexDirection: "row",
-    backgroundColor: "#006eff",
-    elevation: 2,
-    alignItems: "center",
-    justifyContent: "center",
-    height: 50,
-    width: 50,
-    borderRadius: 25,
-  },
-  buttonText: {
-    color: "#111111",
-    fontSize: 16,
-    fontWeight: "bold",
-    marginBottom: 2,
-    marginRight: 5,
-  },
-});

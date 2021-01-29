@@ -1,26 +1,52 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
-  Dimensions,
   FlatList,
   Image,
   Modal,
-  StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
-// import Modal from 'react-native-modalbox';
 import { CubeNavigationHorizontal } from "react-native-3dcube-navigation";
+import { useSelector } from "react-redux";
 import AllStories from "../../constants/AllStories";
-import StoryContainer from "../../components/Stories/StoryContainer";
-import { SwipeablePanel } from "rn-swipeable-panel";
+import { firestore } from "../../firebase/firebase.utils";
+import StoryContainer from "../Stories/StoryContainer";
+import { styles } from "./styles";
 
-const StoryViewScreen = (props) => {
+const StoriesViewModal = (props) => {
+  const currentUser = useSelector((state) => state.currentUser);
   const [isModelOpen, setModel] = useState(false);
   const [currentUserIndex, setCurrentUserIndex] = useState(0);
   const [currentScrollValue, setCurrentScrollValue] = useState(0);
+  const [myStory, setMyStory] = useState([]);
+  const [stories, setStories] = useState([]);
   const modalScroll = useRef(null);
 
+  useEffect(() => {}, []);
+  async function getStories() {
+    const storiesRef = firestore
+      .collection("stories")
+      .doc(currentUser.id)
+      .collection("stories");
+    storiesRef.onSnapshot((snapshot) => {
+      const storiesArr = [];
+      const xeamStory = [];
+      //   const myStory=[]
+      snapshot.docs.forEach((item) => {
+        if (item.userId === currentUser.id) {
+          setMyStory(item);
+          // myStory.push(item)
+        }
+        if (item.username === "xeam") {
+          setMyStory(item);
+          // myStory.push(item)
+        }
+        storiesArr.push(item);
+      });
+      setStories(storiesArr);
+    });
+  }
   const onStorySelect = (index) => {
     setCurrentUserIndex(index);
     setModel(true);
@@ -65,22 +91,23 @@ const StoryViewScreen = (props) => {
     }
   };
 
-  const renderSeperator = () => (
-    <View style={{ height: 1, backgroundColor: "#ccc" }} />
-  );
-
   return (
     <View style={styles.container}>
       <FlatList
         data={AllStories}
         horizontal
         renderItem={({ item, index }) => (
-          <TouchableOpacity onPress={() => onStorySelect(index)}>
-            <Image
-              style={styles.circle}
-              source={{ uri: item.profile }}
-              isHorizontal
-            />
+          <TouchableOpacity
+            onPress={() => onStorySelect(index)}
+            style={styles.userContainer}
+          >
+            <View style={styles.rounded}>
+              <Image
+                style={styles.roundedImage}
+                source={{ uri: item.profile }}
+                isHorizontal
+              />
+            </View>
             <Text style={styles.title}>{item.title}</Text>
           </TouchableOpacity>
         )}
@@ -106,11 +133,13 @@ const StoryViewScreen = (props) => {
         >
           {AllStories.map((item, index) => (
             <StoryContainer
+              ksy={index}
               onClose={onStoryClose}
               onStoryNext={onStoryNext}
               onStoryPrevious={onStoryPrevious}
               user={item}
               isNewStory={index !== currentUserIndex}
+              index={index}
             />
           ))}
         </CubeNavigationHorizontal>
@@ -119,28 +148,4 @@ const StoryViewScreen = (props) => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "flex-start",
-    paddingVertical: 50,
-    // backgroundColor: "rgba(255,255,255,255)",
-  },
-  circle: {
-    width: 66,
-    margin: 4,
-    height: 66,
-    borderRadius: 33,
-    borderWidth: 2,
-    borderColor: "#006eff",
-  },
-  modal: {
-    flex: 1,
-  },
-  title: {
-    fontSize: 9,
-    textAlign: "center",
-  },
-});
-
-export default StoryViewScreen;
+export default StoriesViewModal;

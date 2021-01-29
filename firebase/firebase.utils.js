@@ -123,8 +123,56 @@ export const postReel = (postData) => {
     .collection("userReels")
     .doc(postData.id)
     .set(postData);
-  // firestore.collection("reels").doc(postData.id).set(postData);
-  // firestore.collection("data").doc("one").set(docData)
+};
+export const postUserStory = async (postData) => {
+  const storiesRefGet = await firestore
+    .collection("userStories")
+    .doc(postData.userId)
+    .get();
+  if (storiesRefGet.exists) {
+    const oldStories = storiesRefGet.data().stories;
+    const newPostData = {
+      stories: [...oldStories, postData.stories],
+      updatedAt: postData.updatedAt,
+      action,
+    };
+    firestore.collection("userStories").doc(userId).update(newPostData);
+  } else {
+    firestore.collection("userStories").doc(postData.userId).set(postData);
+  }
+};
+export const updateViews = async (data, userId, postId) => {
+  const storiesRefGet = await firestore
+    .collection("userStories")
+    .doc(userId)
+    .get();
+  const filtered = storiesRefGet
+    .data()
+    .stories.filter((item, index) => item.id !== postId);
+  const action = {
+    type: "UPDATE_VIEWS",
+    payload: postId,
+    userId,
+  };
+  const postData = {
+    stories: [...filtered, data.stories],
+    updatedAt: data.updatedAt,
+    action,
+  };
+  firestore.collection("userStories").doc(userId).update(postData);
+};
+export const deleteUserStory = async (data, userId, postId) => {
+  const action = {
+    type: "DELETE",
+    payload: postId,
+    userId,
+  };
+  const postData = {
+    stories: data.stories,
+    updatedAt: data.updatedAt,
+    action,
+  };
+  firestore.collection("userStories").doc(userId).update(postData);
 };
 
 export const handleUnfollowUser = (profileId, currentUserId) => {
@@ -346,7 +394,22 @@ export const deleteReel = async (ownerId, postId) => {
   //   }
   // });
 };
-
+export const handleTurnPostNotificationOn = async (userId, currentUserId) => {
+  firestore
+    .collection("postNotifications")
+    .doc(userId)
+    .collection("users")
+    .doc(currentUserId)
+    .set({});
+};
+export const handleTurnPostNotificationOff = async (userId, currentUserId) => {
+  firestore
+    .collection("postNotifications")
+    .doc(userId)
+    .collection("users")
+    .doc(currentUserId)
+    .delete({});
+};
 export const addLikeToActivityFeed = async (
   currentUser,
   ownerId,

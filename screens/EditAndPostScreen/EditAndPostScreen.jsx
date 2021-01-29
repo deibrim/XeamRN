@@ -6,16 +6,27 @@ import {
   Text,
   TouchableOpacity,
   TouchableWithoutFeedback,
+  Image,
 } from "react-native";
 import { Video } from "expo-av";
 import { useSelector } from "react-redux";
-
-import styles from "./styles";
+import { postUserStory } from "../../firebase/firebase.utils";
 // import { Base64 } from "../../utils/DeEncoder";
+import styles from "./styles";
 
 const EditAndPostScreen = () => {
+  const user = useSelector((state) => state.user.currentUser);
+  const tvProfile = useSelector((state) => state.user.currentUserTvProfile);
+  const xStore = useSelector((state) => state.user.currentUserXStore);
+  const [description, setDescription] = useState("");
+  const [videoUri, setVideoUri] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [uploadingPercentage, setUploadingPercentage] = useState(0);
+  const [loading, setLoading] = useState(false);
   const [paused, setPaused] = useState(false);
   const [resizeMode, setResizeMode] = useState("cover");
+  const [postingTo, setPostingTo] = useState("");
 
   const onPlayPausePress = () => {
     setPaused(!paused);
@@ -26,6 +37,89 @@ const EditAndPostScreen = () => {
   const onCancel = async () => {
     navigation.goBack();
   };
+
+  const uploadToStorage = async (file, id) => {
+    const response = await fetch(file);
+    const blob = await response.blob();
+    try {
+      const storageRef = firebase.storage().ref(`stories/${user.id}/${id}`);
+      const uploadTask = storageRef.put(blob);
+      uploadTask.on(
+        "state_changed",
+        (snapshot) => {
+          let progressPercentage =
+            (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          setUploadingPercentage(Math.floor(progressPercentage));
+          switch (snapshot.state) {
+            case firebase.storage.TaskState.PAUSED:
+              setUploading("paused");
+              break;
+            case firebase.storage.TaskState.RUNNING:
+              setUploading("uploading");
+              break;
+          }
+        },
+        (error) => {
+          console.log(error);
+        },
+        () => {
+          uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
+            setVideoUri(downloadURL);
+            setUploading("");
+            onPublish(downloadURL, id);
+          });
+        }
+      );
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handlePublish = async () => {
+    setLoading(true);
+    const id = uuidv4().split("-").join("");
+    uploadToStorage(route.params.videoUri, id);
+  };
+  async function onPublish(uri, id) {
+    try {
+      const newPost = {
+        id,
+        uri,
+        type: route.params.mediaType,
+        isSeen: false,
+        duration: route.params.mediaType === "image" ? 5 : 15,
+        externalLink: "",
+        views: {},
+        postedAt: Date.now(),
+      };
+      if (postingTo === "personal") {
+        const pdata = {
+          userId: user.id,
+          username: user.username,
+          profile_pic: user.profile_pic,
+          stories: [newPost],
+          updatedAt: Date.now(),
+        };
+        postUserStory(pdata);
+      }
+      if (postingTo === "tv") {
+        const pdata = {
+          userId: user.id,
+          username: tvProfile.tvHandle,
+          profile_pic: tvProfile.logo,
+          stories: [newPost],
+          updatedAt: Date.now(),
+        };
+        postTvStory(pdata);
+      }
+      setLoading(false);
+      navigation.navigate("HomeScreen");
+    } catch (e) {
+      setLoading(false);
+      console.error(e);
+    }
+  }
+
   return (
     <>
       <View style={styles.container}>

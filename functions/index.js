@@ -4,6 +4,8 @@ const {
   deleteUser,
   createFollower,
   deleteFollower,
+  createStory,
+  updateStory,
   createReel,
   updateReel,
   deleteReel,
@@ -13,6 +15,8 @@ const {
   deleteTvProfile,
   createTvFollower,
   deleteTvFollower,
+  createTvStory,
+  updateTvStory,
   createTvReel,
   updateTvReel,
   deleteTvReel,
@@ -51,6 +55,14 @@ exports.onDeleteFollower = functions.firestore
   .document("/followers/{userId}/userFollowers/{followerId}")
   .onDelete(deleteFollower);
 
+exports.onCreateStory = functions.firestore
+  .document("/userStories/{userId}")
+  .onCreate(createStory);
+
+exports.onUpdateStory = functions.firestore
+  .document("/userStories/{userId}")
+  .onUpdate(updateStory);
+
 exports.onCreateReel = functions.firestore
   .document("/reels/{userId}/userReels/{postId}")
   .onCreate(createReel);
@@ -80,6 +92,14 @@ exports.onCreateTvFollower = functions.firestore
 exports.onDeleteTvFollower = functions.firestore
   .document("/tvFollowers/{tvId}/followers/{followerId}")
   .onDelete(deleteTvFollower);
+
+exports.onCreateTvStory = functions.firestore
+  .document("/tvStories/{tvId}")
+  .onCreate(createTvStory);
+
+exports.onUpdateTvStory = functions.firestore
+  .document("/tvStories/{tvId}")
+  .onUpdate(updateTvStory);
 
 exports.onCreateTvReel = functions.firestore
   .document("/tvReels/{tvId}/reels/{postId}")

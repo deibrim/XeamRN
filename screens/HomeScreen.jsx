@@ -30,6 +30,7 @@ import { toggleShowBottomNavbar } from "../redux/settings/actions";
 import AddProductModal from "../components/AddProductModal/AddProductModal";
 import StoriesPreviewContainer from "../components/StoriesPreviewContainer/StoriesPreviewContainer";
 import FeedContainer from "../components/FeedContainer/FeedContainer";
+import StoriesViewModal from "../components/StoriesViewModal/StoriesViewModal";
 const wait = (timeout) => {
   return new Promise((resolve) => {
     setTimeout(resolve, timeout);
@@ -229,7 +230,8 @@ export default React.memo(function HomeScreen() {
             />
             <Text style={styles.sectionTitle}>Stories</Text>
           </View> */}
-          <StoriesPreviewContainer />
+          {/* <StoriesPreviewContainer /> */}
+          <StoriesViewModal />
         </View>
         {!hasTimeline && (
           <View style={styles.trendSection}>

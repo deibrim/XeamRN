@@ -26,6 +26,7 @@ import { toggleShowBottomNavbar } from "../../redux/settings/actions";
 import { useDispatch, useSelector } from "react-redux";
 import { LongPressGestureHandler } from "react-native-gesture-handler";
 import TextStoryContainer from "../../components/TextStoryContainer/TextStoryContainer";
+import SketchStoryContainer from "../../components/SketchStoryContainer/SketchStoryContainer";
 
 const wait = (timeout) => {
   return new Promise((resolve) => {
@@ -47,6 +48,7 @@ export default function CameraScreen() {
   const [labelHidden, hideLabel] = useState(false);
   const [isPanelActive, setIsPanelActive] = useState(false);
   const [showProgressBar, setShowProgressBar] = useState(false);
+  const [showStoryTypes, setShowStoryTypes] = useState(true);
   const [deviceCameraRatio, setDeviceCameraRatio] = useState(["16:9"]);
   const [storyType, setStoryType] = useState("video");
   const [postingTo, setPostingTo] = useState("personal");
@@ -104,17 +106,18 @@ export default function CameraScreen() {
     }
   };
   const onTakePicture = async () => {
-    const data = await camera.takePictureAsync()({
+    const data = await camera.takePictureAsync({
       quality: 1,
     });
 
     if (data) {
-      console.log(data);
-      // navigation.navigate("EditAndPostScreen", {
-      //   photoUri: data.uri,
-      //   type: route.params.type,
-      //   mediaType: "photo",
-      // });
+      navigation.navigate("EditAndPostScreen", {
+        photoUri: data.uri,
+        type: route.params.type,
+        mediaType: "photo",
+        height: data.height,
+        width: data.width,
+      });
     }
   };
 
@@ -179,74 +182,61 @@ export default function CameraScreen() {
   };
   return (
     <>
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backBtn}
-          onPress={() => {
-            dispatch(toggleShowBottomNavbar(false));
-            navigation.goBack();
-          }}
-        >
-          <Ionicons name="md-arrow-back" size={24} color="black" />
-        </TouchableOpacity>
-        {route.params.type === "story" ? (
-          <View style={styles.postToContainer}>
-            {xStore && (
-              <>
-                <TouchableWithoutFeedback
-                  onPress={() => {
-                    setPostingTo("store");
-                  }}
-                >
-                  <View
-                    style={[
-                      styles.postTo,
-                      postingTo !== "store" && { backgroundColor: "#ffffff45" },
-                    ]}
+      {storyType !== "text" && storyType !== "sketch" && (
+        <View style={styles.header}>
+          <TouchableOpacity
+            style={styles.backBtn}
+            onPress={() => {
+              if (storyType === "text") {
+                setStoryType("video");
+                return;
+              }
+              dispatch(toggleShowBottomNavbar(false));
+              navigation.goBack();
+            }}
+          >
+            <Ionicons name="md-arrow-back" size={24} color="black" />
+          </TouchableOpacity>
+          {route.params.type === "story" ? (
+            <View style={styles.postToContainer}>
+              {xStore && (
+                <>
+                  <TouchableWithoutFeedback
+                    onPress={() => {
+                      setPostingTo("store");
+                    }}
                   >
-                    <Image
-                      source={{ uri: user.profile_pic }}
-                      style={styles.postToImage}
-                    />
-                    {labelHidden ? null : (
-                      <Text style={styles.postToText}>Store Story</Text>
-                    )}
-                  </View>
-                </TouchableWithoutFeedback>
-                <View style={{ width: 10, height: 10 }}></View>
-              </>
-            )}
-            <TouchableWithoutFeedback
-              onPress={() => {
-                setPostingTo("personal");
-              }}
-            >
-              <View
-                style={[
-                  styles.postTo,
-                  postingTo !== "personal" && { backgroundColor: "#ffffff45" },
-                ]}
-              >
-                <Image
-                  source={{ uri: user.profile_pic }}
-                  style={styles.postToImage}
-                />
-                {labelHidden ? null : (
-                  <Text style={styles.postToText}>Your Story</Text>
-                )}
-              </View>
-            </TouchableWithoutFeedback>
-            <View style={{ width: 10, height: 10 }}></View>
-            {tvProfile && (
+                    <View
+                      style={[
+                        styles.postTo,
+                        postingTo !== "store" && {
+                          backgroundColor: "#ffffff45",
+                        },
+                      ]}
+                    >
+                      <Image
+                        source={{ uri: user.profile_pic }}
+                        style={styles.postToImage}
+                      />
+                      {labelHidden ? null : (
+                        <Text style={styles.postToText}>Store Story</Text>
+                      )}
+                    </View>
+                  </TouchableWithoutFeedback>
+                  <View style={{ width: 10, height: 10 }}></View>
+                </>
+              )}
               <TouchableWithoutFeedback
                 onPress={() => {
-                  setPostingTo("tv");
+                  setPostingTo("personal");
                 }}
               >
                 <View
                   style={[
                     styles.postTo,
-                    postingTo !== "tv" && { backgroundColor: "#ffffff45" },
+                    postingTo !== "personal" && {
+                      backgroundColor: "#ffffff45",
+                    },
                   ]}
                 >
                   <Image
@@ -254,41 +244,66 @@ export default function CameraScreen() {
                     style={styles.postToImage}
                   />
                   {labelHidden ? null : (
-                    <Text style={styles.postToText}>Tv Story</Text>
+                    <Text style={styles.postToText}>Your Story</Text>
                   )}
                 </View>
               </TouchableWithoutFeedback>
-            )}
-          </View>
-        ) : null}
-      </View>
-      <TouchableOpacity
-        onPress={onSwitchFlashMode}
-        style={{
-          position: "absolute",
-          left: 20,
-          top: "20%",
-          zIndex: 1,
-          backgroundColor: "#006eff89",
-          borderRadius: 50,
-          height: 35,
-          width: 35,
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <MaterialIcons
-          name={
-            flashMode === "off"
-              ? "flash-off"
-              : flashMode === "on"
-              ? "flash-on"
-              : "flash-auto"
-          }
-          size={20}
-          color="#ffffff89"
-        />
-      </TouchableOpacity>
+              <View style={{ width: 10, height: 10 }}></View>
+              {tvProfile && (
+                <TouchableWithoutFeedback
+                  onPress={() => {
+                    setPostingTo("tv");
+                  }}
+                >
+                  <View
+                    style={[
+                      styles.postTo,
+                      postingTo !== "tv" && { backgroundColor: "#ffffff45" },
+                    ]}
+                  >
+                    <Image
+                      source={{ uri: user.profile_pic }}
+                      style={styles.postToImage}
+                    />
+                    {labelHidden ? null : (
+                      <Text style={styles.postToText}>Tv Story</Text>
+                    )}
+                  </View>
+                </TouchableWithoutFeedback>
+              )}
+            </View>
+          ) : null}
+        </View>
+      )}
+      {storyType !== "text" && storyType !== "sketch" && (
+        <TouchableOpacity
+          onPress={onSwitchFlashMode}
+          style={{
+            position: "absolute",
+            left: 20,
+            top: "20%",
+            zIndex: 1,
+            backgroundColor: "#006eff89",
+            borderRadius: 50,
+            height: 35,
+            width: 35,
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <MaterialIcons
+            name={
+              flashMode === "off"
+                ? "flash-off"
+                : flashMode === "on"
+                ? "flash-on"
+                : "flash-auto"
+            }
+            size={20}
+            color="#ffffff89"
+          />
+        </TouchableOpacity>
+      )}
       <View
         style={{
           flex: 1,
@@ -300,8 +315,9 @@ export default function CameraScreen() {
           isPanelActive={isPanelActive}
           setIsPanelActive={setIsPanelActive}
           type={route.params.type}
+          storyType={storyType}
         />
-        {storyType !== "text" && (
+        {storyType !== "text" && storyType !== "sketch" && (
           <Camera
             ref={(ref) => (camera = ref)}
             focusDepth={"on"}
@@ -316,9 +332,14 @@ export default function CameraScreen() {
             {/* <Feather name="camera" size={24} color="black" /> */}
           </Camera>
         )}
-        {storyType === "text" && <TextStoryContainer />}
+        {storyType === "text" && (
+          <TextStoryContainer setShowStoryTypes={setShowStoryTypes} />
+        )}
+        {storyType === "sketch" && (
+          <SketchStoryContainer setShowStoryTypes={setShowStoryTypes} />
+        )}
         <View style={styles.otherControl}>
-          {route.params.type === "story" ? (
+          {route.params.type === "story" && showStoryTypes ? (
             <View style={styles.storyTypes}>
               <TouchableWithoutFeedback
                 onPress={() => {
@@ -341,6 +362,32 @@ export default function CameraScreen() {
                   <View style={[styles.storyTypeTextWrapper]}>
                     {labelHidden ? null : (
                       <Text style={styles.storyTypeText}>Text</Text>
+                    )}
+                  </View>
+                </View>
+              </TouchableWithoutFeedback>
+              <View style={{ width: 10, height: 10 }}></View>
+              <TouchableWithoutFeedback
+                onPress={() => {
+                  setStoryType("sketch");
+                }}
+              >
+                <View style={[styles.storyType]}>
+                  <View
+                    style={[
+                      styles.storyTypeIconWrapper,
+                      storyType !== "sketch" && { borderColor: "#ffffff45" },
+                    ]}
+                  >
+                    <MaterialCommunityIcons
+                      name="draw"
+                      size={30}
+                      color="#000000"
+                    />
+                  </View>
+                  <View style={[styles.storyTypeTextWrapper]}>
+                    {labelHidden ? null : (
+                      <Text style={styles.storyTypeText}>Sketch</Text>
                     )}
                   </View>
                 </View>
@@ -393,7 +440,7 @@ export default function CameraScreen() {
           ) : null}
 
           {showProgressBar ? renderProgressBar() : null}
-          {storyType === "text" ? null : (
+          {storyType === "text" || storyType === "sketch" ? null : (
             <View style={styles.otherControlWrapper}>
               <TouchableOpacity
                 style={styles.selectFromPhoneContainer}

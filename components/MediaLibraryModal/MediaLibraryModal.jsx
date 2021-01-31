@@ -1,21 +1,38 @@
 import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import { View } from "react-native";
-import { AssetsSelector } from "expo-images-picker";
+// import { AssetsSelector } from "expo-images-picker";
+import AssetsSelector from "../AssetsSelector/AssetsSelector";
 import { useSelector } from "react-redux";
 import { useNavigation } from "@react-navigation/native";
 import { styles } from "./styles";
 
-const MediaLibraryModal = ({ isPanelActive, setIsPanelActive, type }) => {
+const MediaLibraryModal = ({
+  isPanelActive,
+  setIsPanelActive,
+  type,
+  storyType,
+}) => {
   const user = useSelector((state) => state.user.currentUser);
   const navigation = useNavigation();
   const onDone = (data) => {
-    setIsPanelActive(false);
-    navigation.navigate("EditAndPostScreen", {
-      videoUri: data[0].uri,
-      type,
-      mediaType: data[0].mediaType,
-    });
+    const mediaType = data[0].mediaType;
+    console.log(mediaType);
+    const routeParams =
+      mediaType === "video"
+        ? {
+            videoUri: data[0].uri,
+            type,
+            mediaType,
+          }
+        : {
+            photoUri: data[0].uri,
+            type,
+            mediaType,
+            height: data[0].height,
+            width: data[0].width,
+          };
+    navigation.navigate("EditAndPostScreen", routeParams);
   };
 
   const goBack = () => {
@@ -25,7 +42,7 @@ const MediaLibraryModal = ({ isPanelActive, setIsPanelActive, type }) => {
     <View style={styles.container}>
       <AssetsSelector
         options={{
-          assetsType: ["video"],
+          assetsType: [storyType],
           noAssets: {
             Component: () => <View></View>,
           },

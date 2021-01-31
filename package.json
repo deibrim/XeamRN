@@ -24,6 +24,8 @@
     "@react-navigation/drawer": "^5.7.2",
     "@react-navigation/native": "^5.7.3",
     "@react-navigation/stack": "^5.9.0",
+    "axios": "^0.21.1",
+    "axios-hooks": "^2.3.0",
     "cartoon-avatar": "^1.0.2",
     "expo": "~39.0.2",
     "expo-asset": "~8.2.0",

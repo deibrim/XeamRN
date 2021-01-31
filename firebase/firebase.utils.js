@@ -124,6 +124,44 @@ export const postReel = (postData) => {
     .doc(postData.id)
     .set(postData);
 };
+export const set24HoursTimer = async (storyId, userId, accountType) => {
+  const timestamp = Date.now();
+  // const endTime = new Date(timestamp + 60 * 60 * 24 * 1000)
+  const endTime = new Date(timestamp + 60 * 1000);
+
+  const data = {
+    storyId,
+    userId,
+    timestamp,
+    endTime,
+    accountType,
+  };
+  console.log(data);
+
+  try {
+    const url =
+      "https://us-central1-chattie-3eb7b.cloudfunctions.net/api/v1/stories/test";
+    // const url = "http://192.168.43.199:5000";
+    const postRes = await fetch(url, {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        storyId,
+        userId,
+        timestamp,
+        endTime,
+        accountType,
+      }),
+    });
+    const res = await postRes.json();
+    console.log(res);
+  } catch (e) {
+    console.log("here", e);
+  }
+};
 export const postUserStory = async (postData) => {
   const storiesRefGet = await firestore
     .collection("userStories")
@@ -136,11 +174,17 @@ export const postUserStory = async (postData) => {
       updatedAt: postData.updatedAt,
       action,
     };
-    firestore.collection("userStories").doc(userId).update(newPostData);
+    await firestore.collection("userStories").doc(userId).update(newPostData);
+    set24HoursTimer(postData.id, postData.userId, "personal");
   } else {
-    firestore.collection("userStories").doc(postData.userId).set(postData);
+    await firestore
+      .collection("userStories")
+      .doc(postData.userId)
+      .set(postData);
+    set24HoursTimer(postData.id, postData.userId, "personal");
   }
 };
+
 export const updateViews = async (data, userId, postId) => {
   const storiesRefGet = await firestore
     .collection("userStories")

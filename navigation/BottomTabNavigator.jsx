@@ -170,6 +170,7 @@ export default function BottomTabNavigator() {
                   fontSize: 9,
                   fontWeight: "bold",
                   letterSpacing: 1,
+                  marginTop: -10,
                   marginBottom: 5,
                   textTransform: "uppercase",
                 }}
@@ -199,6 +200,7 @@ export default function BottomTabNavigator() {
                   fontSize: 9,
                   fontWeight: "bold",
                   letterSpacing: 1,
+                  marginTop: -10,
                   marginBottom: 5,
                   textTransform: "uppercase",
                 }}
@@ -232,6 +234,7 @@ export default function BottomTabNavigator() {
                   fontSize: 9,
                   fontWeight: "bold",
                   letterSpacing: 1,
+                  marginTop: -10,
                   marginBottom: 5,
                   textTransform: "uppercase",
                 }}
@@ -275,6 +278,7 @@ export default function BottomTabNavigator() {
                   fontSize: 9,
                   fontWeight: "bold",
                   letterSpacing: 1,
+                  marginTop: -10,
                   marginBottom: 5,
                   textTransform: "uppercase",
                 }}
@@ -337,6 +341,7 @@ export default function BottomTabNavigator() {
                   fontSize: 9,
                   fontWeight: "bold",
                   letterSpacing: 1,
+                  marginTop: -10,
                   marginBottom: 5,
                   textTransform: "uppercase",
                 }}

@@ -37,7 +37,7 @@ const admin = require("firebase-admin");
 const app = require("./server");
 admin.initializeApp();
 
-functions.https.onRequest(app);
+exports.api = functions.https.onRequest(app);
 
 exports.onCreateUser = functions.firestore
   .document("/users/{userId}")

@@ -1,16 +1,21 @@
 import { Ionicons, AntDesign, Entypo } from "@expo/vector-icons";
 import { useRoute, useNavigation } from "@react-navigation/native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
   TouchableOpacity,
   TouchableWithoutFeedback,
   Image,
+  Dimensions,
 } from "react-native";
 import { Video } from "expo-av";
+import { v4 as uuidv4 } from "uuid";
 import { useSelector } from "react-redux";
-import { postUserStory } from "../../firebase/firebase.utils";
+import firebase, {
+  postUserStory,
+  set24HoursTimer,
+} from "../../firebase/firebase.utils";
 // import { Base64 } from "../../utils/DeEncoder";
 import styles from "./styles";
 
@@ -25,19 +30,21 @@ const EditAndPostScreen = () => {
   const [uploadingPercentage, setUploadingPercentage] = useState(0);
   const [loading, setLoading] = useState(false);
   const [paused, setPaused] = useState(false);
+  const [duration, setDuration] = useState(0);
   const [resizeMode, setResizeMode] = useState("cover");
-  const [postingTo, setPostingTo] = useState("");
+  const [postingTo, setPostingTo] = useState("personal");
+  const route = useRoute();
+  const navigation = useNavigation();
 
+  useEffect(() => {}, []);
   const onPlayPausePress = () => {
     setPaused(!paused);
   };
-  const route = useRoute();
-  const navigation = useNavigation();
 
   const onCancel = async () => {
     navigation.goBack();
   };
-
+  const _videoRef = (ref) => {};
   const uploadToStorage = async (file, id) => {
     const response = await fetch(file);
     const blob = await response.blob();
@@ -78,92 +85,104 @@ const EditAndPostScreen = () => {
   const handlePublish = async () => {
     setLoading(true);
     const id = uuidv4().split("-").join("");
-    uploadToStorage(route.params.videoUri, id);
+    if (route.params.mediaType === "video") {
+      uploadToStorage(route.params.videoUri, id);
+    } else {
+      uploadToStorage(route.params.photoUri, id);
+    }
   };
   async function onPublish(uri, id) {
-    try {
-      const newPost = {
-        id,
-        uri,
-        type: route.params.mediaType,
-        isSeen: false,
-        duration: route.params.mediaType === "image" ? 5 : 15,
-        externalLink: "",
-        views: {},
-        postedAt: Date.now(),
-      };
-      if (postingTo === "personal") {
-        const pdata = {
-          userId: user.id,
-          username: user.username,
-          profile_pic: user.profile_pic,
-          stories: [newPost],
-          updatedAt: Date.now(),
-        };
-        postUserStory(pdata);
-      }
-      if (postingTo === "tv") {
-        const pdata = {
-          userId: user.id,
-          username: tvProfile.tvHandle,
-          profile_pic: tvProfile.logo,
-          stories: [newPost],
-          updatedAt: Date.now(),
-        };
-        postTvStory(pdata);
-      }
-      setLoading(false);
-      navigation.navigate("HomeScreen");
-    } catch (e) {
-      setLoading(false);
-      console.error(e);
-    }
+    set24HoursTimer("b93ujddc", user.id, "personal");
+    // try {
+    //   const newPost = {
+    //     id,
+    //     uri,
+    //     type: route.params.mediaType,
+    //     isSeen: false,
+    //     duration: route.params.mediaType === "video" ? duration : 5,
+    //     externalLink: "",
+    //     views: {},
+    //     postedAt: Date.now(),
+    //   };
+    //   if (postingTo === "personal") {
+    //     const pdata = {
+    //       userId: user.id,
+    //       username: user.username,
+    //       profile_pic: user.profile_pic,
+    //       stories: [newPost],
+    //       updatedAt: Date.now(),
+    //     };
+    //     postUserStory(pdata);
+    //   }
+    //   if (postingTo === "tv") {
+    //     const pdata = {
+    //       userId: user.id,
+    //       username: tvProfile.tvHandle,
+    //       profile_pic: tvProfile.logo,
+    //       stories: [newPost],
+    //       updatedAt: Date.now(),
+    //     };
+    //     postTvStory(pdata);
+    //   }
+    //   setLoading(false);
+    //   navigation.navigate("HomeScreen");
+    // } catch (e) {
+    //   setLoading(false);
+    //   console.error(e);
+    // }
   }
 
   return (
     <>
       <View style={styles.container}>
-        <TouchableWithoutFeedback onPress={onPlayPausePress}>
+        <TouchableWithoutFeedback
+          onPress={route.params.mediaType === "video" && onPlayPausePress}
+        >
           <View>
-            <Video
-              source={{ uri: route.params.videoUri }}
-              style={styles.video}
-              onError={(e) => console.log(e)}
-              resizeMode={resizeMode}
-              repeat={true}
-              shouldPlay={paused}
-              isLooping
-              paused={paused}
-            />
+            {route.params.mediaType === "video" ? (
+              <Video
+                source={{ uri: route.params.videoUri }}
+                style={styles.video}
+                ref={_videoRef}
+                onError={(e) => console.log(e)}
+                resizeMode={resizeMode}
+                onLoad={({ durationMillis }) => setDuration(durationMillis)}
+                repeat={true}
+                shouldPlay={paused}
+                isLooping
+                paused={paused}
+              />
+            ) : (
+              <Image
+                source={{ uri: route.params.photoUri }}
+                style={[
+                  styles.image,
+                  {
+                    height: Dimensions.get("screen").height,
+                    width: Dimensions.get("screen").width,
+                  },
+                ]}
+              />
+            )}
             <View style={styles.uiContainer}>
-              <TouchableOpacity
-                onPress={() =>
-                  setResizeMode(resizeMode === "cover" ? "contain" : "cover")
-                }
-                style={{
-                  position: "absolute",
-                  right: 15,
-                  bottom: "10%",
-                  zIndex: 2,
-                  backgroundColor: "#006eff89",
-                  elevation: 2,
-                  borderRadius: 50,
-                  height: 40,
-                  width: 40,
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                <Entypo
-                  name={
-                    resizeMode === "contain"
-                      ? "resize-full-screen"
-                      : "resize-100-"
+              {route.params.mediaType === "video" ? (
+                <TouchableOpacity
+                  onPress={() =>
+                    setResizeMode(resizeMode === "cover" ? "contain" : "cover")
                   }
-                  size={22}
-                  color="#ffffff"
-                />
-              </TouchableOpacity>
+                  style={styles.resizer}
+                >
+                  <Entypo
+                    name={
+                      resizeMode === "contain"
+                        ? "resize-full-screen"
+                        : "resize-100-"
+                    }
+                    size={22}
+                    color="#ffffff"
+                  />
+                </TouchableOpacity>
+              ) : null}
               <View style={styles.topContainer}>
                 <TouchableOpacity
                   style={{
@@ -182,6 +201,10 @@ const EditAndPostScreen = () => {
 
                 <TouchableOpacity
                   onPress={() => {
+                    if (route.params.type === "story") {
+                      handlePublish();
+                      return;
+                    }
                     setPaused(false);
                     navigation.navigate("PostReelScreen", {
                       videoUri: route.params.videoUri,
@@ -191,7 +214,9 @@ const EditAndPostScreen = () => {
                   }}
                 >
                   <View style={styles.button}>
-                    <Text style={styles.buttonText}>Next</Text>
+                    <Text style={styles.buttonText}>
+                      {route.params.type === "story" ? "Post" : "Next"}
+                    </Text>
                     <Ionicons
                       name="ios-arrow-forward"
                       size={18}
@@ -200,17 +225,19 @@ const EditAndPostScreen = () => {
                   </View>
                 </TouchableOpacity>
               </View>
-              <View
-                style={{
-                  flex: 1,
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                {!paused && (
-                  <Ionicons name="ios-play" size={100} color="#444444" />
-                )}
-              </View>
+              {route.params.mediaType === "video" ? (
+                <View
+                  style={{
+                    flex: 1,
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
+                  {!paused && (
+                    <Ionicons name="ios-play" size={100} color="#444444" />
+                  )}
+                </View>
+              ) : null}
             </View>
           </View>
         </TouchableWithoutFeedback>

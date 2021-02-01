@@ -1,10 +1,27 @@
 import { Ionicons } from "@expo/vector-icons";
-import React, { useState } from "react";
-import { StyleSheet, TextInput, TouchableOpacity, View } from "react-native";
+import React, { useEffect, useState } from "react";
+import {
+  Keyboard,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import Colors from "../../constants/Colors";
-const ReplyStoryInput = () => {
-  const onSendPress = () => {};
+const ReplyStoryInput = ({ setShowReplyInput, setIsPause }) => {
   const [message, setMessage] = useState("");
+  const [keyboardShowing, setKeyboardShowing] = useState(false);
+  useEffect(() => {
+    Keyboard.addListener("keyboardDidShow", () => {
+      setKeyboardShowing(true);
+    });
+    Keyboard.addListener("keyboardDidHide", () => {
+      setKeyboardShowing(false);
+      setIsPause(false);
+      setShowReplyInput(false);
+    });
+  }, [keyboardShowing]);
+  const onSendPress = () => {};
   return (
     <View style={styles.container}>
       <View
@@ -39,6 +56,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     margin: 10,
     alignItems: "flex-end",
+    position: "absolute",
+    bottom: "40%",
   },
   mainContainer: {
     flexDirection: "row",

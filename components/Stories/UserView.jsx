@@ -1,5 +1,6 @@
 import React from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import moment from "moment";
 
 class UserView extends React.PureComponent {
   constructor(props) {
@@ -14,7 +15,7 @@ class UserView extends React.PureComponent {
         <Image source={{ uri: props.profile }} style={styles.image} />
         <View style={{ flex: 1 }}>
           <Text style={styles.name}>{props.name}</Text>
-          <Text style={styles.time}>2h ago</Text>
+          <Text style={styles.time}>{moment(props.timestamp).fromNow()}</Text>
         </View>
       </View>
     );

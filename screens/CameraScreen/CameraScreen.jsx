@@ -355,7 +355,7 @@ export default function CameraScreen() {
                   >
                     <MaterialCommunityIcons
                       name="cursor-text"
-                      size={30}
+                      size={25}
                       color="#000000"
                     />
                   </View>
@@ -381,7 +381,7 @@ export default function CameraScreen() {
                   >
                     <MaterialCommunityIcons
                       name="draw"
-                      size={30}
+                      size={25}
                       color="#000000"
                     />
                   </View>
@@ -405,7 +405,7 @@ export default function CameraScreen() {
                       storyType !== "video" && { borderColor: "#ffffff45" },
                     ]}
                   >
-                    <Feather name="video" size={30} color="#000000" />
+                    <Feather name="video" size={25} color="#000000" />
                   </View>
                   <View style={[styles.storyTypeTextWrapper]}>
                     {labelHidden ? null : (
@@ -427,7 +427,7 @@ export default function CameraScreen() {
                       storyType !== "photo" && { borderColor: "#ffffff45" },
                     ]}
                   >
-                    <AntDesign name="picture" size={30} color="#000000" />
+                    <AntDesign name="picture" size={25} color="#000000" />
                   </View>
                   <View style={[styles.storyTypeTextWrapper]}>
                     {labelHidden ? null : (

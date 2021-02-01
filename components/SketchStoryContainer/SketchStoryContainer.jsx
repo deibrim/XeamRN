@@ -1,22 +1,16 @@
-import {
-  AntDesign,
-  Entypo,
-  Feather,
-  Fontisto,
-  MaterialIcons,
-  SimpleLineIcons,
-} from "@expo/vector-icons";
+import { Feather, Fontisto, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import React, { useEffect, useState, useRef } from "react";
 import {
   Keyboard,
   Text,
   TextInput,
+  TouchableOpacity,
   TouchableWithoutFeedback,
   View,
 } from "react-native";
 import ViewShot, { captureRef } from "react-native-view-shot";
 import { useSelector } from "react-redux";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import * as Permissions from "expo-permissions";
 import * as MediaLibrary from "expo-media-library";
 import AppButton from "../AppButton/AppButton";
@@ -30,11 +24,11 @@ const SketchStoryContainer = ({ setShowStoryTypes }) => {
   const store = useSelector((state) => state.user.currentUserXStore);
   const [showDraggable, setShowDraggable] = useState(true);
   const [keyboardShowing, setKeyboardShowing] = useState(false);
-  const [backgroundColor, setBackgroundColor] = useState("#006eff67");
+  const [backgroundColor, setBackgroundColor] = useState("#549eff");
   const [textBoxVisible, setTextBoxVisible] = useState(false);
   const [text, setText] = useState("");
   const navigation = useNavigation();
-  const [cameraRollUri, setCameraRollUri] = useState("");
+  const route = useRoute();
   const captureViewRef = useRef();
   let _clear;
   let _undo;
@@ -50,19 +44,31 @@ const SketchStoryContainer = ({ setShowStoryTypes }) => {
       setKeyboardShowing(false);
     });
   }, [keyboardShowing]);
-
-  const onCapture = async (share) => {
+  const onNext = async (asset) => {
+    navigation.navigate("EditAndPostScreen", {
+      photoUri: asset.uri,
+      type: route.params.type,
+      mediaType: "photo",
+      height: asset.height,
+      width: asset.width,
+      asset: asset,
+    });
+  };
+  const onCapture = async (next) => {
     try {
       let result = await captureRef(captureViewRef, {
         quality: 1,
-        format: "png",
+        format: "jpg",
       });
       const asset = await MediaLibrary.createAssetAsync(result);
-      setCameraRollUri(asset.uri);
+      if (asset && next) {
+        onNext(asset);
+      }
     } catch (snapshotError) {
       console.error(snapshotError);
     }
   };
+
   const undo = () => {
     if (_undo !== undefined) _undo();
   };
@@ -71,31 +77,45 @@ const SketchStoryContainer = ({ setShowStoryTypes }) => {
   };
   return (
     <View style={[styles.wrapper]}>
+      <View style={styles.topContainer}>
+        <TouchableOpacity onPress={() => onCapture(true)}>
+          <View style={styles.button}>
+            <Text style={styles.buttonText}>Next</Text>
+            <Ionicons name="ios-arrow-forward" size={18} color="black" />
+          </View>
+        </TouchableOpacity>
+      </View>
       <View style={styles.controls}>
-        <TouchableWithoutFeedback
-          onPress={() => setTextBoxVisible(!textBoxVisible)}
-        >
+        <TouchableOpacity onPress={() => {}}>
           <View style={styles.controlBtn}>
             <MaterialIcons name="text-fields" size={26} color="#ffffff89" />
           </View>
-        </TouchableWithoutFeedback>
-        <TouchableWithoutFeedback onPress={undo}>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={undo}>
           <View style={styles.controlBtn}>
             <Fontisto name="undo" size={20} color="#ffffff89" />
           </View>
-        </TouchableWithoutFeedback>
-        <TouchableWithoutFeedback onPress={clear}>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={clear}>
           <View style={styles.controlBtn}>
             <MaterialIcons name="clear" size={24} color="#ffffff89" />
           </View>
-        </TouchableWithoutFeedback>
-        <TouchableWithoutFeedback onPress={() => {}}>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => onCapture(false)}>
           <View style={styles.controlBtn}>
             <Feather name="download" size={24} color="#ffffff89" />
           </View>
-        </TouchableWithoutFeedback>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => {}}>
+          <View style={styles.controlBtn}>
+            <MaterialIcons name="insert-link" size={26} color="#ffffff89" />
+          </View>
+        </TouchableOpacity>
       </View>
-      <ViewShot style={{ backgroundColor: "transparent" }} ref={captureViewRef}>
+      <ViewShot
+        style={{ backgroundColor: backgroundColor }}
+        ref={captureViewRef}
+      >
         <View style={[styles.container, { backgroundColor }]}>
           {textBoxVisible && (
             <TextInput

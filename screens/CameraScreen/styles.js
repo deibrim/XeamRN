@@ -124,8 +124,8 @@ const styles = StyleSheet.create({
   storyTypeIconWrapper: {
     borderWidth: 2,
     borderColor: "#006eff",
-    width: 50,
-    height: 50,
+    width: 45,
+    height: 45,
     justifyContent: "center",
     alignItems: "center",
     borderRadius: 30,

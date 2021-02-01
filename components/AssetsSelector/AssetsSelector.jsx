@@ -42,8 +42,6 @@ const AssetsSelector = ({ options = defaultOptions }) => {
     margin,
     portraitCols,
     landscapeCols,
-    widgetWidth,
-    widgetBgColor,
     videoIcon,
     selectedIcon,
     defaultTopNavigator,
@@ -114,20 +112,27 @@ const AssetsSelector = ({ options = defaultOptions }) => {
 
   const onClickUseCallBack = useCallback((id) => {
     setSelectedItems((selectedItems) => {
-      const alreadySelected = selectedItems.indexOf(id) >= 0;
-      if (selectedItems.length >= maxSelections && !alreadySelected)
-        return selectedItems;
-      if (alreadySelected) return selectedItems.filter((item) => item !== id);
-      else return [...selectedItems, id];
+      // const alreadySelected = selectedItems.indexOf(id) >= 0;
+      // if (selectedItems.length >= maxSelections && !alreadySelected)
+      //   return selectedItems;
+
+      // if (alreadySelected) return selectedItems.filter((item) => item !== id);
+      // else return [...selectedItems, id];
+      return [...selectedItems, id];
     });
   }, []);
 
   useEffect(() => {
     getAssets();
+    if (selectedItems.length) {
+      defaultTopNavigator.doneFunction(prepareResponse());
+      setSelectedItems([]);
+    }
   }, [
     assetsType,
     permissions.hasCameraPermission,
     permissions.hasCameraRollPermission,
+    selectedItems,
   ]);
 
   const getAssets = () => {

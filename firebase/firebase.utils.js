@@ -171,10 +171,8 @@ export const postUserStory = async (postContainer, postData, postingTo) => {
       action,
     };
     await firestore.collection("userStories").doc(userId).update(newPostData);
-    // set24HoursTimer(postData.id, userId, postingTo);
   } else {
     await firestore.collection("userStories").doc(userId).set(postContainer);
-    // set24HoursTimer(postData.id, userId, postingTo);
   }
 };
 
@@ -193,23 +191,30 @@ export const updateViews = async (data, userId, postId) => {
   };
   const postData = {
     stories: [...filtered, data.stories],
-    updatedAt: data.updatedAt,
     action,
   };
   firestore.collection("userStories").doc(userId).update(postData);
 };
-export const deleteUserStory = async (data, userId, postId) => {
-  const action = {
-    type: "DELETE",
-    payload: postId,
-    userId,
-  };
-  const postData = {
-    stories: data.stories,
-    updatedAt: data.updatedAt,
-    action,
-  };
-  firestore.collection("userStories").doc(userId).update(postData);
+export const deleteUserStory = async (userId, postId) => {
+  const storiesRefGet = await firestore
+    .collection("userStories")
+    .doc(userId)
+    .get();
+  if (storiesRefGet.exists) {
+    const filtered = storiesRefGet
+      .data()
+      .stories.filter((item, index) => item.id !== postId);
+    const action = {
+      type: "DELETE",
+      payload: postId,
+      userId,
+    };
+    const postData = {
+      stories: filtered,
+      action,
+    };
+    firestore.collection("userStories").doc(userId).update(postData);
+  }
 };
 
 export const handleUnfollowUser = (profileId, currentUserId) => {

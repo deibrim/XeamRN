@@ -17,7 +17,6 @@ const MediaLibraryModal = ({
   const navigation = useNavigation();
   const onDone = (data) => {
     const mediaType = data[0].mediaType;
-    console.log(mediaType);
     const routeParams =
       mediaType === "video"
         ? {
@@ -66,10 +65,6 @@ const MediaLibraryModal = ({
             size: 26,
           },
           defaultTopNavigator: {
-            continueText: "DONE ",
-            goBackText: "BACK ",
-            textStyle: styles.textStyle,
-            buttonStyle: styles.buttonStyle,
             backFunction: () => goBack(),
             doneFunction: (data) => onDone(data),
           },

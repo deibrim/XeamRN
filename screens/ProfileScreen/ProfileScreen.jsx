@@ -21,12 +21,21 @@ import ReelPreview from "../../components/ReelPreview/ReelPreview";
 import { setShoppingBagSize } from "../../redux/shopping/actions";
 import { styles } from "./styles";
 import FollowersImagePreview from "../../components/FollowersImagePreview/FollowersImagePreview";
+import Dialog from "react-native-popup-dialog";
+
+const wait = (timeout) => {
+  return new Promise((resolve) => {
+    setTimeout(resolve, timeout);
+  });
+};
+
 export default function ProfileScreen() {
   const user = useSelector((state) => state.user.currentUser);
   const reels = useSelector((state) => state.reel.myReels);
   const savedReels = useSelector((state) => state.save.posts);
   const [followerCount, setFollowerCount] = useState(0);
   const [lastVisible, setLastVisible] = useState("");
+  const [dialogVisible, setDialogVisible] = useState(false);
   const [friendIds, setFriendIds] = useState([]);
   const [followingCount, setFollowingCount] = useState(0);
   const [focused, setFocused] = useState("reels");
@@ -110,11 +119,14 @@ export default function ProfileScreen() {
     navigation.goBack();
   };
   const handleSignout = () => {
-    auth.signOut();
-    dispatch(setCurrentUser(null));
-    dispatch(setCurrentUserTvProfile(null));
-    dispatch(setCurrentUserXStore(null));
-    dispatch(setShoppingBagSize(0));
+    setDialogVisible(false);
+    wait(2000).then(() => {
+      auth.signOut();
+      dispatch(setCurrentUser(null));
+      dispatch(setCurrentUserTvProfile(null));
+      dispatch(setCurrentUserXStore(null));
+      dispatch(setShoppingBagSize(0));
+    });
   };
   return (
     <>
@@ -136,7 +148,10 @@ export default function ProfileScreen() {
             width: 60,
           }}
         >
-          <TouchableOpacity style={styles.circle} onPress={() => {}}>
+          <TouchableOpacity
+            style={styles.circle}
+            onPress={() => setDialogVisible(true)}
+          >
             <Feather name="more-vertical" size={24} color="black" />
           </TouchableOpacity>
         </View>
@@ -159,6 +174,42 @@ export default function ProfileScreen() {
         </View>
       ) : (
         <View style={styles.container}>
+          <Dialog
+            visible={dialogVisible}
+            onTouchOutside={() => {
+              setDialogVisible(false);
+            }}
+            width={0.8}
+          >
+            <View style={{ paddingVertical: 5, paddingHorizontal: 10 }}>
+              <View style={{ minHeight: 100 }}>
+                <View style={styles.customDialogTitle}>
+                  <Text
+                    style={[
+                      styles.username,
+                      { textAlign: "center", fontSize: 16, fontWeight: "bold" },
+                    ]}
+                  >
+                    {user.username}
+                  </Text>
+                </View>
+                <TouchableOpacity
+                  style={[styles.modalTextButton]}
+                  onPress={handleSignout}
+                >
+                  <Feather
+                    name="log-out"
+                    size={20}
+                    color="red"
+                    style={{ marginRight: 20 }}
+                  />
+                  <Text style={[styles.modalText, { color: "red" }]}>
+                    Logout
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Dialog>
           <View style={styles.userPreview}>
             <View style={styles.userImageContainer}>
               <Image

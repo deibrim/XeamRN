@@ -14,12 +14,11 @@ import { firestore } from "../../firebase/firebase.utils";
 import StoryContainer from "../Stories/StoryContainer";
 import { styles } from "./styles";
 
-const StoriesViewModal = (props) => {
+const StoriesViewModal = () => {
   const currentUser = useSelector((state) => state.user.currentUser);
   const [isModelOpen, setModel] = useState(false);
   const [currentUserIndex, setCurrentUserIndex] = useState(0);
   const [currentScrollValue, setCurrentScrollValue] = useState(0);
-  const [myStory, setMyStory] = useState([]);
   const [stories, setStories] = useState([]);
   const modalScroll = useRef(null);
 
@@ -30,23 +29,22 @@ const StoriesViewModal = (props) => {
     const storiesRef = firestore
       .collection("stories")
       .doc(currentUser.id)
-      .collection("stories");
+      .collection("stories")
+      .orderBy("updatedAt", "asc");
     storiesRef.onSnapshot((snapshot) => {
       const storiesArr = [];
       const xeamStory = [];
-      //   const myStory=[]
+      const myStory = [];
       snapshot.docs.forEach((item) => {
-        // if (item.data().userId === currentUser.id) {
-        //   setMyStory(item.data());
-        //   // myStory.push(item.data())
-        // }
-        if (item.data().username === "xeam") {
-          setMyStory(item.data());
-          // myStory.push(item.data())
+        if (item.data().userId === currentUser.id) {
+          myStory.push(item.data());
+        } else if (item.data().username === "xeam") {
+          xeamStory.push(item.data());
+        } else {
+          storiesArr.push(item.data());
         }
-        storiesArr.push(item.data());
       });
-      setStories(storiesArr);
+      setStories([...myStory, ...xeamStory, ...storiesArr]);
     });
   }
   const onStorySelect = (index) => {
@@ -109,7 +107,9 @@ const StoriesViewModal = (props) => {
                 isHorizontal
               />
             </View>
-            <Text style={styles.title}>{item.username}</Text>
+            <Text style={styles.title}>
+              {item.userId === currentUser.id ? "You" : item.username}
+            </Text>
           </TouchableOpacity>
         )}
         keyExtractor={(item, index) => index.toString()}

@@ -1,15 +1,16 @@
-import { AntDesign, Entypo, MaterialIcons } from "@expo/vector-icons";
+import { AntDesign, Entypo, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import React, { useEffect, useState, useRef } from "react";
 import {
   Keyboard,
   Text,
   TextInput,
+  TouchableOpacity,
   TouchableWithoutFeedback,
   View,
 } from "react-native";
 import ViewShot, { captureRef } from "react-native-view-shot";
 import { useSelector } from "react-redux";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import * as Permissions from "expo-permissions";
 import * as MediaLibrary from "expo-media-library";
 import useAxios from "axios-hooks";
@@ -29,7 +30,7 @@ const TextStoryContainer = ({ setShowStoryTypes }) => {
     { manual: true }
   );
   const [showDraggable, setShowDraggable] = useState(true);
-  const [backgroundColor, setBackgroundColor] = useState("#006eff67");
+  const [backgroundColor, setBackgroundColor] = useState("#549eff");
   const [keyboardShowing, setKeyboardShowing] = useState(false);
   const [textBoxVisible, setTextBoxVisible] = useState(false);
   const [fontSize, setFontSize] = useState(30);
@@ -39,7 +40,7 @@ const TextStoryContainer = ({ setShowStoryTypes }) => {
   const [texts, setTexts] = useState([{ id: 1, data: "lol" }]);
   const [text, setText] = useState("");
   const navigation = useNavigation();
-  const [cameraRollUri, setCameraRollUri] = useState("");
+  const route = useRoute();
   const captureViewRef = useRef();
   useEffect(() => {
     Permissions.askAsync(Permissions.CAMERA_ROLL);
@@ -55,31 +56,37 @@ const TextStoryContainer = ({ setShowStoryTypes }) => {
     });
   }, [keyboardShowing]);
 
-  const onCapture = async (share) => {
+  const onCapture = async () => {
     try {
       let result = await captureRef(captureViewRef, {
         quality: 1,
-        format: "png",
+        format: "jpg",
       });
       const asset = await MediaLibrary.createAssetAsync(result);
-      setCameraRollUri(asset.uri);
+      if (asset) {
+        navigation.navigate("EditAndPostScreen", {
+          photoUri: asset.uri,
+          type: route.params.type,
+          mediaType: "photo",
+          height: asset.height,
+          width: asset.width,
+          asset: asset,
+        });
+      }
     } catch (snapshotError) {
       console.error(snapshotError);
     }
   };
   return (
     <View style={[styles.wrapper]}>
-      {/* {showDraggable && (
-        <View
-          style={{
-            position: "absolute",
-            top: 0,
-            width: "100%",
-            height: 70,
-            backgroundColor: "red",
-          }}
-        ></View>
-      )} */}
+      <View style={styles.topContainer}>
+        <TouchableOpacity onPress={onCapture}>
+          <View style={styles.button}>
+            <Text style={styles.buttonText}>Next</Text>
+            <Ionicons name="ios-arrow-forward" size={18} color="black" />
+          </View>
+        </TouchableOpacity>
+      </View>
       <View style={styles.controls}>
         <TouchableWithoutFeedback
           onPress={() => setTextBoxVisible(!textBoxVisible)}

@@ -543,23 +543,6 @@ export default function UserProfileScreen() {
                 marginLeft: "auto",
               }}
             />
-            {/* <View style={{ alignItems: "center", width: 100 }}>
-            <TouchableOpacity onPress={() => setFocused("saves")}>
-            {focused === "saves" ? (
-              <MaterialCommunityIcons
-              name="bookmark-multiple"
-              size={25}
-              color="#006eff"
-              />
-              ) : (
-                <MaterialCommunityIcons
-                  name="bookmark-multiple-outline"
-                  size={25}
-                  color="#b3b4b6"
-                />
-                )}
-                </TouchableOpacity>
-              </View> */}
           </View>
         </TouchableWithoutFeedback>
         <ScrollView>

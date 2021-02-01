@@ -12,27 +12,27 @@ import { WebView } from "react-native-webview";
 import GestureRecognizer from "react-native-swipe-gestures";
 import Story from "./Story";
 import UserView from "./UserView";
-import Readmore from "./Readmore";
+import Readmore from "./StoryAction";
 import ProgressArray from "./ProgressArray";
-// import ReplyStoryInput from "./ReplyStoryInput";
+import ReplyStoryInput from "./ReplyStoryInput";
+import StoryAction from "./StoryAction";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
-
-const wait = (timeout) => {
-  return new Promise((resolve) => {
-    setTimeout(resolve, timeout);
-  });
-};
 
 const StoryContainer = (props) => {
   const { user } = props;
   const { stories = [] } = user || {};
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isModelOpen, setModel] = useState(false);
+  const [showReplyInput, setShowReplyInput] = useState(false);
   const [isPause, setIsPause] = useState(false);
   const [isLoaded, setLoaded] = useState(false);
   const story = stories.length ? stories[currentIndex] : {};
   const [duration, setDuration] = useState(story.duration);
+  const [timestamp, setTimestamp] = useState(story.postedAt);
+  const [viewCount, setViewCount] = useState(
+    Object.values(story.views).filter((v) => v).length
+  );
   const { externalLink, uri } = story || {};
 
   const changeStory = (evt) => {
@@ -46,7 +46,7 @@ const StoryContainer = (props) => {
     LogBox.ignoreLogs([
       `Warning: Each child in a list should have a unique "key" prop.`,
     ]);
-  }, []);
+  }, [duration, timestamp, viewCount]);
 
   const nextStory = () => {
     if (stories.length - 1 > currentIndex) {
@@ -68,9 +68,9 @@ const StoryContainer = (props) => {
       props.onStoryPrevious();
     }
   };
-
-  const onImageLoaded = () => {
+  const onImageLoaded = (duration) => {
     setLoaded(true);
+    setDuration(duration);
   };
 
   const onVideoLoaded = (length) => {
@@ -101,6 +101,10 @@ const StoryContainer = (props) => {
               pause
               onVideoLoaded={onVideoLoaded}
               story={story}
+              userId={user.userId}
+              isLoaded={isLoaded}
+              setTimestamp={setTimestamp}
+              setViewCount={setViewCount}
             />
           </View>
           <ActivityIndicator color="white" />
@@ -117,16 +121,21 @@ const StoryContainer = (props) => {
   const onSwipeDown = () => {
     if (!isModelOpen) {
       props.onClose();
-    } else {
-      setModel(false);
+    } else if (externalLink.trim() === "") {
+      setShowReplyInput(false);
       onPause(false);
+    } else {
+      onPause(false);
+      setModel(false);
     }
   };
 
   const onSwipeUp = () => {
+    setIsPause(true);
     if (!isModelOpen && externalLink.trim() !== "") {
-      onPause(true);
       setModel(true);
+    } else {
+      setShowReplyInput(true);
     }
   };
 
@@ -152,6 +161,10 @@ const StoryContainer = (props) => {
             isNewStory={props.isNewStory}
             onVideoLoaded={onVideoLoaded}
             story={story}
+            userId={user.userId}
+            isLoaded={isLoaded}
+            setTimestamp={setTimestamp}
+            setViewCount={setViewCount}
           />
 
           {loading()}
@@ -161,13 +174,24 @@ const StoryContainer = (props) => {
               name={user.username}
               profile={user.profile_pic}
               onClosePress={props.onClose}
+              timestamp={timestamp}
             />
           )}
 
-          {externalLink.trim() !== "" && (
-            <Readmore onReadMore={onReadMoreOpen} />
+          {externalLink.trim() === "" ? (
+            <StoryAction
+              onPress={() => setShowReplyInput(true)}
+              text={"Reply"}
+            />
+          ) : (
+            <StoryAction onPress={onReadMoreOpen} text={"Swipe up"} />
           )}
-          {/* <ReplyStoryInput /> */}
+          {showReplyInput && (
+            <ReplyStoryInput
+              setShowReplyInput={setShowReplyInput}
+              setIsPause={setIsPause}
+            />
+          )}
 
           <ProgressArray
             next={nextStory}

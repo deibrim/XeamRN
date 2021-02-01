@@ -10,6 +10,8 @@ import {
   Dimensions,
 } from "react-native";
 import { Video } from "expo-av";
+import * as Permissions from "expo-permissions";
+import * as MediaLibrary from "expo-media-library";
 import { v4 as uuidv4 } from "uuid";
 import { useSelector } from "react-redux";
 import firebase, {
@@ -36,12 +38,17 @@ const EditAndPostScreen = () => {
   const route = useRoute();
   const navigation = useNavigation();
 
-  useEffect(() => {}, []);
+  useEffect(() => {
+    Permissions.askAsync(Permissions.CAMERA_ROLL);
+  }, []);
   const onPlayPausePress = () => {
     setPaused(!paused);
   };
 
   const onCancel = async () => {
+    if (route.params.asset) {
+      await MediaLibrary.deleteAssetsAsync(route.params.asset);
+    }
     navigation.goBack();
   };
   const _videoRef = (ref) => {};
@@ -70,9 +77,12 @@ const EditAndPostScreen = () => {
           console.log(error);
         },
         () => {
-          uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
+          uploadTask.snapshot.ref.getDownloadURL().then(async (downloadURL) => {
             setVideoUri(downloadURL);
             setUploading("");
+            if (route.params.asset) {
+              await MediaLibrary.deleteAssetsAsync(route.params.asset);
+            }
             onPublish(downloadURL, id);
           });
         }
@@ -92,7 +102,6 @@ const EditAndPostScreen = () => {
     }
   };
   async function onPublish(uri, id) {
-    // set24HoursTimer("b93ujddc", user.id, "personal");
     const calcDuration = duration / 1000;
     try {
       const mediaType = route.params.mediaType;
@@ -206,16 +215,18 @@ const EditAndPostScreen = () => {
 
                 <TouchableOpacity
                   onPress={() => {
-                    if (route.params.type === "story") {
+                    if (route.params.type === "story" && !loading) {
                       handlePublish();
                       return;
                     }
-                    setPaused(false);
-                    navigation.navigate("PostReelScreen", {
-                      videoUri: route.params.videoUri,
-                      type: route.params.type,
-                      resizeMode,
-                    });
+                    if (!loading) {
+                      setPaused(false);
+                      navigation.navigate("PostReelScreen", {
+                        videoUri: route.params.videoUri,
+                        type: route.params.type,
+                        resizeMode,
+                      });
+                    }
                   }}
                 >
                   <View style={styles.button}>

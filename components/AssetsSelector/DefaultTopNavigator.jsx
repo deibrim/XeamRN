@@ -21,7 +21,7 @@ export const DefaultTopNavigator = ({
       paddingHorizontal: 10,
       flexDirection: "row",
       alignItems: "center",
-      justifyContent: "space-between",
+      justifyContent: "flex-start",
       padding: 5,
       backgroundColor: "#ecf2fa",
       borderRadius: 20,
@@ -42,11 +42,14 @@ export const DefaultTopNavigator = ({
       <AntDesign name="close" size={20} color="#ffffff" />
     </TouchableOpacity>
     {loading && (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <View style={{ marginLeft: "auto" }}>
         <ActivityIndicator color="black" />
       </View>
     )}
-    <TouchableOpacity onPress={selected > 0 && onFinish}>
+    {/* <TouchableOpacity
+      style={{ marginLeft: "auto" }}
+      onPress={selected > 0 && onFinish}
+    >
       <View
         style={[styles.button, selected > 0 && { backgroundColor: "#006eff" }]}
       >
@@ -59,7 +62,7 @@ export const DefaultTopNavigator = ({
           color={selected > 0 ? "#ffffff" : "black"}
         />
       </View>
-    </TouchableOpacity>
+    </TouchableOpacity> */}
   </View>
 );
 

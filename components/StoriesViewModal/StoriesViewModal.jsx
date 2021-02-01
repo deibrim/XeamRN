@@ -15,7 +15,7 @@ import StoryContainer from "../Stories/StoryContainer";
 import { styles } from "./styles";
 
 const StoriesViewModal = (props) => {
-  const currentUser = useSelector((state) => state.currentUser);
+  const currentUser = useSelector((state) => state.user.currentUser);
   const [isModelOpen, setModel] = useState(false);
   const [currentUserIndex, setCurrentUserIndex] = useState(0);
   const [currentScrollValue, setCurrentScrollValue] = useState(0);
@@ -23,7 +23,9 @@ const StoriesViewModal = (props) => {
   const [stories, setStories] = useState([]);
   const modalScroll = useRef(null);
 
-  useEffect(() => {}, []);
+  useEffect(() => {
+    getStories();
+  }, []);
   async function getStories() {
     const storiesRef = firestore
       .collection("stories")
@@ -34,15 +36,15 @@ const StoriesViewModal = (props) => {
       const xeamStory = [];
       //   const myStory=[]
       snapshot.docs.forEach((item) => {
-        if (item.userId === currentUser.id) {
-          setMyStory(item);
-          // myStory.push(item)
+        // if (item.data().userId === currentUser.id) {
+        //   setMyStory(item.data());
+        //   // myStory.push(item.data())
+        // }
+        if (item.data().username === "xeam") {
+          setMyStory(item.data());
+          // myStory.push(item.data())
         }
-        if (item.username === "xeam") {
-          setMyStory(item);
-          // myStory.push(item)
-        }
-        storiesArr.push(item);
+        storiesArr.push(item.data());
       });
       setStories(storiesArr);
     });
@@ -58,7 +60,8 @@ const StoriesViewModal = (props) => {
 
   const onStoryNext = (isScroll) => {
     const newIndex = currentUserIndex + 1;
-    if (AllStories.length - 1 > currentUserIndex) {
+    const checker = stories.length ? stories.length - 1 : AllStories.length - 1;
+    if (checker > currentUserIndex) {
       setCurrentUserIndex(newIndex);
       if (!isScroll) {
         modalScroll.current.scrollTo(newIndex, true);
@@ -81,12 +84,10 @@ const StoriesViewModal = (props) => {
   const onScrollChange = (scrollValue) => {
     if (currentScrollValue > scrollValue) {
       onStoryNext(true);
-      console.log("next");
       setCurrentScrollValue(scrollValue);
     }
     if (currentScrollValue < scrollValue) {
       onStoryPrevious();
-      console.log("previous");
       setCurrentScrollValue(scrollValue);
     }
   };
@@ -94,7 +95,7 @@ const StoriesViewModal = (props) => {
   return (
     <View style={styles.container}>
       <FlatList
-        data={AllStories}
+        data={stories.length ? stories : AllStories}
         horizontal
         renderItem={({ item, index }) => (
           <TouchableOpacity
@@ -104,11 +105,11 @@ const StoriesViewModal = (props) => {
             <View style={styles.rounded}>
               <Image
                 style={styles.roundedImage}
-                source={{ uri: item.profile }}
+                source={{ uri: item.profile_pic }}
                 isHorizontal
               />
             </View>
-            <Text style={styles.title}>{item.title}</Text>
+            <Text style={styles.title}>{item.username}</Text>
           </TouchableOpacity>
         )}
         keyExtractor={(item, index) => index.toString()}
@@ -131,17 +132,29 @@ const StoriesViewModal = (props) => {
           ref={modalScroll}
           style={styles.container}
         >
-          {AllStories.map((item, index) => (
-            <StoryContainer
-              ksy={index}
-              onClose={onStoryClose}
-              onStoryNext={onStoryNext}
-              onStoryPrevious={onStoryPrevious}
-              user={item}
-              isNewStory={index !== currentUserIndex}
-              index={index}
-            />
-          ))}
+          {stories.length
+            ? stories.map((item, index) => (
+                <StoryContainer
+                  ksy={index}
+                  onClose={onStoryClose}
+                  onStoryNext={onStoryNext}
+                  onStoryPrevious={onStoryPrevious}
+                  user={item}
+                  isNewStory={index !== currentUserIndex}
+                  index={index}
+                />
+              ))
+            : AllStories.map((item, index) => (
+                <StoryContainer
+                  ksy={index}
+                  onClose={onStoryClose}
+                  onStoryNext={onStoryNext}
+                  onStoryPrevious={onStoryPrevious}
+                  user={item}
+                  isNewStory={index !== currentUserIndex}
+                  index={index}
+                />
+              ))}
         </CubeNavigationHorizontal>
       </Modal>
     </View>

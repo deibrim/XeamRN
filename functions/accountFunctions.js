@@ -1,4 +1,5 @@
 const admin = require("firebase-admin");
+const { set24HoursTimer } = require("./utils");
 
 exports.createUser = async (snapshot, context) => {
   const userId = context.params.userId;
@@ -151,18 +152,31 @@ exports.createFollower = async (snapshot, context) => {
     .collection("reels")
     .doc(userId)
     .collection("userReels");
-
-  // 2) Create following user's timeline ref
+  const followedUserStoriesRef = await admin
+    .firestore()
+    .collection("userStories")
+    .doc(userId);
+  const followedUserStoriesRefGet = await followedUserStoriesRef.get();
+  // 2) Create following user's timeline ref and stories ref
   const timelineReelsRef = admin
     .firestore()
     .collection("timeline")
     .doc(followerId)
     .collection("timelineReels");
+  const timelineStoriesRef = admin
+    .firestore()
+    .collection("stories")
+    .doc(followerId)
+    .collection("stories");
 
   // 3) Get followed users reels
   const querySnapshot = await followedUserReelsRef.get();
 
-  // 4) Add each user post to following user's timeline
+  // 4) Add user stories to following user's stories
+  if (followedUserStoriesRefGet.data().stories > 0) {
+    timelineStoriesRef.doc(userId).set(followedUserStoriesRefGet.data());
+  }
+  // 5) Add each user post to following user's timeline
   querySnapshot.forEach((doc) => {
     if (doc.exists) {
       const postId = doc.id;
@@ -175,6 +189,15 @@ exports.createFollower = async (snapshot, context) => {
 exports.deleteFollower = async (snapshot, context) => {
   const userId = context.params.userId;
   const followerId = context.params.followerId;
+
+  const timelineStoriesRef = admin
+    .firestore()
+    .collection("stories")
+    .doc(followerId)
+    .collection("stories")
+    .doc(userId);
+  const timelineStoriesGet = await timelineStoriesRef.get();
+  if (timelineStoriesGet.exists) timelineStoriesRef.delete();
 
   const fgRef = admin
     .firestore()
@@ -229,7 +252,7 @@ exports.deleteFollower = async (snapshot, context) => {
 exports.createStory = async (snapshot, context) => {
   const postCreated = snapshot.data();
   const userId = context.params.userId;
-
+  set24HoursTimer(postCreated.stories[0].id, userId, "personal");
   // 1) Get all the followers of the user who made the post
   const userFollowersRef = admin
     .firestore()
@@ -241,6 +264,7 @@ exports.createStory = async (snapshot, context) => {
   // 2) Add new post to each follower's timeline
   querySnapshot.forEach((doc) => {
     const followerId = doc.id;
+
     admin
       .firestore()
       .collection("stories")
@@ -256,6 +280,9 @@ exports.updateStory = async (change, context) => {
   const action = change.after.data().action;
   const userId = context.params.userId;
 
+  if (action.type === "ADD_STORY") {
+    set24HoursTimer(action.payload, userId, "personal");
+  }
   // 1) Get all the followers of the user who made the post
   const userFollowersRef = admin
     .firestore()
@@ -276,14 +303,26 @@ exports.updateStory = async (change, context) => {
       .doc(userId)
       .get();
     if (storiesRefGet.exists) {
-      if (postUpdated.stories.length === 0) {
-        storiesRefGet.ref.delete();
-      } else {
+      if (action.type === "DELETE") {
+        if (postUpdated.stories.length === 0) {
+          storiesRefGet.ref.delete();
+        } else {
+          storiesRefGet.ref.update({
+            stories: postUpdated.stories,
+          });
+        }
+      } else if (action.type === "UPDATE_VIEWS") {
+        storiesRefGet.ref.update({
+          stories: postUpdated.stories,
+        });
+      } else if (action.type === "ADD_STORY") {
         storiesRefGet.ref.update({
           stories: postUpdated.stories,
           updatedAt: postUpdated.updatedAt,
         });
       }
+    } else if (postUpdated.stories.length > 0) {
+      storiesRefGet.ref.set(postUpdated);
     }
   });
   if (action.type === "DELETE") {

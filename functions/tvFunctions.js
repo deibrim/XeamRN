@@ -1,4 +1,5 @@
 const admin = require("firebase-admin");
+const { set24HoursTimer } = require("./utils");
 
 exports.createTvProfile = async (snapshot, context) => {
   const tvId = context.params.tvId;
@@ -69,17 +70,32 @@ exports.createTvFollower = async (snapshot, context) => {
     .doc(tvId)
     .collection("reels");
 
-  // 2) Create following tv's timeline ref
+  const followedTvStoriesRef = await admin
+    .firestore()
+    .collection("tvStories")
+    .doc(tvId);
+  const followedTvStoriesGet = await followedTvStoriesRef.get();
+
+  // 2) Create following tv's timeline ref and stories ref
   const timelineReelsRef = admin
     .firestore()
     .collection("timeline")
     .doc(followerId)
     .collection("timelineReels");
 
+  const timelineStoriesRef = admin
+    .firestore()
+    .collection("stories")
+    .doc(followerId)
+    .collection("stories");
+
   // 3) Get followed tv reels
   const querySnapshot = await followedTvReelsRef.get();
-
-  // 4) Add each tv post to following user's timeline
+  // 4) Add tv stories to following user's stories
+  if (followedTvStoriesGet.data().stories > 0) {
+    timelineStoriesRef.doc(`${tvId}_tv`).set(followedTvStoriesGet.data());
+  }
+  // 5) Add each tv post to following user's timeline
   querySnapshot.forEach((doc) => {
     if (doc.exists) {
       const postId = doc.id;
@@ -92,6 +108,15 @@ exports.createTvFollower = async (snapshot, context) => {
 exports.deleteTvFollower = async (snapshot, context) => {
   const tvId = context.params.tvId;
   const followerId = context.params.followerId;
+
+  const timelineStoriesRef = admin
+    .firestore()
+    .collection("stories")
+    .doc(followerId)
+    .collection("stories")
+    .doc(`${tvId}_tv`);
+  const timelineStoriesGet = await timelineStoriesRef.get();
+  if (timelineStoriesGet.exists) timelineStoriesRef.delete();
 
   const timelinePostsRef = admin
     .firestore()
@@ -106,12 +131,30 @@ exports.deleteTvFollower = async (snapshot, context) => {
       doc.ref.delete();
     }
   });
+  const ayRef = admin
+    .firestore()
+    .collection("activity_feed")
+    .doc(followerId)
+    .collection("feedItems")
+    .doc(tvId);
+  const aySnapshot = ayRef.get();
+
+  aySnapshot
+    .then((doc) => {
+      if (doc.exists) {
+        ayRef.delete();
+      }
+      return;
+    })
+    .catch((e) => {
+      console.log(e);
+    });
 };
 
 exports.createTvStory = async (snapshot, context) => {
   const postCreated = snapshot.data();
   const tvId = context.params.tvId;
-
+  set24HoursTimer(postCreated.stories[0].id, tvId, "tv");
   // 1) Get all the followers of the tv who made the post
   const tvFollowersRef = admin
     .firestore()
@@ -130,7 +173,7 @@ exports.createTvStory = async (snapshot, context) => {
       .collection("stories")
       .doc(followerId)
       .collection("stories")
-      .doc(tvId)
+      .doc(`${tvId}_tv`)
       .set(postCreated);
   });
 };
@@ -140,6 +183,9 @@ exports.updateTvStory = async (change, context) => {
   const action = change.after.data().action;
   const tvId = context.params.tvId;
 
+  if (action.type === "ADD_STORY") {
+    set24HoursTimer(action.payload, tvId, "tv");
+  }
   // 1) Get all the followers of the tv who made the post
   const tvFollowersRef = admin
     .firestore()
@@ -157,17 +203,29 @@ exports.updateTvStory = async (change, context) => {
       .collection("stories")
       .doc(followerId)
       .collection("stories")
-      .doc(tvId)
+      .doc(`${tvId}_tv`)
       .get();
     if (storiesRefGet.exists) {
-      if (postUpdated.stories.length === 0) {
-        storiesRefGet.ref.delete();
-      } else {
+      if (action.type === "DELETE") {
+        if (postUpdated.stories.length === 0) {
+          storiesRefGet.ref.delete();
+        } else {
+          storiesRefGet.ref.update({
+            stories: postUpdated.stories,
+          });
+        }
+      } else if (action.type === "UPDATE_VIEWS") {
+        storiesRefGet.ref.update({
+          stories: postUpdated.stories,
+        });
+      } else if (action.type === "ADD_STORY") {
         storiesRefGet.ref.update({
           stories: postUpdated.stories,
           updatedAt: postUpdated.updatedAt,
         });
       }
+    } else if (postUpdated.stories.length > 0) {
+      storiesRefGet.ref.set(postUpdated);
     }
   });
   if (action.type === "DELETE") {
@@ -175,7 +233,7 @@ exports.updateTvStory = async (change, context) => {
     admin
       .storage()
       .bucket("chattie-3eb7b.appspot.com/")
-      .file(`stories/${action.userId}/${action.payload}`)
+      .file(`stories/${action.tvId}/${action.payload}`)
       .delete();
   }
 };

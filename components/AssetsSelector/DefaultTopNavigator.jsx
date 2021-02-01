@@ -1,8 +1,19 @@
 import { AntDesign, Ionicons } from "@expo/vector-icons";
 import React from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  ActivityIndicator,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
-export const DefaultTopNavigator = ({ selected, backFunction, onFinish }) => (
+export const DefaultTopNavigator = ({
+  selected,
+  backFunction,
+  onFinish,
+  loading,
+}) => (
   <View
     style={{
       width: "98%",
@@ -30,7 +41,11 @@ export const DefaultTopNavigator = ({ selected, backFunction, onFinish }) => (
     >
       <AntDesign name="close" size={20} color="#ffffff" />
     </TouchableOpacity>
-
+    {loading && (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator color="black" />
+      </View>
+    )}
     <TouchableOpacity onPress={selected > 0 && onFinish}>
       <View
         style={[styles.button, selected > 0 && { backgroundColor: "#006eff" }]}

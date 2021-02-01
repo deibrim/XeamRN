@@ -1,6 +1,6 @@
 const admin = require("firebase-admin");
-
-exports.addStory = async (req, res) => {
+const schedule = require("node-schedule");
+exports.create = async (req, res) => {
   const { storyId, userId, endTime, accountType } = req.body;
 
   schedule.scheduleJob(endTime, async () => {
@@ -46,12 +46,10 @@ exports.test = async (req, res) => {
   schedule.scheduleJob(endTime, () => {
     console.log(`${storyId} has been deleted`);
   });
-  res.status(200).json({ message: "success" });
-};
-
-exports.deleteStory = async (req, res) => {
-  res.status(401).json({
+  res.status(200).json({
     status: "success",
-    data: null,
+    data: {
+      message: "Story added",
+    },
   });
 };

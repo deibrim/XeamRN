@@ -1,11 +1,12 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Dimensions,
+  LogBox,
+  Modal,
   StyleSheet,
   TouchableOpacity,
   View,
-  Modal,
 } from "react-native";
 import { WebView } from "react-native-webview";
 import GestureRecognizer from "react-native-swipe-gestures";
@@ -13,6 +14,7 @@ import Story from "./Story";
 import UserView from "./UserView";
 import Readmore from "./Readmore";
 import ProgressArray from "./ProgressArray";
+// import ReplyStoryInput from "./ReplyStoryInput";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 
@@ -29,13 +31,9 @@ const StoryContainer = (props) => {
   const [isModelOpen, setModel] = useState(false);
   const [isPause, setIsPause] = useState(false);
   const [isLoaded, setLoaded] = useState(false);
-  const [duration, setDuration] = useState(3);
   const story = stories.length ? stories[currentIndex] : {};
-  const { isReadMore, url } = story || {};
-
-  // const onVideoLoaded = (length) => {
-  //   props.onVideoLoaded(length.duration);
-  // };
+  const [duration, setDuration] = useState(story.duration);
+  const { externalLink, uri } = story || {};
 
   const changeStory = (evt) => {
     if (evt.locationX > SCREEN_WIDTH / 2) {
@@ -44,12 +42,16 @@ const StoryContainer = (props) => {
       prevStory();
     }
   };
+  useEffect(() => {
+    LogBox.ignoreLogs([
+      `Warning: Each child in a list should have a unique "key" prop.`,
+    ]);
+  }, []);
 
   const nextStory = () => {
     if (stories.length - 1 > currentIndex) {
       setCurrentIndex(currentIndex + 1);
       setLoaded(false);
-      setDuration(3);
     } else {
       setCurrentIndex(0);
       props.onStoryNext();
@@ -60,7 +62,7 @@ const StoryContainer = (props) => {
     if (currentIndex > 0 && stories.length) {
       setCurrentIndex(currentIndex - 1);
       setLoaded(false);
-      setDuration(3);
+      setDuration(story.duration);
     } else {
       setCurrentIndex(0);
       props.onStoryPrevious();
@@ -73,7 +75,7 @@ const StoryContainer = (props) => {
 
   const onVideoLoaded = (length) => {
     setLoaded(true);
-    setDuration(length.duration);
+    setDuration(length.durationMillis / 1000);
   };
 
   const onPause = (result) => {
@@ -122,7 +124,7 @@ const StoryContainer = (props) => {
   };
 
   const onSwipeUp = () => {
-    if (!isModelOpen && isReadMore) {
+    if (!isModelOpen && externalLink.trim() !== "") {
       onPause(true);
       setModel(true);
     }
@@ -154,13 +156,18 @@ const StoryContainer = (props) => {
 
           {loading()}
 
-          <UserView
-            name={user.username}
-            profile={user.profile}
-            onClosePress={props.onClose}
-          />
+          {!isPause && (
+            <UserView
+              name={user.username}
+              profile={user.profile_pic}
+              onClosePress={props.onClose}
+            />
+          )}
 
-          {isReadMore && <Readmore onReadMore={onReadMoreOpen} />}
+          {externalLink.trim() !== "" && (
+            <Readmore onReadMore={onReadMoreOpen} />
+          )}
+          {/* <ReplyStoryInput /> */}
 
           <ProgressArray
             next={nextStory}
@@ -185,7 +192,7 @@ const StoryContainer = (props) => {
           position="bottom"
         >
           <View style={styles.bar} />
-          <WebView source={{ uri: "https://www.google.com" }} />
+          <WebView source={{ uri: externalLink }} />
         </Modal>
       </TouchableOpacity>
     </GestureRecognizer>
@@ -198,7 +205,7 @@ const styles = StyleSheet.create({
     width: "100%",
     justifyContent: "flex-start",
     alignItems: "center",
-    backgroundColor: "red",
+    backgroundColor: "#000000",
   },
   progressBarArray: {
     flexDirection: "row",

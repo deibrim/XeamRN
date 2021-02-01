@@ -51,7 +51,7 @@ const AssetsSelector = ({ options = defaultOptions }) => {
     noAssets,
     onError,
   } = options;
-
+  const [loading, setLoading] = useState(false);
   const getScreen = () => Dimensions.get("screen");
 
   const { width, height } = useMemo(() => getScreen(), []);
@@ -77,9 +77,10 @@ const AssetsSelector = ({ options = defaultOptions }) => {
 
   const loadAssets = useCallback(
     (params) => {
+      // Loading to true
+      setLoading(true);
       getAssetsAsync(params)
         .then(({ endCursor, assets, hasNextPage }) => {
-          // console.log(assets);
           if (availableOptions.after === endCursor) return;
           const newAssets = assets;
           setAvailableOptions({
@@ -87,6 +88,8 @@ const AssetsSelector = ({ options = defaultOptions }) => {
             after: endCursor,
             hasNextPage: hasNextPage,
           });
+          // Loading to false
+          setLoading(false);
           return setItems([...assetItems, ...newAssets]);
         })
         .catch((err) => onError && onError(err));
@@ -179,6 +182,7 @@ const AssetsSelector = ({ options = defaultOptions }) => {
           selected={selectedItems.length}
           backFunction={() => defaultTopNavigator.backFunction()}
           onFinish={() => defaultTopNavigator.doneFunction(prepareResponse())}
+          loading={loading}
         />
       )}
       <View

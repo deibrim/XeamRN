@@ -92,44 +92,50 @@ const EditAndPostScreen = () => {
     }
   };
   async function onPublish(uri, id) {
-    set24HoursTimer("b93ujddc", user.id, "personal");
-    // try {
-    //   const newPost = {
-    //     id,
-    //     uri,
-    //     type: route.params.mediaType,
-    //     isSeen: false,
-    //     duration: route.params.mediaType === "video" ? duration : 5,
-    //     externalLink: "",
-    //     views: {},
-    //     postedAt: Date.now(),
-    //   };
-    //   if (postingTo === "personal") {
-    //     const pdata = {
-    //       userId: user.id,
-    //       username: user.username,
-    //       profile_pic: user.profile_pic,
-    //       stories: [newPost],
-    //       updatedAt: Date.now(),
-    //     };
-    //     postUserStory(pdata);
-    //   }
-    //   if (postingTo === "tv") {
-    //     const pdata = {
-    //       userId: user.id,
-    //       username: tvProfile.tvHandle,
-    //       profile_pic: tvProfile.logo,
-    //       stories: [newPost],
-    //       updatedAt: Date.now(),
-    //     };
-    //     postTvStory(pdata);
-    //   }
-    //   setLoading(false);
-    //   navigation.navigate("HomeScreen");
-    // } catch (e) {
-    //   setLoading(false);
-    //   console.error(e);
-    // }
+    // set24HoursTimer("b93ujddc", user.id, "personal");
+    const calcDuration = duration / 1000;
+    try {
+      const mediaType = route.params.mediaType;
+      const newPost = {
+        id,
+        uri,
+        type: mediaType,
+        isSeen: false,
+        duration: mediaType === "video" ? calcDuration : 5,
+        externalLink: "",
+        views: {},
+        postedAt: Date.now(),
+        resizeMode,
+      };
+      if (mediaType === "video") {
+        newPost["isPaused"] = true;
+      }
+      if (postingTo === "personal") {
+        const pdata = {
+          userId: user.id,
+          username: user.username,
+          profile_pic: user.profile_pic,
+          stories: [newPost],
+          updatedAt: Date.now(),
+        };
+        postUserStory(pdata, newPost, "personal");
+      }
+      if (postingTo === "tv") {
+        const pdata = {
+          userId: user.id,
+          username: tvProfile.tvHandle,
+          profile_pic: tvProfile.logo,
+          stories: [newPost],
+          updatedAt: Date.now(),
+        };
+        postTvStory(pdata, newPost, "tv");
+      }
+      setLoading(false);
+      navigation.navigate("HomeScreen");
+    } catch (e) {
+      setLoading(false);
+      console.error(e);
+    }
   }
 
   return (
@@ -162,27 +168,26 @@ const EditAndPostScreen = () => {
                     width: Dimensions.get("screen").width,
                   },
                 ]}
+                resizeMode={resizeMode}
               />
             )}
             <View style={styles.uiContainer}>
-              {route.params.mediaType === "video" ? (
-                <TouchableOpacity
-                  onPress={() =>
-                    setResizeMode(resizeMode === "cover" ? "contain" : "cover")
+              <TouchableOpacity
+                onPress={() =>
+                  setResizeMode(resizeMode === "cover" ? "contain" : "cover")
+                }
+                style={styles.resizer}
+              >
+                <Entypo
+                  name={
+                    resizeMode === "contain"
+                      ? "resize-full-screen"
+                      : "resize-100-"
                   }
-                  style={styles.resizer}
-                >
-                  <Entypo
-                    name={
-                      resizeMode === "contain"
-                        ? "resize-full-screen"
-                        : "resize-100-"
-                    }
-                    size={22}
-                    color="#ffffff"
-                  />
-                </TouchableOpacity>
-              ) : null}
+                  size={22}
+                  color="#ffffff"
+                />
+              </TouchableOpacity>
               <View style={styles.topContainer}>
                 <TouchableOpacity
                   style={{

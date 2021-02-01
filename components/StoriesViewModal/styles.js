@@ -15,13 +15,13 @@ export const styles = StyleSheet.create({
   roundedImage: {
     height: "100%",
     width: "100%",
-    borderRadius: 16,
+    borderRadius: 26,
   },
   rounded: {
-    borderRadius: 20,
+    borderRadius: 30,
     marginVertical: 5,
-    width: 60,
-    height: 60,
+    width: 70,
+    height: 70,
     borderWidth: 2,
     padding: 2,
     borderColor: "#006eff",
@@ -30,7 +30,7 @@ export const styles = StyleSheet.create({
     flex: 1,
   },
   title: {
-    fontSize: 10,
+    fontSize: 12,
     textAlign: "center",
     fontWeight: "bold",
     color: "#11111198",

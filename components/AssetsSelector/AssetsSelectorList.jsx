@@ -107,7 +107,6 @@ export const AssetsSelectorList = ({
   videoIcon,
   noAssets,
 }) => {
-  console.log(data);
   const _renderItem = ({ item }) => (
     <MemoizedAssetItem
       id={item.id}

@@ -128,20 +128,10 @@ export const set24HoursTimer = async (storyId, userId, accountType) => {
   const timestamp = Date.now();
   // const endTime = new Date(timestamp + 60 * 60 * 24 * 1000)
   const endTime = new Date(timestamp + 60 * 1000);
-
-  const data = {
-    storyId,
-    userId,
-    timestamp,
-    endTime,
-    accountType,
-  };
-  console.log(data);
-
   try {
     const url =
-      "https://us-central1-chattie-3eb7b.cloudfunctions.net/api/v1/stories/test";
-    // const url = "http://192.168.43.199:5000";
+      "https://us-central1-chattie-3eb7b.cloudfunctions.net/api/v1/stories/create";
+    // const url = "http://192.168.43.199:5000/stories";
     const postRes = await fetch(url, {
       method: "POST",
       headers: {
@@ -159,29 +149,32 @@ export const set24HoursTimer = async (storyId, userId, accountType) => {
     const res = await postRes.json();
     console.log(res);
   } catch (e) {
-    console.log("here", e);
+    console.log(e);
   }
 };
-export const postUserStory = async (postData) => {
+export const postUserStory = async (postContainer, postData, postingTo) => {
+  const userId = postContainer.userId;
   const storiesRefGet = await firestore
     .collection("userStories")
-    .doc(postData.userId)
+    .doc(userId)
     .get();
   if (storiesRefGet.exists) {
+    const action = {
+      type: "ADD_STORY",
+      payload: postData.id,
+      userId: userId,
+    };
     const oldStories = storiesRefGet.data().stories;
     const newPostData = {
-      stories: [...oldStories, postData.stories],
-      updatedAt: postData.updatedAt,
+      stories: [...oldStories, postData],
+      updatedAt: postContainer.updatedAt,
       action,
     };
     await firestore.collection("userStories").doc(userId).update(newPostData);
-    set24HoursTimer(postData.id, postData.userId, "personal");
+    // set24HoursTimer(postData.id, userId, postingTo);
   } else {
-    await firestore
-      .collection("userStories")
-      .doc(postData.userId)
-      .set(postData);
-    set24HoursTimer(postData.id, postData.userId, "personal");
+    await firestore.collection("userStories").doc(userId).set(postContainer);
+    // set24HoursTimer(postData.id, userId, postingTo);
   }
 };
 

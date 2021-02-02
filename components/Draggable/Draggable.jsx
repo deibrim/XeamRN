@@ -1,13 +1,18 @@
+import { AntDesign } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
 import { StyleSheet, View, Text, PanResponder, Animated } from "react-native";
-import { PinchGestureHandler, State } from "react-native-gesture-handler";
+import {
+  PinchGestureHandler,
+  State,
+  TouchableOpacity,
+} from "react-native-gesture-handler";
 
-const Draggable = ({ widget, showDraggable, setShowDraggable }) => {
+const Draggable = ({ widget, showDraggable, data, setEditing }) => {
   const [dropAreaValues, setDropAreaValues] = useState(null);
   const [pan, setPan] = useState(new Animated.ValueXY());
   const [opacity, setOpacity] = useState(new Animated.Value(1));
   const [scaling, setScaling] = useState(1);
-
+  const [canDelete, setCanDelete] = useState(false);
   let _val = { x: 0, y: 0 };
   useEffect(() => {
     pan.addListener((value) => (_val = value));
@@ -25,13 +30,13 @@ const Draggable = ({ widget, showDraggable, setShowDraggable }) => {
       useNativeDriver: false,
     }),
     onPanResponderRelease: (e, gesture) => {
-      if (isDropArea(gesture)) {
-        Animated.timing(opacity, {
-          toValue: 0,
-          duration: 1000,
-          useNativeDriver: false,
-        }).start(() => setShowDraggable(false));
-      }
+      // if (isDropArea(gesture)) {
+      //   Animated.timing(opacity, {
+      //     toValue: 0,
+      //     duration: 1000,
+      //     useNativeDriver: false,
+      //   }).start(() => {});
+      // }
     },
   });
   function isDropArea(gesture) {
@@ -71,18 +76,41 @@ const Draggable = ({ widget, showDraggable, setShowDraggable }) => {
             {...panResponder.panHandlers}
             style={[panStyle, styles.circle, { opacity: opacity }]}
           >
-            {/* <PinchGestureHandler
+            {canDelete ? (
+              <View style={{ position: "absolute", right: 0, top: 0 }}>
+                <TouchableOpacity
+                  onPress={() => setShowDraggable(false)}
+                  style={{ position: "absolute" }}
+                >
+                  <AntDesign name="close" size={20} color="red" />
+                </TouchableOpacity>
+              </View>
+            ) : null}
+            <TouchableOpacity
+              activeOpacity={1}
+              delayLongPress={200}
+              onPress={() => {
+                setCanDelete(false);
+                setEditing(data);
+              }}
+              onLongPress={() => setCanDelete(true)}
+              style={{ position: "relative", zIndex: 5 }}
+            >
+              {/* <PinchGestureHandler
               onGestureEvent={onZoomEvent}
               onHandlerStateChange={onZoomStateChange}
             > */}
-            <Animated.Text
-              style={{
-                transform: [{ scale: scaling }],
-                //   fontSize: scale,
-              }}
-            >
-              {widget}
-            </Animated.Text>
+              <Animated.Text
+                style={{
+                  transform: [{ scale: scaling }],
+                  color: data.color,
+                  fontSize: data.fontSize,
+                  //   fontSize: scale,
+                }}
+              >
+                {data.data}
+              </Animated.Text>
+            </TouchableOpacity>
             {/* </PinchGestureHandler> */}
           </Animated.View>
         </View>

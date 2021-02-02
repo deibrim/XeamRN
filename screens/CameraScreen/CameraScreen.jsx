@@ -215,7 +215,7 @@ export default function CameraScreen() {
                       ]}
                     >
                       <Image
-                        source={{ uri: user.profile_pic }}
+                        source={{ uri: xStore.logo }}
                         style={styles.postToImage}
                       />
                       {labelHidden ? null : (
@@ -262,7 +262,7 @@ export default function CameraScreen() {
                     ]}
                   >
                     <Image
-                      source={{ uri: user.profile_pic }}
+                      source={{ uri: tvProfile.logo }}
                       style={styles.postToImage}
                     />
                     {labelHidden ? null : (

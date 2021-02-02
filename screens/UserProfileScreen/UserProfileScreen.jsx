@@ -419,9 +419,9 @@ export default function UserProfileScreen() {
           </View>
         </View>
         <View style={{ paddingHorizontal: 10 }}>
-          {/* <Text style={{ color: "#42414C", fontSize: 14, fontWeight: "bold" }}>
-            {user.name || ""}
-          </Text> */}
+          <Text style={{ color: "#42414C", fontSize: 14, fontWeight: "bold" }}>
+            {user.bio || ""}
+          </Text>
           <Text style={{ color: "#42414C", fontSize: 14, fontWeight: "500" }}>
             {user.headline || ""}
           </Text>

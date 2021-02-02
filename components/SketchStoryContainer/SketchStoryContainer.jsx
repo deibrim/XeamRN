@@ -17,14 +17,15 @@ import AppButton from "../AppButton/AppButton";
 import { styles } from "./styles";
 // import Draggable from "../Draggable/Draggable";
 import Canvas from "../Canvas/Canvas";
+import ColorPicker from "../ColorPicker/ColorPicker";
+import { colors } from "../../constants/Colors";
 
 const SketchStoryContainer = ({ setShowStoryTypes }) => {
   const user = useSelector((state) => state.user.currentUser);
   const tv = useSelector((state) => state.user.currentUserTvProfile);
   const store = useSelector((state) => state.user.currentUserXStore);
-  const [showDraggable, setShowDraggable] = useState(true);
   const [keyboardShowing, setKeyboardShowing] = useState(false);
-  const [backgroundColor, setBackgroundColor] = useState("#549eff");
+  const [backgroundColor, setBackgroundColor] = useState("#549EFF");
   const [textBoxVisible, setTextBoxVisible] = useState(false);
   const [text, setText] = useState("");
   const navigation = useNavigation();
@@ -37,7 +38,6 @@ const SketchStoryContainer = ({ setShowStoryTypes }) => {
     Keyboard.addListener("keyboardDidShow", () => {
       setShowStoryTypes(false);
       setKeyboardShowing(true);
-      setFSize("focusFontSize");
     });
     Keyboard.addListener("keyboardDidHide", () => {
       setShowStoryTypes(true);
@@ -128,8 +128,8 @@ const SketchStoryContainer = ({ setShowStoryTypes }) => {
               placeholder="Type Something"
               placeholderTextColor="#000000"
               autoCapitalize="none"
-              onBlur={() => setFSize(fontSize)}
-              onFocus={() => setFSize(focusFontSize)}
+              onBlur={() => {}}
+              onFocus={() => {}}
               returnKeyType="done"
               onChangeText={(e) => {
                 setText(e);
@@ -139,20 +139,27 @@ const SketchStoryContainer = ({ setShowStoryTypes }) => {
           )}
           <Canvas
             strokes={[]}
-            containerStyle={{ flex: 1, backgroundColor: "rgba(0,0,0,0.01)" }}
+            containerStyle={{ flex: 1, backgroundColor: "rgba(0,0,0,0.0)" }}
             rewind={(undo) => {
               _undo = undo;
             }}
             clear={(clear) => {
               _clear = clear;
             }}
-            color={"#000000"}
+            color={"#ffffff"}
             strokeWidth={4}
             enabled={true}
             onChangeStrokes={(strokes) => {}}
           />
         </View>
       </ViewShot>
+      <View style={styles.backgroundColorPickerWrapper}>
+        <ColorPicker
+          onPress={setBackgroundColor}
+          colors={colors}
+          color={backgroundColor}
+        />
+      </View>
     </View>
   );
 };

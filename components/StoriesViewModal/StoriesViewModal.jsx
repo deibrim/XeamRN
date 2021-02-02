@@ -14,7 +14,7 @@ import { firestore } from "../../firebase/firebase.utils";
 import StoryContainer from "../Stories/StoryContainer";
 import { styles } from "./styles";
 
-const StoriesViewModal = () => {
+const StoriesViewModal = ({ togglePanel }) => {
   const currentUser = useSelector((state) => state.user.currentUser);
   const [isModelOpen, setModel] = useState(false);
   const [currentUserIndex, setCurrentUserIndex] = useState(0);
@@ -30,7 +30,7 @@ const StoriesViewModal = () => {
       .collection("stories")
       .doc(currentUser.id)
       .collection("stories")
-      .orderBy("updatedAt", "asc");
+      .orderBy("updatedAt", "desc");
     storiesRef.onSnapshot((snapshot) => {
       const storiesArr = [];
       const xeamStory = [];
@@ -92,28 +92,42 @@ const StoriesViewModal = () => {
 
   return (
     <View style={styles.container}>
-      <FlatList
-        data={stories.length ? stories : AllStories}
-        horizontal
-        renderItem={({ item, index }) => (
-          <TouchableOpacity
-            onPress={() => onStorySelect(index)}
-            style={styles.userContainer}
-          >
+      <View style={{ flexDirection: "row", alignItems: "center" }}>
+        {stories.length && stories[0].userId !== currentUser.id ? (
+          <TouchableOpacity onPress={togglePanel} style={styles.userContainer}>
             <View style={styles.rounded}>
               <Image
                 style={styles.roundedImage}
-                source={{ uri: item.profile_pic }}
+                source={{ uri: currentUser.profile_pic }}
                 isHorizontal
               />
             </View>
-            <Text style={styles.title}>
-              {item.userId === currentUser.id ? "You" : item.username}
-            </Text>
+            <Text style={styles.title}>Add story</Text>
           </TouchableOpacity>
-        )}
-        keyExtractor={(item, index) => index.toString()}
-      />
+        ) : null}
+        <FlatList
+          data={stories.length ? stories : AllStories}
+          horizontal
+          renderItem={({ item, index }) => (
+            <TouchableOpacity
+              onPress={() => onStorySelect(index)}
+              style={styles.userContainer}
+            >
+              <View style={styles.rounded}>
+                <Image
+                  style={styles.roundedImage}
+                  source={{ uri: item.profile_pic }}
+                  isHorizontal
+                />
+              </View>
+              <Text style={styles.title}>
+                {item.userId === currentUser.id ? "You" : item.username}
+              </Text>
+            </TouchableOpacity>
+          )}
+          keyExtractor={(item, index) => index.toString()}
+        />
+      </View>
       <Modal
         animationType="slide"
         transparent={false}

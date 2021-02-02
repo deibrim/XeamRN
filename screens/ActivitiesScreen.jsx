@@ -99,6 +99,7 @@ export default function ActivitiesScreen() {
 function ActivityPreview({ item }) {
   const user = useSelector((state) => state.user.currentUser);
   const dispatch = useDispatch();
+  const navigation = useNavigation();
   !item.viewed && onView();
 
   async function onView() {
@@ -133,7 +134,7 @@ function ActivityPreview({ item }) {
           justifyContent: "flex-start",
           alignItems: "center",
           paddingHorizontal: 20,
-          backgroundColor: "white",
+          backgroundColor: !item.viewed ? "#006eff22" : "white",
         }}
       >
         <Image

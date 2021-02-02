@@ -76,4 +76,9 @@ export const styles = StyleSheet.create({
     borderRadius: 25,
     letterSpacing: 1,
   },
+  backgroundColorPickerWrapper: {
+    position: "absolute",
+    bottom: "16%",
+    left: 5,
+  },
 });

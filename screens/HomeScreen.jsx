@@ -62,7 +62,7 @@ export default React.memo(function HomeScreen() {
     return () => {
       Notifications.removeNotificationSubscription(responseListener);
     };
-  }, []);
+  }, [refreshing]);
   async function getFollowing(userId) {
     const snapshot = await firestore
       .collection("following")
@@ -231,7 +231,7 @@ export default React.memo(function HomeScreen() {
             <Text style={styles.sectionTitle}>Stories</Text>
           </View> */}
           {/* <StoriesPreviewContainer /> */}
-          <StoriesViewModal />
+          <StoriesViewModal togglePanel={togglePanel} />
         </View>
         {!hasTimeline && (
           <View style={styles.trendSection}>

@@ -28,6 +28,7 @@ const Draggable = ({
   setFontSize,
   setTextColor,
   setTextBoxVisible,
+  onDeleteText,
 }) => {
   const [dropAreaValues, setDropAreaValues] = useState(null);
   const [pan, setPan] = useState(new Animated.ValueXY());
@@ -40,24 +41,24 @@ const Draggable = ({
   let _cVal = { x: 0, y: 0 };
   useEffect(() => {
     pan.addListener((value) => {
-      setClicked(true);
       _val = value;
-      // Animated.timing(_val, {
-      //   duration: 1000,
-      //   delay: 0,
-      //   useNativeDriver: false,
-      // }).start(({ finished }) => {
-      //   if (_val.x === _cVal.x && _val.y === _cVal.y) {
-      //     setCanDelete(true);
-      //     setClicked(false);
-      //   }
-      // });
-      setTimeout(() => {
+      const shortP = setTimeout(() => {
+        if (_val.x === _cVal.x && _val.y === _cVal.y) {
+          setClicked(true);
+        }
+      }, 500);
+      const longP = setTimeout(() => {
         if (_val.x === _cVal.x && _val.y === _cVal.y) {
           setCanDelete(true);
           setClicked(false);
         }
       }, 1000);
+      if (_val.x !== _cVal.x && _val.y !== _cVal.y) {
+        setCanDelete(false);
+        clearTimeout(shortP);
+        clearTimeout(longP);
+      }
+
       // wait(1000).then();
     });
   }, [editing, canDelete, clicked]);
@@ -132,58 +133,42 @@ const Draggable = ({
     };
     if (showDraggable) {
       return (
-        // <View
-        //   style={{ position: "absolute", width: "100%", left: 0, right: 0 }}
-        // >
         <Animated.View
           {...panResponder.panHandlers}
           style={[panStyle, styles.circle, { opacity: opacity }]}
         >
           {canDelete ? (
-            <View
-              style={{
-                position: "absolute",
-                left: 0,
-                right: 0,
-                top: 0,
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
+            <View>
               <TouchableOpacity
-                onPress={() => setShowDraggable(false)}
-                style={{ position: "absolute" }}
+                onPress={() => onDeleteText(data.id)}
+                style={{
+                  justifyContent: "center",
+                  alignItems: "center",
+                  position: "absolute",
+                  top: -20,
+                  left: 0,
+                  right: 0,
+                  zIndex: 90,
+                }}
               >
-                <AntDesign name="close" size={20} color="red" />
+                <View
+                  style={{
+                    backgroundColor: "#ffffff",
+                    borderRadius: 20,
+                    height: 30,
+                    width: 30,
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
+                  <AntDesign name="close" size={24} color="red" />
+                </View>
               </TouchableOpacity>
             </View>
           ) : null}
-          {/* <TouchableWithoutFeedback
-            activeOpacity={1}
-            delayLongPress={200}
-            onPress={() => {
-              setCanDelete(false);
-              setEditing(data);
-            }}
-            onLongPress={() => {
-              setCanDelete(true);
-            }}
-            style={
-              {
-                position: "absolute",
-                left: 0,
-                right: 0,
-                top: 0,
-                bottom: 0,
-                zIndex: 0,
-                backgroundColor: "#00000001",
-              }
-            }
-          > */}
           <Text
             numberOfLines={10}
             style={{
-              // flex: 1,
               width: "100%",
               color: data.color,
               fontSize: data.fontSize,
@@ -192,9 +177,7 @@ const Draggable = ({
           >
             {data.data}
           </Text>
-          {/* </TouchableWithoutFeedback> */}
         </Animated.View>
-        // </View>
       );
     }
   }

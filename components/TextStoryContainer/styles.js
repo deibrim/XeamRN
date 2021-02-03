@@ -64,7 +64,6 @@ export const styles = StyleSheet.create({
     marginVertical: 10,
   },
   input: {
-    // flex: 1,
     width: "100%",
     textAlign: "center",
     paddingTop: 10,

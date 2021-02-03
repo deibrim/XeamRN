@@ -78,6 +78,8 @@ const TextStoryContainer = ({ setShowStoryTypes }) => {
           { id: editing.id, data: text, fontSize, color: textColor },
         ]);
         setText("");
+        setEditing();
+        setFontSize(20);
       } else {
         setTexts([...texts, { id: 1, data: text, fontSize, color: textColor }]);
         setText("");
@@ -86,7 +88,7 @@ const TextStoryContainer = ({ setShowStoryTypes }) => {
       setKeyboardShowing(false);
       setTextBoxVisible(false);
     });
-  }, [keyboardShowing, text, editing, textColor, fontSize]);
+  }, [keyboardShowing, texts, text, editing, textColor, fontSize]);
   Keyboard.addListener("keyboardDidShow", () => {
     setShowStoryTypes(false);
     setKeyboardShowing(true);
@@ -95,6 +97,9 @@ const TextStoryContainer = ({ setShowStoryTypes }) => {
     setKeyboardShowing(false);
     setTextBoxVisible(false);
   });
+  const onDeleteText = (id) => {
+    setTexts(texts.filter((item, index) => item.id !== id));
+  };
 
   const onNext = async (asset) => {
     navigation.navigate("EditAndPostScreen", {
@@ -174,6 +179,7 @@ const TextStoryContainer = ({ setShowStoryTypes }) => {
               setText={setText}
               setFontSize={setFontSize}
               setTextColor={setTextColor}
+              onDeleteText={onDeleteText}
             />
             // </TouchableOpacity>
           ))}
@@ -225,7 +231,7 @@ const TextStoryContainer = ({ setShowStoryTypes }) => {
                   max={100}
                   step={1}
                   valueOnChange={(value) => setFontSize(value)}
-                  initialValue={20}
+                  initialValue={fontSize}
                   knobColor="#ffffff"
                   valueLabelsBackgroundColor="#ffffff"
                   inRangeBarColor="#ffffff22"

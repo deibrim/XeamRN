@@ -1,4 +1,10 @@
-import { AntDesign, Entypo, Ionicons, MaterialIcons } from "@expo/vector-icons";
+import {
+  AntDesign,
+  Entypo,
+  Feather,
+  Ionicons,
+  MaterialIcons,
+} from "@expo/vector-icons";
 import React, { useEffect, useState, useRef } from "react";
 import {
   Keyboard,
@@ -29,9 +35,10 @@ const TextStoryContainer = ({ setShowStoryTypes }) => {
   const [backgroundColor, setBackgroundColor] = useState("#549EFF");
   const [keyboardShowing, setKeyboardShowing] = useState(false);
   const [textBoxVisible, setTextBoxVisible] = useState(false);
-  const [fontSize, setFontSize] = useState(13);
+  const [fontSize, setFontSize] = useState(20);
   const [focusFontSize, setFocusFontSize] = useState(20);
   const [editing, setEditing] = useState();
+  const [canDelete, setCanDelete] = useState(false);
 
   //   {
   //   id: 1,
@@ -51,7 +58,7 @@ const TextStoryContainer = ({ setShowStoryTypes }) => {
   useEffect(() => {
     Permissions.askAsync(Permissions.CAMERA_ROLL);
     Keyboard.addListener("keyboardDidHide", () => {
-      if (text.trim() !== "" && texts.length && !keyboardShowing) {
+      if (!editing && text.trim() !== "" && texts.length && !keyboardShowing) {
         setTexts((prev) => {
           const nextId = prev[prev.length - 1].id + 1;
           return [
@@ -64,6 +71,13 @@ const TextStoryContainer = ({ setShowStoryTypes }) => {
         setFinalText(text);
         setTexts([{ id: 1, data: text, fontSize, color: textColor }]);
         setText("");
+      } else if (editing) {
+        const filterOut = texts.filter((item, index) => item.id !== editing.id);
+        setTexts([
+          ...filterOut,
+          { id: editing.id, data: text, fontSize, color: textColor },
+        ]);
+        setText("");
       } else {
         setTexts([...texts, { id: 1, data: text, fontSize, color: textColor }]);
         setText("");
@@ -71,48 +85,36 @@ const TextStoryContainer = ({ setShowStoryTypes }) => {
       setShowStoryTypes(true);
       setKeyboardShowing(false);
       setTextBoxVisible(false);
-      console.log(texts);
     });
-  }, [keyboardShowing, text, editing]);
+  }, [keyboardShowing, text, editing, textColor, fontSize]);
   Keyboard.addListener("keyboardDidShow", () => {
     setShowStoryTypes(false);
     setKeyboardShowing(true);
   });
   Keyboard.addListener("keyboardWillHide", () => {
-    // if (text.trim() !== "" && texts.length) {
-    //   setTexts((prev) => {
-    //     const nextId = prev[prev.length - 1].id + 1;
-    //     return [
-    //       ...prev,
-    //       { id: nextId, data: text, fontSize: 13, color: "#000000" },
-    //     ];
-    //   });
-    //   setText("");
-    // } else if (text.trim() !== "") {
-    //   setTexts([{ id: 1, data: text, fontSize: 13, color: "#000000" }]);
-    //   setText("");
-    // }
-    // console.log(texts);
     setKeyboardShowing(false);
     setTextBoxVisible(false);
   });
 
-  const onCapture = async () => {
+  const onNext = async (asset) => {
+    navigation.navigate("EditAndPostScreen", {
+      photoUri: asset.uri,
+      type: route.params.type,
+      mediaType: "photo",
+      height: asset.height,
+      width: asset.width,
+      asset: asset,
+    });
+  };
+  const onCapture = async (next) => {
     try {
       let result = await captureRef(captureViewRef, {
         quality: 1,
         format: "jpg",
       });
       const asset = await MediaLibrary.createAssetAsync(result);
-      if (asset) {
-        navigation.navigate("EditAndPostScreen", {
-          photoUri: asset.uri,
-          type: route.params.type,
-          mediaType: "photo",
-          height: asset.height,
-          width: asset.width,
-          asset: asset,
-        });
+      if (asset && next) {
+        onNext(asset);
       }
     } catch (snapshotError) {
       console.error(snapshotError);
@@ -122,7 +124,7 @@ const TextStoryContainer = ({ setShowStoryTypes }) => {
     <View style={[styles.wrapper]}>
       {!textBoxVisible && (
         <View style={styles.topContainer}>
-          <TouchableOpacity onPress={onCapture}>
+          <TouchableOpacity onPress={() => onCapture(true)}>
             <View style={styles.button}>
               <Text style={styles.buttonText}>Next</Text>
               <Ionicons name="ios-arrow-forward" size={18} color="black" />
@@ -139,11 +141,23 @@ const TextStoryContainer = ({ setShowStoryTypes }) => {
               <MaterialIcons name="text-fields" size={26} color="#ffffff89" />
             </View>
           </TouchableWithoutFeedback>
-          <TouchableWithoutFeedback onPress={() => {}}>
+          <TouchableOpacity onPress={() => onCapture(false)}>
             <View style={styles.controlBtn}>
-              <MaterialIcons name="insert-link" size={26} color="#ffffff89" />
+              <Feather name="download" size={24} color="#ffffff89" />
             </View>
-          </TouchableWithoutFeedback>
+          </TouchableOpacity>
+          {tv ||
+            (store && (
+              <TouchableWithoutFeedback onPress={() => {}}>
+                <View style={styles.controlBtn}>
+                  <MaterialIcons
+                    name="insert-link"
+                    size={26}
+                    color="#ffffff89"
+                  />
+                </View>
+              </TouchableWithoutFeedback>
+            ))}
         </View>
       )}
       <ViewShot style={{ backgroundColor: "transparent" }} ref={captureViewRef}>
@@ -151,23 +165,25 @@ const TextStoryContainer = ({ setShowStoryTypes }) => {
           {texts.map((item, index) => (
             <Draggable
               key={index}
-              widget={item.data}
               showDraggable={showDraggable}
               setShowDraggable={setShowDraggable}
               data={item}
+              editing={editing}
               setEditing={setEditing}
+              setTextBoxVisible={setTextBoxVisible}
+              setText={setText}
+              setFontSize={setFontSize}
+              setTextColor={setTextColor}
             />
+            // </TouchableOpacity>
           ))}
           {textBoxVisible && (
             <ScrollView
+              keyboardShouldPersistTaps={"handled"}
               contentContainerStyle={{
                 justifyContent: "center",
               }}
               style={{
-                // width: "100%",
-                // height: 1,
-                // marginTop: "auto",
-                // flexDirection: "column",
                 paddingTop: 0,
                 position: "absolute",
                 top: 0,
@@ -177,13 +193,39 @@ const TextStoryContainer = ({ setShowStoryTypes }) => {
                 backgroundColor: "#00000034",
               }}
             >
+              <View>
+                <TextInput
+                  style={[
+                    styles.input,
+                    {
+                      fontSize: editing ? editing.fontSize : fontSize,
+                      color: textColor,
+                    },
+                  ]}
+                  underlineColorAndroid="transparent"
+                  multiline={true}
+                  autoFocus
+                  autoCapitalize
+                  // placeholder="Type Something"
+                  placeholderTextColor="#000000"
+                  autoCapitalize="none"
+                  onBlur={() => {}}
+                  onFocus={() => {}}
+                  returnKeyType="done"
+                  defaultValue={editing && editing.data}
+                  onChangeText={(e) => {
+                    setText(e);
+                  }}
+                  value={text}
+                />
+              </View>
               <View style={styles.fontSizeSliderWrapper}>
                 <Slider
                   min={5}
-                  max={40}
+                  max={100}
                   step={1}
                   valueOnChange={(value) => setFontSize(value)}
-                  initialValue={13}
+                  initialValue={20}
                   knobColor="#ffffff"
                   valueLabelsBackgroundColor="#ffffff"
                   inRangeBarColor="#ffffff22"
@@ -192,29 +234,12 @@ const TextStoryContainer = ({ setShowStoryTypes }) => {
                   showRangeLabels={false}
                 />
               </View>
-              <View>
-                <TextInput
-                  style={[styles.input, { fontSize, color: textColor }]}
-                  underlineColorAndroid="transparent"
-                  multiline={true}
-                  autoFocus
-                  // placeholder="Type Something"
-                  placeholderTextColor="#000000"
-                  autoCapitalize="none"
-                  onBlur={() => {}}
-                  onFocus={() => {}}
-                  returnKeyType="done"
-                  onChangeText={(e) => {
-                    setText(e);
-                  }}
-                  value={text}
-                />
-              </View>
               <View style={styles.textColorPickerWrapper}>
                 <ColorPicker
                   onPress={setTextColor}
                   colors={colors}
                   color={textColor}
+                  column
                 />
               </View>
             </ScrollView>
@@ -222,13 +247,15 @@ const TextStoryContainer = ({ setShowStoryTypes }) => {
         </View>
       </ViewShot>
 
-      <View style={styles.backgroundColorPickerWrapper}>
-        <ColorPicker
-          onPress={setBackgroundColor}
-          colors={colors}
-          color={backgroundColor}
-        />
-      </View>
+      {!keyboardShowing && (
+        <View style={styles.backgroundColorPickerWrapper}>
+          <ColorPicker
+            onPress={setBackgroundColor}
+            colors={colors}
+            color={backgroundColor}
+          />
+        </View>
+      )}
     </View>
   );
 };

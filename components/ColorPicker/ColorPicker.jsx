@@ -1,11 +1,19 @@
 import React from "react";
 import { ScrollView, TouchableOpacity, View } from "react-native";
 
-const ColorPicker = ({ colors, onPress, color }) => {
+const ColorPicker = ({ colors, onPress, color, column }) => {
   return (
-    <ScrollView horizontal>
+    <ScrollView
+      keyboardShouldPersistTaps={"handled"}
+      horizontal={column ? false : true}
+      contentContainerStyle={
+        column
+          ? { flexDirection: "row", flexWrap: "wrap", justifyContent: "center" }
+          : {}
+      }
+    >
       {colors.map((item, index) => (
-        <TouchableOpacity onPress={() => onPress(item)}>
+        <TouchableOpacity key={index} onPress={() => onPress(item)}>
           <View
             style={{
               height: 30,

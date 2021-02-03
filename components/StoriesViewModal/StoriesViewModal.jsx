@@ -1,3 +1,4 @@
+import { useNavigation } from "@react-navigation/native";
 import React, { useEffect, useRef, useState } from "react";
 import {
   FlatList,
@@ -9,7 +10,7 @@ import {
 } from "react-native";
 import { CubeNavigationHorizontal } from "react-native-3dcube-navigation";
 import { useSelector } from "react-redux";
-import AllStories from "../../constants/AllStories";
+// import AllStories from "../../constants/AllStories";
 import { firestore } from "../../firebase/firebase.utils";
 import StoryContainer from "../Stories/StoryContainer";
 import { styles } from "./styles";
@@ -21,7 +22,7 @@ const StoriesViewModal = ({ togglePanel }) => {
   const [currentScrollValue, setCurrentScrollValue] = useState(0);
   const [stories, setStories] = useState([]);
   const modalScroll = useRef(null);
-
+  const navigation = useNavigation();
   useEffect(() => {
     getStories();
   }, []);
@@ -58,7 +59,8 @@ const StoriesViewModal = ({ togglePanel }) => {
 
   const onStoryNext = (isScroll) => {
     const newIndex = currentUserIndex + 1;
-    const checker = stories.length ? stories.length - 1 : AllStories.length - 1;
+    // const checker = stories.length ? stories.length - 1 : AllStories.length - 1;
+    const checker = stories.length && stories.length - 1;
     if (checker > currentUserIndex) {
       setCurrentUserIndex(newIndex);
       if (!isScroll) {
@@ -93,8 +95,14 @@ const StoriesViewModal = ({ togglePanel }) => {
   return (
     <View style={styles.container}>
       <View style={{ flexDirection: "row", alignItems: "center" }}>
-        {stories.length && stories[0].userId !== currentUser.id ? (
-          <TouchableOpacity onPress={togglePanel} style={styles.userContainer}>
+        {(stories.length && stories[0].userId !== currentUser.id) ||
+        !stories.length ? (
+          <TouchableOpacity
+            onPress={() =>
+              navigation.navigate("CameraScreen", { type: "story" })
+            }
+            style={styles.userContainer}
+          >
             <View style={styles.rounded}>
               <Image
                 style={styles.roundedImage}
@@ -106,7 +114,8 @@ const StoriesViewModal = ({ togglePanel }) => {
           </TouchableOpacity>
         ) : null}
         <FlatList
-          data={stories.length ? stories : AllStories}
+          data={stories.length && stories}
+          // data={stories.length ? stories : AllStories}
           horizontal
           renderItem={({ item, index }) => (
             <TouchableOpacity
@@ -158,17 +167,7 @@ const StoriesViewModal = ({ togglePanel }) => {
                   index={index}
                 />
               ))
-            : AllStories.map((item, index) => (
-                <StoryContainer
-                  ksy={index}
-                  onClose={onStoryClose}
-                  onStoryNext={onStoryNext}
-                  onStoryPrevious={onStoryPrevious}
-                  user={item}
-                  isNewStory={index !== currentUserIndex}
-                  index={index}
-                />
-              ))}
+            : null}
         </CubeNavigationHorizontal>
       </Modal>
     </View>

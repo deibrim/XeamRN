@@ -27,9 +27,9 @@ export const styles = StyleSheet.create({
     elevation: 2,
     alignItems: "center",
     justifyContent: "center",
-    height: 38,
+    height: 30,
     borderRadius: 20,
-    width: 80,
+    width: 70,
   },
   buttonText: {
     color: "#111111",
@@ -80,5 +80,11 @@ export const styles = StyleSheet.create({
     position: "absolute",
     bottom: "16%",
     left: 5,
+  },
+  strokeWidthSliderWrapper: {
+    position: "absolute",
+    bottom: "18%",
+    left: 0,
+    right: 0,
   },
 });

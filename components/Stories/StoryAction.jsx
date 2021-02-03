@@ -4,12 +4,14 @@ import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 const StoryAction = ({ type, text, onPress }) => {
   return (
-    <TouchableOpacity onPress={onPress} style={styles.storyActionWrapper}>
-      <View style={styles.storyAction}>
-        <Feather name="chevron-up" size={20} color="white" />
-      </View>
-      <Text style={styles.text}>{text}</Text>
-    </TouchableOpacity>
+    <View style={styles.storyActionWrapper}>
+      <TouchableOpacity onPress={onPress} style={{ alignItems: "center" }}>
+        <View style={styles.storyAction}>
+          <Feather name="chevron-up" size={20} color="white" />
+        </View>
+        <Text style={styles.text}>{text}</Text>
+      </TouchableOpacity>
+    </View>
   );
 };
 

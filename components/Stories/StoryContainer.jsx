@@ -99,12 +99,14 @@ const StoryContainer = (props) => {
             <Story
               onImageLoaded={onImageLoaded}
               pause
+              onPause={onPause}
               onVideoLoaded={onVideoLoaded}
               story={story}
               userId={user.userId}
               isLoaded={isLoaded}
               setTimestamp={setTimestamp}
               setViewCount={setViewCount}
+              nextStory={nextStory}
             />
           </View>
           <ActivityIndicator color="white" />
@@ -158,6 +160,7 @@ const StoryContainer = (props) => {
           <Story
             onImageLoaded={onImageLoaded}
             pause={isPause}
+            onPause={onPause}
             isNewStory={props.isNewStory}
             onVideoLoaded={onVideoLoaded}
             story={story}
@@ -165,6 +168,7 @@ const StoryContainer = (props) => {
             isLoaded={isLoaded}
             setTimestamp={setTimestamp}
             setViewCount={setViewCount}
+            nextStory={nextStory}
           />
 
           {loading()}

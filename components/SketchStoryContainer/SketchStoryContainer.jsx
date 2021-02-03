@@ -19,6 +19,7 @@ import { styles } from "./styles";
 import Canvas from "../Canvas/Canvas";
 import ColorPicker from "../ColorPicker/ColorPicker";
 import { colors } from "../../constants/Colors";
+import { Slider } from "react-native-range-slider-expo";
 
 const SketchStoryContainer = ({ setShowStoryTypes }) => {
   const user = useSelector((state) => state.user.currentUser);
@@ -28,6 +29,7 @@ const SketchStoryContainer = ({ setShowStoryTypes }) => {
   const [backgroundColor, setBackgroundColor] = useState("#549EFF");
   const [textBoxVisible, setTextBoxVisible] = useState(false);
   const [text, setText] = useState("");
+  const [strokeWidth, setStrokeWidth] = useState(4);
   const navigation = useNavigation();
   const route = useRoute();
   const captureViewRef = useRef();
@@ -43,7 +45,7 @@ const SketchStoryContainer = ({ setShowStoryTypes }) => {
       setShowStoryTypes(true);
       setKeyboardShowing(false);
     });
-  }, [keyboardShowing]);
+  }, [keyboardShowing, strokeWidth, colors, _clear, _undo]);
   const onNext = async (asset) => {
     navigation.navigate("EditAndPostScreen", {
       photoUri: asset.uri,
@@ -147,7 +149,7 @@ const SketchStoryContainer = ({ setShowStoryTypes }) => {
               _clear = clear;
             }}
             color={"#ffffff"}
-            strokeWidth={4}
+            strokeWidth={strokeWidth}
             enabled={true}
             onChangeStrokes={(strokes) => {}}
           />
@@ -158,6 +160,21 @@ const SketchStoryContainer = ({ setShowStoryTypes }) => {
           onPress={setBackgroundColor}
           colors={colors}
           color={backgroundColor}
+        />
+      </View>
+      <View style={styles.strokeWidthSliderWrapper}>
+        <Slider
+          min={5}
+          max={100}
+          step={2}
+          valueOnChange={(value) => setStrokeWidth(value)}
+          initialValue={4}
+          knobColor="#ffffff"
+          valueLabelsBackgroundColor="#ffffff"
+          inRangeBarColor="#ffffff22"
+          outOfRangeBarColor="#ffffff98"
+          styleSize={"small"}
+          showRangeLabels={false}
         />
       </View>
     </View>

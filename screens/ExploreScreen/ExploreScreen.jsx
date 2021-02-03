@@ -186,12 +186,14 @@ export default function ExploreScreen() {
         ) : active === "people" ? (
           <FlatList
             data={foundUsers}
+            keyboardShouldPersistTaps={"handled"}
             renderItem={({ item }) => <FoundUserPreview item={item} />}
             keyExtractor={(item, index) => index.toString()}
           />
         ) : (
           <FlatList
             data={foundTags}
+            keyboardShouldPersistTaps={"handled"}
             renderItem={({ item }) => <FoundTagPreview item={item} />}
             keyExtractor={(item, index) => index.toString()}
           />

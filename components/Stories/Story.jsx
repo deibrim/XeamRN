@@ -222,7 +222,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   viewButton: {
-    // height: 35,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",

@@ -14,6 +14,7 @@ const ProgressBar = (props) => {
   };
 
   useEffect(() => {
+    console.log(active);
     switch (active) {
       case 2:
         return scale.setValue(width);
@@ -39,7 +40,7 @@ const ProgressBar = (props) => {
     const totalPlaytime = duration * 1000;
 
     if (props.pause) {
-      return 50000;
+      return 500000;
     }
 
     if (pauseTime === null) {

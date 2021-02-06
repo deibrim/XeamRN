@@ -8,17 +8,11 @@ import {
   Dimensions,
   Text,
   TouchableOpacity,
-  TouchableWithoutFeedback,
 } from "react-native";
 import {
   // PinchGestureHandler,
   State,
 } from "react-native-gesture-handler";
-const wait = (timeout) => {
-  return new Promise((resolve) => {
-    setTimeout(resolve, timeout);
-  });
-};
 const Draggable = ({
   showDraggable,
   editing,
@@ -35,7 +29,6 @@ const Draggable = ({
   const [opacity, setOpacity] = useState(new Animated.Value(1));
   const [scaling, setScaling] = useState(1);
   const [canDelete, setCanDelete] = useState(false);
-  // const [hold, setHold] = useState(false);
   const [clicked, setClicked] = useState(false);
   let _val = { x: 0, y: 0 };
   let _cVal = { x: 0, y: 0 };
@@ -58,14 +51,11 @@ const Draggable = ({
         clearTimeout(shortP);
         clearTimeout(longP);
       }
-
-      // wait(1000).then();
     });
   }, [editing, canDelete, clicked]);
   const panResponder = PanResponder.create({
     onStartShouldSetPanResponder: (e, gesture) => {
       setClicked(false);
-      // setHold(true);
       return true;
     },
     onPanResponderGrant: (e, gesture) => {
@@ -92,7 +82,6 @@ const Draggable = ({
         setTextColor(data.color);
         setTextBoxVisible(true);
       }
-      // setHold(true);
       // if (isDropArea(gesture)) {
       //   Animated.timing(opacity, {
       //     toValue: 0,

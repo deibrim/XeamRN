@@ -94,6 +94,7 @@ const ReelScreen = React.memo(() => {
         snapToInterval={Dimensions.get("window").height}
         snapToAlignment={"start"}
         decelerationRate={"fast"}
+        removeClippedSubviews={false}
         viewabilityConfig={viewConfigRef.current}
         keyExtractor={(item, index) => index.toString()}
         renderItem={({ item, index }) => (

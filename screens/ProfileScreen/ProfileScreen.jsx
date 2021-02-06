@@ -22,6 +22,7 @@ import { setShoppingBagSize } from "../../redux/shopping/actions";
 import { styles } from "./styles";
 import FollowersImagePreview from "../../components/FollowersImagePreview/FollowersImagePreview";
 import Dialog from "react-native-popup-dialog";
+import HelperDialog from "../../components/HelperDialog/HelperDialog";
 
 const wait = (timeout) => {
   return new Promise((resolve) => {
@@ -174,42 +175,24 @@ export default function ProfileScreen() {
         </View>
       ) : (
         <View style={styles.container}>
-          <Dialog
+          <HelperDialog
             visible={dialogVisible}
-            onTouchOutside={() => {
-              setDialogVisible(false);
-            }}
-            width={0.8}
+            setDialogVisible={setDialogVisible}
+            title={user.username}
           >
-            <View style={{ paddingVertical: 5, paddingHorizontal: 10 }}>
-              <View style={{ minHeight: 100 }}>
-                <View style={styles.customDialogTitle}>
-                  <Text
-                    style={[
-                      styles.username,
-                      { textAlign: "center", fontSize: 16, fontWeight: "bold" },
-                    ]}
-                  >
-                    {user.username}
-                  </Text>
-                </View>
-                <TouchableOpacity
-                  style={[styles.modalTextButton]}
-                  onPress={handleSignout}
-                >
-                  <Feather
-                    name="log-out"
-                    size={20}
-                    color="red"
-                    style={{ marginRight: 20 }}
-                  />
-                  <Text style={[styles.modalText, { color: "red" }]}>
-                    Logout
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </Dialog>
+            <TouchableOpacity
+              style={[styles.modalTextButton]}
+              onPress={handleSignout}
+            >
+              <Feather
+                name="log-out"
+                size={20}
+                color="red"
+                style={{ marginRight: 20 }}
+              />
+              <Text style={[styles.modalText, { color: "red" }]}>Logout</Text>
+            </TouchableOpacity>
+          </HelperDialog>
           <View style={styles.userPreview}>
             <View style={styles.userImageContainer}>
               <Image

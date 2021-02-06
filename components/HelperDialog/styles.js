@@ -1,8 +1,16 @@
-import { StyleSheet } from "react-native";
+import { Dimensions, StyleSheet } from "react-native";
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
+  },
+  modal: {
+    width: "100%",
+    height: Dimensions.get("screen").height,
+    backgroundColor: "white",
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingTop: 30,
   },
   header: {
     flexDirection: "row",

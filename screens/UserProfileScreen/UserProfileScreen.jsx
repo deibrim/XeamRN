@@ -26,7 +26,6 @@ import {
   handleTurnPostNotificationOn,
   handleUnfollowUser,
 } from "../../firebase/firebase.utils";
-import Dialog from "react-native-popup-dialog";
 import { setCurrentChannel, setPrivateChannel } from "../../redux/chat/actions";
 import { setUserReels } from "../../redux/reel/actions";
 import ReelPreview from "../../components/ReelPreview/ReelPreview";
@@ -34,6 +33,7 @@ import UserProfileMoreModal from "../../components/UserProfileMoreModal/UserProf
 import { styles } from "./styles";
 import AfterReporting from "../../components/AfterReporting/AfterReporting";
 import FollowersImagePreview from "../../components/FollowersImagePreview/FollowersImagePreview";
+import HelperDialog from "../../components/HelperDialog/HelperDialog";
 export default function UserProfileScreen() {
   const route = useRoute();
   const navigation = useNavigation();
@@ -262,107 +262,68 @@ export default function UserProfileScreen() {
         </View>
       ) : null}
       <View style={styles.container}>
-        <Dialog
+        <HelperDialog
           visible={showMore}
-          onTouchOutside={() => {
-            setShowMore(false);
-          }}
-          width={0.8}
+          setDialogVisible={setShowMore}
+          title={"More"}
         >
-          <View style={{ paddingVertical: 5, paddingHorizontal: 10 }}>
-            <View
-              style={{
-                minHeight: 100,
-              }}
-            >
-              <View style={styles.customDialogTitle}>
-                <Text
-                  style={[
-                    styles.username,
-                    { textAlign: "center", fontSize: 16, fontWeight: "bold" },
-                  ]}
-                >
-                  More
-                </Text>
-              </View>
-              <UserProfileMoreModal
-                userId={user.id}
-                userData={user}
-                setShowMore={setShowMore}
-                reported={reported}
-                setReported={setReported}
-                currentUser={currentUser}
-              />
-            </View>
-          </View>
-        </Dialog>
-        <Dialog
+          <UserProfileMoreModal
+            userId={user.id}
+            userData={user}
+            setShowMore={setShowMore}
+            reported={reported}
+            setReported={setReported}
+            currentUser={currentUser}
+          />
+        </HelperDialog>
+        <HelperDialog
           visible={dialogVisible}
-          onTouchOutside={() => {
-            setDialogVisible(false);
-          }}
-          width={0.8}
+          setDialogVisible={setDialogVisible}
+          title={user.username}
         >
-          <View style={{ paddingVertical: 5, paddingHorizontal: 10 }}>
-            <View style={{ minHeight: 100 }}>
-              <View style={styles.customDialogTitle}>
-                <Text
-                  style={[
-                    styles.username,
-                    { textAlign: "center", fontSize: 16, fontWeight: "bold" },
-                  ]}
-                >
-                  {user.username}
-                </Text>
-              </View>
-
-              <TouchableOpacity
-                style={styles.modalTextButton}
-                onPress={() => {
-                  // onBlacklistUser();
-                }}
-              >
-                <MaterialCommunityIcons
-                  name="block-helper"
-                  size={20}
-                  color="black"
-                  style={{ marginRight: 20 }}
-                />
-                <Text style={styles.modalText}>Block User</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.modalTextButton}
-                onPress={() => {
-                  togglePostNoty(userId);
-                }}
-              >
-                <Feather
-                  name={isPostNotyOn ? "bell-off" : "bell"}
-                  size={20}
-                  color="black"
-                  style={{ marginRight: 20 }}
-                />
-                <Text style={styles.modalText}>
-                  Turn {isPostNotyOn ? "off" : "on"} post notification
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.modalTextButton]}
-                onPress={handleToggleFollow}
-              >
-                <SimpleLineIcons
-                  name="user-unfollow"
-                  size={20}
-                  color="red"
-                  style={{ marginRight: 20 }}
-                />
-                <Text style={[styles.modalText, { color: "red" }]}>
-                  Unfollow
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </Dialog>
+          <TouchableOpacity
+            style={styles.modalTextButton}
+            onPress={() => {
+              // onBlacklistUser();
+            }}
+          >
+            <MaterialCommunityIcons
+              name="block-helper"
+              size={20}
+              color="black"
+              style={{ marginRight: 20 }}
+            />
+            <Text style={styles.modalText}>Block User</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.modalTextButton}
+            onPress={() => {
+              togglePostNoty(userId);
+            }}
+          >
+            <Feather
+              name={isPostNotyOn ? "bell-off" : "bell"}
+              size={20}
+              color="black"
+              style={{ marginRight: 20 }}
+            />
+            <Text style={styles.modalText}>
+              Turn {isPostNotyOn ? "off" : "on"} post notification
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.modalTextButton]}
+            onPress={handleToggleFollow}
+          >
+            <SimpleLineIcons
+              name="user-unfollow"
+              size={20}
+              color="red"
+              style={{ marginRight: 20 }}
+            />
+            <Text style={[styles.modalText, { color: "red" }]}>Unfollow</Text>
+          </TouchableOpacity>
+        </HelperDialog>
         <View style={styles.userPreview}>
           <View style={styles.userImageContainer}>
             <Image

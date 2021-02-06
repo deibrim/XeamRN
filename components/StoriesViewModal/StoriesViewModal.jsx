@@ -1,6 +1,7 @@
 import { useNavigation } from "@react-navigation/native";
 import React, { useEffect, useRef, useState } from "react";
 import {
+  Dimensions,
   FlatList,
   Image,
   Modal,
@@ -8,13 +9,14 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { CubeNavigationHorizontal } from "react-native-3dcube-navigation";
+// import { CubeNavigationHorizontal } from "react-native-3dcube-navigation";
+import CubeNavigationHorizontal from "../CubeNavigationHorizontal/CubeNavigationHorizontal";
 import { useSelector } from "react-redux";
 // import AllStories from "../../constants/AllStories";
 import { firestore } from "../../firebase/firebase.utils";
 import StoryContainer from "../Stories/StoryContainer";
 import { styles } from "./styles";
-
+const { width } = Dimensions.get("screen");
 const StoriesViewModal = ({ togglePanel }) => {
   const currentUser = useSelector((state) => state.user.currentUser);
   const [isModelOpen, setModel] = useState(false);
@@ -26,6 +28,9 @@ const StoriesViewModal = ({ togglePanel }) => {
   useEffect(() => {
     getStories();
   }, []);
+  useEffect(() => {
+    onScrollChange();
+  }, [currentUserIndex, currentScrollValue]);
   async function getStories() {
     const storiesRef = firestore
       .collection("stories")
@@ -91,6 +96,9 @@ const StoriesViewModal = ({ togglePanel }) => {
       setCurrentScrollValue(scrollValue);
     }
   };
+  const callBackAfterSwipe = (pos) => {
+    onScrollChange(pos);
+  };
 
   return (
     <View style={styles.container}>
@@ -151,7 +159,7 @@ const StoriesViewModal = ({ togglePanel }) => {
         onRequestClose={onStoryClose}
       >
         <CubeNavigationHorizontal
-          callBackAfterSwipe={(g) => onScrollChange(g)}
+          callBackAfterSwipe={callBackAfterSwipe}
           ref={modalScroll}
           style={styles.container}
         >

@@ -1,21 +1,44 @@
-import { Feather } from "@expo/vector-icons";
 import React from "react";
-import { Text, TouchableOpacity, View } from "react-native";
-import Dialog from "react-native-popup-dialog";
+import { Modal, Text, TouchableOpacity, View } from "react-native";
 import { styles } from "./styles";
 
-const HelperDialog = ({ dialogVisible, setDialogVisible, buttons, title }) => {
+const HelperDialog = ({ visible, setDialogVisible, children, title }) => {
   return (
-    <Dialog
-      visible={dialogVisible}
-      onTouchOutside={() => {
-        setDialogVisible(false);
-      }}
-      width={0.9}
+    <Modal
+      animationType="fade"
+      statusBarTranslucent={true}
+      transparent={true}
+      visible={visible}
+      style={styles.modal}
+      position="bottom"
     >
-      <View style={{ paddingVertical: 5, paddingHorizontal: 10 }}>
-        <View style={{ minHeight: 100 }}>
-          {title && (
+      <TouchableOpacity
+        activeOpacity={1}
+        onPress={() => {
+          setDialogVisible(false);
+        }}
+        style={{
+          position: "absolute",
+          top: 0,
+          bottom: 0,
+          left: 0,
+          right: 0,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: "#00000056",
+        }}
+      >
+        <View
+          style={{
+            paddingVertical: 5,
+            paddingHorizontal: 10,
+            backgroundColor: "#ffffff",
+            width: "90%",
+            borderRadius: 10,
+            // elevation: 4,
+          }}
+        >
+          <View style={{ minHeight: 100 }}>
             <View style={styles.customDialogTitle}>
               <Text
                 style={[
@@ -26,21 +49,11 @@ const HelperDialog = ({ dialogVisible, setDialogVisible, buttons, title }) => {
                 {title}
               </Text>
             </View>
-          )}
-          {buttons.map((item, index) => (
-            <TouchableOpacity
-              style={[styles.modalTextButton]}
-              onPress={item.onPress}
-            >
-              {item.icon && item.icon}
-              <Text style={[styles.modalText, { color: item.textColor }]}>
-                {item.text}
-              </Text>
-            </TouchableOpacity>
-          ))}
+            {children}
+          </View>
         </View>
-      </View>
-    </Dialog>
+      </TouchableOpacity>
+    </Modal>
   );
 };
 

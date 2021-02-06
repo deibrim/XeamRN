@@ -13,6 +13,7 @@ const ProgressArray = (props) => {
       "Animated: `useNativeDriver` was not specified.",
       `Warning: Each child in a list should have a unique "key" prop.`,
     ]);
+    // console.log(props);
     if (props.pause) {
       Animated.timing(opacity, {
         toValue: 0,

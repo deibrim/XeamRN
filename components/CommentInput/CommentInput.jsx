@@ -3,13 +3,7 @@ import React, { useState } from "react";
 import { addAComment } from "../../firebase/firebase.utils";
 import { useSelector } from "react-redux";
 import { v4 as uuidv4 } from "uuid";
-import {
-  View,
-  ImageBackground,
-  TextInput,
-  TouchableOpacity,
-  TouchableWithoutFeedback,
-} from "react-native";
+import { View, TextInput, TouchableOpacity } from "react-native";
 import styles from "./styles";
 
 const CommentInput = ({ postId, postOwnerId }) => {

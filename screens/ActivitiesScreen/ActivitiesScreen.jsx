@@ -12,8 +12,8 @@ import {
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import moment from "moment";
-import { firestore } from "../firebase/firebase.utils";
-import { toggleHasNoty } from "../redux/user/actions";
+import { firestore } from "../../firebase/firebase.utils";
+import { toggleHasNoty } from "../../redux/user/actions";
 const wait = (timeout) => {
   return new Promise((resolve) => {
     setTimeout(resolve, timeout);

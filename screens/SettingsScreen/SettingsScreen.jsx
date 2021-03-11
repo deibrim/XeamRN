@@ -22,8 +22,8 @@ import {
 } from "react-native";
 import { useSelector } from "react-redux";
 import { useNavigation } from "@react-navigation/native";
-import SettingsItemWrapper from "../components/SettingsItemWrapper/SettingsItemWrapper";
-import AppButton from "../components/AppButton/AppButton";
+import SettingsItemWrapper from "../../components/SettingsItemWrapper/SettingsItemWrapper";
+import AppButton from "../../components/AppButton/AppButton";
 const wait = (timeout) => {
   return new Promise((resolve) => {
     setTimeout(resolve, timeout);
